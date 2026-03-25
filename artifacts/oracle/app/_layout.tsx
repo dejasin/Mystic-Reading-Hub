@@ -1,10 +1,14 @@
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  useFonts,
-} from "@expo-google-fonts/inter";
+  CinzelDecorative_400Regular,
+  CinzelDecorative_700Bold,
+  useFonts as useCinzelFonts,
+} from "@expo-google-fonts/cinzel-decorative";
+import {
+  EBGaramond_400Regular,
+  EBGaramond_500Medium,
+  EBGaramond_400Regular_Italic,
+  useFonts as useGaramondFonts,
+} from "@expo-google-fonts/eb-garamond";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -12,29 +16,32 @@ import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { setBaseUrl } from "@workspace/api-client-react";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { OracleProvider } from "@/context/OracleContext";
+import Colors from "@/constants/colors";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
+setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
+
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
-function RootLayoutNav() {
-  return (
-    <Stack screenOptions={{ headerBackTitle: "Back" }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
-  );
-}
-
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
+  const [cinzelLoaded, cinzelError] = useCinzelFonts({
+    CinzelDecorative_400Regular,
+    CinzelDecorative_700Bold,
   });
+
+  const [garamondLoaded, garamondError] = useGaramondFonts({
+    EBGaramond_400Regular,
+    EBGaramond_500Medium,
+    EBGaramond_400Regular_Italic,
+  });
+
+  const fontsLoaded = cinzelLoaded && garamondLoaded;
+  const fontError = cinzelError || garamondError;
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
@@ -48,11 +55,25 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <GestureHandlerRootView>
-            <KeyboardProvider>
-              <RootLayoutNav />
-            </KeyboardProvider>
-          </GestureHandlerRootView>
+          <OracleProvider>
+            <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bg }}>
+              <KeyboardProvider>
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: Colors.bg },
+                    animation: "fade",
+                  }}
+                >
+                  <Stack.Screen name="index" />
+                  <Stack.Screen name="intake" />
+                  <Stack.Screen name="ritual" />
+                  <Stack.Screen name="reading" />
+                  <Stack.Screen name="chat" />
+                </Stack>
+              </KeyboardProvider>
+            </GestureHandlerRootView>
+          </OracleProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </SafeAreaProvider>

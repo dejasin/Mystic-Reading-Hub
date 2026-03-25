@@ -16,12 +16,45 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
 
+## The Oracle App
+
+**"The Oracle"** is a mystical AI reading mobile app (Expo React Native) that analyzes palm/iris/face photos via Claude AI alongside pre-computed numerology and astrology to generate personalized life readings.
+
+### Architecture
+- **Frontend**: Expo React Native app (`artifacts/oracle`) — 5-screen flow with gold/dark mystical theme
+- **Backend**: Express API (`artifacts/api-server`) — SSE streaming, Claude `claude-opus-4-5`, sharp image processing
+
+### Screens
+1. `app/index.tsx` — Landing page with animated hexagram sigil and starfield
+2. `app/intake.tsx` — User data form (name, DOB, birth time, city, gender, dominant hand, eye color, 3 life questions)
+3. `app/ritual.tsx` — 6-step photo ritual wizard (intro → right palm → left palm → right iris → left iris → face → review)
+4. `app/reading.tsx` — SSE streaming reading, paywall gate after Section 2, archetype card, share + chat CTA
+5. `app/chat.tsx` — Oracle chat with streaming responses, inverted FlatList, starter questions
+
+### API Routes (`/api`)
+- `POST /api/generate` — SSE stream, free sections 1–2 then paywall event
+- `POST /api/generate/continue` — SSE stream, paid sections 3–7 + archetype
+- `POST /api/chat` — Oracle persona chat, rate-limited 10 msg/session
+
+### Fonts
+- `@expo-google-fonts/cinzel-decorative` — CinzelDecorative_400Regular, CinzelDecorative_700Bold (headings)
+- `@expo-google-fonts/eb-garamond` — EBGaramond_400Regular, EBGaramond_500Medium, EBGaramond_400Regular_Italic (body)
+
+### Colors (mystical gold/dark)
+- Background: `#04040f`, Surface: `#0b0b1e`, Gold: `#c9a84c`, Cream: `#f0e6cc`
+
+### Monetization TODO
+- Stripe ($7.99 one-time) — replace DEV bypass in `reading.tsx` PaywallGate
+- SendGrid PDF email — post-payment reading export
+- Share-to-unlock — 3 shares = free access
+
 ## Structure
 
 ```text
 artifacts-monorepo/
 ├── artifacts/              # Deployable applications
-│   └── api-server/         # Express API server
+│   ├── api-server/         # Express API server
+│   └── oracle/             # Expo React Native — The Oracle app
 ├── lib/                    # Shared libraries
 │   ├── api-spec/           # OpenAPI spec + Orval codegen config
 │   ├── api-client-react/   # Generated React Query hooks
