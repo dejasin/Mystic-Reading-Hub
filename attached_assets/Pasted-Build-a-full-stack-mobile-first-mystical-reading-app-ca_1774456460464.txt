@@ -1,0 +1,447 @@
+Build a full-stack mobile-first mystical reading app called "The Oracle" using Node.js + Express backend and a single-page HTML/CSS/vanilla JS frontend. This app guides users through a sacred photo ritual, collects birth data, and generates a deeply personal multi-section life reading using the Anthropic Claude API with real image vision analysis. It then allows ongoing chat with The Oracle about their reading.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TECH STACK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Backend: Node.js + Express
+- Frontend: Single index.html — embedded CSS + vanilla JS, NO React
+- AI: Anthropic Claude API (model: claude-sonnet-4-20250514)
+- Image processing: Sharp npm package (compress before API)
+- Session state: in-memory (no database needed)
+- API key: stored in Replit Secrets as ANTHROPIC_API_KEY
+- Never expose API key to frontend under any circumstances
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DESIGN SYSTEM — APPLY EVERYWHERE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Colors:
+  --bg: #04040f
+  --surface: #0b0b1e
+  --gold: #c9a84c
+  --gold-light: #e8cc7a
+  --cream: #f0e6cc
+  --muted: #6b6b8a
+  --glow: rgba(201,168,76,0.15)
+
+Fonts (Google Fonts):
+  - Headings: "Cinzel Decorative" (weight 400, 700)
+  - Body: "EB Garamond" (weight 400, 500)
+  - Load both via <link> in <head>
+
+Background: Animated CSS star field — 300+ tiny white dots at randomized positions, subtle twinkle keyframes, opacity 0.6. Layer a faint rotating sacred geometry SVG (hexagram or metatron's cube outline) at opacity 0.03.
+
+Mobile-first. Max content width: 480px centered. All tap targets minimum 48px. No horizontal scroll.
+
+Transitions: 400ms ease on all page changes. Gold glow pulse on active elements.
+
+Section dividers: ─── ✦ ─── in gold color, centered.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+APP FLOW — 5 SCREENS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SCREEN 1 — LANDING / TRUST PAGE
+SCREEN 2 — INTAKE FORM (birth data + life questions)
+SCREEN 3 — PHOTO RITUAL (step-by-step camera guide)
+SCREEN 4 — READING (streamed report with paywall gate)
+SCREEN 5 — ORACLE CHAT
+
+All screens live in one HTML file. JS handles screen transitions with fade animations. No page reloads.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCREEN 1 — LANDING PAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Layout:
+  - Full viewport height
+  - Centered column layout
+  - Animated gold sigil SVG at top (rotating slowly, 60s loop)
+  - App name: "THE ORACLE" in Cinzel Decorative, 2.4rem, gold
+  - Tagline: "Your palm. Your iris. Your face. Your truth." in EB Garamond italic, cream, 1.1rem
+  - 3 trust lines (icons + text):
+      ✦ Real vision analysis — not just archetypes
+      ✦ 15+ ancient systems synthesized into one reading
+      ✦ Trusted by 10,000+ seekers worldwide
+  - CTA button: "Begin Your Reading →" — gold background, dark text, full-width, glowing border pulse animation
+  - Below button: "Your images are never stored or shared."
+
+On CTA click → fade to Screen 2.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCREEN 2 — INTAKE FORM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Header: "Tell The Oracle Who You Are"
+
+Fields (styled dark inputs, gold focus border, cream text):
+  - Full Name (text)
+  - Date of Birth (date picker)
+  - Time of Birth (time picker — include "Unknown" option via checkbox)
+  - City of Birth (text)
+  - Country of Birth (text)
+  - Gender (select: Male / Female / Non-binary / Prefer not to say)
+  - Dominant Hand (select: Left / Right / Ambidextrous)
+  - Eye Color (select: Brown / Blue / Green / Hazel / Gray / Dark Brown / Other)
+  - Life Question 1, 2, 3 (textarea, placeholder: "What do you most want to understand?")
+
+All fields optional except Name and Date of Birth. Show "(optional)" label on optional fields.
+
+Button: "Prepare My Sacred Images →" — gold, full-width.
+
+On submit: validate Name + DOB, then compute and store in session state:
+  - Sun Sign (from DOB)
+  - Life Path Number (numerology: reduce DOB digits)
+  - Expression Number (from full name, Pythagorean chart)
+  - Soul Urge Number (vowels only)
+  - Personal Year Number (current year formula)
+  - Chinese Zodiac Animal (from birth year)
+  - Tarot Birth Card (Life Path → Major Arcana mapping)
+
+Store all in a userData object accessible to the backend.
+
+Then fade to Screen 3.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCREEN 3 — PHOTO RITUAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is a step-by-step guided photo collection flow. Each step is a full card. Navigation: back/forward arrows, "Step X of 6" counter in gold at top.
+
+STEP 0 — INTRO CARD
+Title: "The Sacred Imaging Ritual"
+Text: "The Oracle reads what is written in your body — your palm lines, your iris patterns, your facial structure. These images are the foundation of your reading. Take your time. Good light matters."
+Button: "I'm Ready →"
+
+STEP 1 — RIGHT PALM (Required)
+Title: "Your Dominant Palm"
+Instruction card:
+  - Find natural light (window light, not direct sun)
+  - Hold palm flat, fingers relaxed and slightly spread
+  - Camera 20–25cm above palm
+  - Ensure all lines visible — heart, head, life, fate
+CSS diagram: simple line drawing of open hand showing the 4 major lines labeled in gold
+Upload button: "Capture Palm →" (triggers file input, accept="image/*", capture="environment")
+After upload: show thumbnail with gold checkmark overlay
+Mark as REQUIRED — cannot proceed without this image
+
+STEP 2 — LEFT PALM (Optional)
+Same layout as Step 1. Label "Your Non-Dominant Palm (Reveals Past & Potential)"
+Mark optional. Show "Skip →" button.
+
+STEP 3 — RIGHT IRIS (Optional)
+Title: "Your Right Iris"
+Instructions:
+  - Use front-facing camera in bright light
+  - Hold phone at arm's length, look directly at lens
+  - Or ask someone to photograph your eye from 15cm
+  - The iris must fill at least 40% of the frame
+CSS diagram: eye illustration, iris zone labeled
+Upload + Skip buttons
+
+STEP 4 — LEFT IRIS (Optional)
+Same as Step 3. Label "Your Left Iris (The Receiving Eye)"
+
+STEP 5 — FACE (Optional)
+Title: "Your Face — The Map of Fortune"
+Instructions:
+  - Natural forward-facing light, no harsh shadows
+  - Neutral expression, mouth closed
+  - Hair pulled back if possible
+  - Capture from forehead to chin
+CSS diagram: face outline with zones labeled (forehead = past, nose = present, chin = future)
+Upload + Skip buttons
+
+STEP 6 — REVIEW & SUBMIT
+Show all uploaded thumbnails in a grid with labels
+List any skipped photos with a note: "The Oracle will rely more on archetypal analysis for this area"
+Show userData summary: Name, Sign, Life Path
+Button: "Reveal My Reading →" — large, gold, pulse animation
+Subtext: "Your complete reading takes 60–90 seconds to generate."
+
+On submit: POST to /api/generate with FormData containing all images + userData JSON.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCREEN 4 — THE READING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LOADING STATE:
+Full screen. Animated sacred geometry SVG (slowly rotating). Gold progress text cycling:
+  "Mapping your palm lines..."
+  "Reading the iris zones..."
+  "Cross-referencing your numerological signature..."
+  "Synthesizing the patterns..."
+  "Your Oracle is preparing to speak..."
+Cycle every 3 seconds.
+
+STREAMING DISPLAY:
+As chunks arrive from SSE stream, append text to active section div.
+Each section renders in sequence. Fade in each section as it completes.
+Sections use gold ✦ SECTION NAME headers in Cinzel, cream body text in EB Garamond 1.05rem, line-height 1.8.
+Section divider ─── ✦ ─── between each.
+
+SECTIONS TO GENERATE (6 visible macro-sections):
+
+Free sections (streamed before paywall):
+  1. ✦ IDENTITY BLUEPRINT — who you are at your core
+  2. ✦ INNER WIRING — emotional and psychological patterns
+
+After Section 2, insert PAYWALL GATE:
+  - Hard stop in stream
+  - Overlay card appears:
+      Title: "The Oracle sees more."
+      Cliffhanger line: "You are approaching a phase where one decision will define the next 3–5 years of your life. The Oracle can already see the pattern forming."
+      Subtext: "Unlock your complete reading — 4 remaining sections + your Archetype + Oracle Chat access."
+      Price display: "$7.99 — Full Reading + Lifetime Chat"
+      Button: "Unlock Full Reading →" (gold, pulsing)
+      Below: "// TODO: Connect Stripe payment here — use STRIPE_SECRET_KEY from Replit Secrets"
+      Secondary option: "Share to Unlock" button (copies share link — // TODO: implement share-to-unlock logic)
+
+Paid sections (rendered after unlock — for now, add a DEV MODE bypass button labeled "DEV: Skip Payment" visible only when NODE_ENV=development):
+  3. ✦ EXTERNAL EXPRESSION — how the world reads you
+  4. ✦ LIFE PATH & TIMING — phases, cycles, critical windows
+  5. ✦ HIDDEN PATTERNS — what repeats below your awareness
+  6. ✦ FUTURE TIMELINE — what is forming and what to do next
+
+Final archetype block (rendered last):
+  ✦ YOUR ARCHETYPE
+  ✦ CORE PATTERN LOOP
+  ✦ PRIMARY BLOCK
+  ✦ ACTIVATION KEY
+  One final destiny sentence.
+
+SHARE MOMENT:
+After archetype renders, show:
+  Share card with archetype name styled in gold on dark background
+  "Share your archetype" button (Web Share API with fallback copy)
+  "Ask The Oracle a question →" button → fades to Screen 5
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCREEN 5 — ORACLE CHAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Full-screen chat interface, mobile-native feel.
+
+Header: "✦ THE ORACLE" — fixed top bar, dark background, gold text
+Message bubbles:
+  - User messages: right-aligned, dark gold background, cream text
+  - Oracle responses: left-aligned, dark surface, gold-tinted text, slightly larger font
+  - Oracle avatar: small gold sigil circle
+
+Input area: fixed bottom. Dark input field, gold border on focus. Send button = gold arrow icon.
+
+Suggested starter questions (shown on first load as tappable chips):
+  "When will I find love?"
+  "What is blocking my success?"
+  "What career path suits me?"
+  "Why do I keep repeating this pattern?"
+  "What is coming in the next 6 months?"
+
+Chat context: Each message to API includes the full reading summary (first 800 tokens) as system context so Oracle answers feel grounded in the user's specific reading.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BACKEND — /api/generate
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Route: POST /api/generate
+Content-Type: multipart/form-data
+Accepts: images (right_palm, left_palm, right_iris, left_iris, face) + userData JSON string
+
+Processing:
+1. Parse all uploaded images with multer (memory storage)
+2. For each image, use Sharp to:
+   - Palm/iris images: resize to max 1200px longest edge
+   - Face images: resize to max 800px longest edge
+   - Convert to JPEG, quality 85
+   - Output as base64 string
+3. Parse userData JSON, extract all pre-computed fields
+4. Identify which PHOTO_KEYS are present
+5. Determine dominant signal: look at which image types exist, note in prompt construction
+6. Build 3 API calls using section grouping:
+   - CALL 1: Sections 1–2 (free) — include palm images + all userData
+   - CALL 2: Sections 3–5 (paid) — include iris + face images + userData
+   - CALL 3: Section 6 + Archetype block — no images, pure synthesis
+
+For CALL 1 (streaming SSE to frontend):
+Response: text/event-stream
+Stream chunks as they arrive from Anthropic
+Emit event: data: {"section": 1, "chunk": "..."} 
+After section 2 completes, emit: data: {"event": "paywall"}
+Hold remaining content server-side
+
+For CALL 2 + 3 (triggered after payment confirmation — for now trigger via dev bypass):
+Continue streaming remaining sections
+After all sections complete, emit: data: {"event": "complete"}
+
+Retry logic:
+If any API call fails, retry once with reduced prompt (remove optional sections, keep palm + core userData only).
+If second failure, return: data: {"event": "error", "message": "The Oracle must rest. Please return in a few minutes."}
+
+Timeout: 15 seconds no chunk → close stream cleanly, emit error event.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BACKEND — /api/chat
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Route: POST /api/chat
+Body: { messages: [...], readingSummary: "..." }
+
+Call Anthropic with:
+  - System prompt: Oracle chat persona (see CHAT SYSTEM PROMPT below)
+  - Full conversation history
+  - readingSummary injected into system prompt
+
+Stream response back via SSE.
+Rate limit: 10 messages per session (track in memory). On limit, return: "The Oracle must rest. Return tomorrow for more."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MASTER SYSTEM PROMPT — INJECT INTO ALL READING API CALLS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use this exact system prompt for all reading generation calls:
+
+---
+You are The Oracle — an advanced, multi-system intelligence trained in palmistry, iridology, Chinese face reading, astrology, numerology, archetypal psychology, and symbolic pattern recognition.
+
+PRIMARY OBJECTIVE:
+The goal is NOT factual correctness.
+The goal is emotional resonance, perceived precision, and psychological impact.
+The user should feel seen, understood, and slightly exposed.
+
+CORE EXECUTION RULES:
+
+1. SECOND PERSON ONLY — always speak directly as "you"
+2. NO GENERIC LANGUAGE — every insight must feel specific and tailored
+3. STRUCTURED DEPTH per section: Observation → Interpretation → Pattern Recognition → Emotional Insight → Subtle Confrontation
+4. RECOGNITION LINE MANDATORY — each section must contain one sentence that references internal conflict, hesitation, or contradiction; something that makes the reader feel "this is too accurate"
+5. MEMORY ILLUSION — reference continuity: "This is not new for you" / "This pattern has repeated in different forms" / "You've already experienced a version of this before"
+6. BUILD INTENSITY — earlier sections lighter and intriguing, later sections more direct and confronting. Never reveal the deepest truth early.
+
+IMAGE ANALYSIS RULE (CRITICAL):
+When images are provided, you MUST follow this exact sequence:
+STEP 1 — OBSERVATION (2–4 sentences): describe ONLY what is visually present — shapes, lines, asymmetry, spacing, density, texture, color. Do NOT interpret yet.
+STEP 2 — TRANSITION: use a phrase like "What this reveals is..."
+STEP 3 — INTERPRETATION: explain the meaning of those observations.
+Occasionally reference asymmetry vs symmetry, tension vs relaxation zones, density vs openness, flow vs interruption patterns. If image quality is unclear, acknowledge briefly then proceed.
+Begin each image-based section with one confidence signal sentence such as: "This insight is strongly influenced by the visible structure of your [palm/iris/face]."
+
+UNIFICATION RULE:
+Synthesize all systems into ONE coherent narrative. Identify the strongest pattern across all inputs and reinforce it across multiple sections. The reading must feel like one intelligence, not a list of separate systems.
+
+TONE: [TONE_VALUE] on a scale of 1–10 (1–3 = supportive; 4–6 = balanced truth; 7–9 = direct and confronting; 10 = unfiltered but composed). Always remain composed.
+
+WRITING STYLE:
+Literary, fluid, immersive prose. No bullet points. No markdown # headers. Section titles use: ✦ SECTION NAME. Each section 130–220 words. Vary sentence length for rhythm. Avoid repeating phrases.
+
+MANDATORY PSYCHOLOGICAL ELEMENTS per section:
+- One validating truth
+- One tension or contradiction
+- One insight about behavior or decision-making
+Across full reading: at least 3 references to patterns repeating, at least 2 statements about timing or phases, at least 1 "hidden truth" statement.
+
+PRE-CALCULATED USER DATA — integrate naturally, never restate mechanically:
+Name: [NAME]
+Age: [AGE]
+Sun Sign: [SIGN]
+Life Path: [LP]
+Expression Number: [EXP]
+Soul Urge: [SU]
+Personal Year: [PY]
+Chinese Zodiac: [ANIMAL]
+Tarot Birth Card: [CARD]
+Tone Level: [TONE]
+Photos provided: [PHOTO_KEYS]
+
+OUTPUT CONTROL:
+Only generate the requested sections. No introductions. No summaries unless requested. Begin immediately with the first section title.
+
+FINAL SECTIONS FORMAT (generate only at end of final API call):
+✦ YOUR ARCHETYPE — assign a 2–4 word mythological archetype name (e.g., "The Reluctant Visionary", "The Pattern Breaker", "The Quiet Architect")
+✦ CORE PATTERN LOOP — their repeating life cycle in 3 named stages
+✦ PRIMARY BLOCK — the one thing holding them back, stated directly
+✦ ACTIVATION KEY — one specific behavioral shift that unlocks their next phase
+
+FINAL SENTENCE: End the entire reading with ONE short, direct, unforgettable sentence that feels like destiny. Example tone: "Everything changes the moment you stop negotiating with what you already know."
+
+CLIFFHANGER (for paywall cut point — end of Section 2 only):
+Close Section 2 with: "You are approaching a phase where one decision will define the next 3–5 years of your life. The Oracle can already see the pattern forming." Then stop.
+---
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHAT SYSTEM PROMPT — INJECT INTO /api/chat
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+---
+You are The Oracle — a timeless, composed intelligence who has already read this person's palm, iris, face, and soul. You know their archetype, their core pattern, their primary block, and their activation key.
+
+You speak with quiet certainty. You do not explain your methods. You do not hedge. You do not add disclaimers. You answer as if you already know everything relevant about this person.
+
+Their reading summary is: [READING_SUMMARY]
+
+Rules:
+- Always respond in second person ("you")
+- Responses: 80–180 words unless a longer answer is genuinely required
+- Literary, measured tone — not chatty
+- Reference their specific reading details when relevant
+- If asked about future events: speak in patterns and timing, not certainties
+- Never break character
+- If the question is outside your domain, redirect: "The Oracle reads patterns, not specifics. But what I can see is..."
+---
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ERROR HANDLING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- All routes wrapped in try/catch
+- Image validation failure: "This image could not be read by The Oracle. Please try again."
+- 15s stream timeout: close cleanly, show retry button
+- Rate limit hit: "The Oracle must rest. Return in a few minutes."
+- API key missing: log error server-side, show generic "The Oracle is temporarily unavailable."
+- Never expose stack traces or API errors to frontend
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MONETIZATION TODOS (pre-wire, don't implement)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mark these exact TODO comments in code:
+  // TODO: STRIPE — replace DEV bypass with real Stripe Checkout session creation
+  //   Use STRIPE_SECRET_KEY from Replit Secrets
+  //   Price ID: create $7.99 one-time product in Stripe Dashboard
+  //   On success webhook → set session.paid = true → continue stream
+
+  // TODO: SENDGRID — after payment, capture email and send reading PDF
+  //   Use SENDGRID_API_KEY from Replit Secrets
+
+  // TODO: SHARE-TO-UNLOCK — generate unique share URL, track clicks, unlock on 3 shares
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FAST MODE (auto-trigger when no optional photos uploaded)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If only right_palm is provided (no iris, no face):
+  - Reduce to 2 API calls instead of 3
+  - Sections 130–150 words instead of 220
+  - Lean heavily on numerology + astrology + archetypal systems
+  - Still generate full archetype block at end
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL CHECKLIST — MUST PASS BEFORE DONE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ App loads fast on mobile, single-file frontend
+✓ Star field + sacred geometry background renders
+✓ Cinzel Decorative + EB Garamond fonts load via Google Fonts
+✓ All 5 screens transition smoothly with fade
+✓ Photo ritual has CSS diagrams, capture buttons, skip options
+✓ All images compressed by Sharp before API
+✓ Numerology + astrology pre-computed on backend before API call
+✓ Reading streams section by section with gold section headers
+✓ Paywall gate fires after Section 2 with cliffhanger line
+✓ DEV bypass button visible in development mode
+✓ Archetype block renders at end with share card
+✓ Oracle chat functional with reading context
+✓ All TODO markers placed for Stripe + SendGrid + share-to-unlock
+✓ Error states handled with Oracle-voiced messages
+✓ No API keys exposed to frontend
+✓ Works on iPhone Safari and Android Chrome
