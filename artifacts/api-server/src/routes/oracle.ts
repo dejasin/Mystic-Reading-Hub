@@ -99,6 +99,9 @@ router.post(
     { name: "right_iris", maxCount: 1 },
     { name: "left_iris", maxCount: 1 },
     { name: "face", maxCount: 1 },
+    { name: "face_front", maxCount: 1 },
+    { name: "face_left", maxCount: 1 },
+    { name: "face_right", maxCount: 1 },
   ]),
   async (req: Request, res: Response) => {
     res.setHeader("Content-Type", "text/event-stream");
@@ -142,11 +145,11 @@ router.post(
       const photoKeys: string[] = [];
       const imageMap: Record<string, { b64: string; mediaType: string }> = {};
 
-      for (const key of ["right_palm","left_palm","right_iris","left_iris","face"]) {
+      for (const key of ["right_palm","left_palm","right_iris","left_iris","face","face_front","face_left","face_right"]) {
         const file = files?.[key]?.[0];
         if (file) {
           photoKeys.push(key);
-          const maxPx = key === "face" ? 800 : 1200;
+          const maxPx = (key === "face" || key.startsWith("face_")) ? 800 : 1200;
           imageMap[key] = await imageToBase64(file.buffer, file.mimetype, maxPx);
         }
       }
@@ -315,6 +318,9 @@ router.post(
     { name: "right_iris", maxCount: 1 },
     { name: "left_iris", maxCount: 1 },
     { name: "face", maxCount: 1 },
+    { name: "face_front", maxCount: 1 },
+    { name: "face_left", maxCount: 1 },
+    { name: "face_right", maxCount: 1 },
   ]),
   async (req: Request, res: Response) => {
     res.setHeader("Content-Type", "text/event-stream");
@@ -366,11 +372,11 @@ router.post(
       const photoKeys: string[] = [];
       const imageMap: Record<string, { b64: string; mediaType: string }> = {};
 
-      for (const key of ["right_palm","left_palm","right_iris","left_iris","face"]) {
+      for (const key of ["right_palm","left_palm","right_iris","left_iris","face","face_front","face_left","face_right"]) {
         const file = files?.[key]?.[0];
         if (file) {
           photoKeys.push(key);
-          const maxPx = key === "face" ? 800 : 1200;
+          const maxPx = (key === "face" || key.startsWith("face_")) ? 800 : 1200;
           imageMap[key] = await imageToBase64(file.buffer, file.mimetype, maxPx);
         }
       }
@@ -469,6 +475,93 @@ ${sectionReading ? `\nPrevious sections: ${sectionReading.substring(0, 400)}` : 
         session.reading = session.reading + "\n" + sectionReading + "\n" + call3Text;
 
         sendEvent({ section: "archetype", chunk: call3Text });
+
+        // CALL 4 — Chinese Face Reading (Mianxiang)
+        const faceImages: Anthropic.ImageBlockParam[] = [];
+        for (const k of ["face_front","face_left","face_right","face"]) {
+          if (imageMap[k]) {
+            faceImages.push({
+              type: "image",
+              source: { type: "base64", media_type: imageMap[k].mediaType as "image/jpeg", data: imageMap[k].b64 }
+            });
+          }
+        }
+
+        let chineseFaceText = "";
+        if (faceImages.length > 0) {
+          const call4Content: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] = [
+            ...faceImages,
+            {
+              type: "text",
+              text: `You are now reading this person's face in the tradition of Mianxiang (面相) — Chinese physiognomy. Analyze ONLY what is visible in the provided face photographs.
+
+Generate ONLY this single section:
+✦ CHINESE FACE READING — using the tradition of Mianxiang, read the five facial zones: forehead (天庭, Heaven), brows and eyes (中停, Human), nose (中岳, the Mountain of Wealth), cheeks and ears, chin and jaw (地閣, Earth). Read the overall facial structure — round, oval, square, triangular. Comment on jaw definition, ear shape, and the three-zone division (past, present, future). Read personality, destiny tendency, life phase energetics, career signature, and relational nature. Deliver in the Oracle's mystical literary voice. ${wordCount} words.
+
+Follow the IMAGE ANALYSIS RULE: first OBSERVATION of what is visually present, then TRANSITION, then INTERPRETATION of meaning. Reference specific visible features. Do NOT make up features not visible in the image.`
+            }
+          ];
+
+          const stream4 = anthropic.messages.stream({
+            model: MODEL,
+            max_tokens: 800,
+            system: systemPrompt,
+            messages: [{ role: "user", content: call4Content }]
+          });
+
+          for await (const chunk of stream4) {
+            if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
+              chineseFaceText += chunk.delta.text;
+              sendEvent({ section: "chinese_face", chunk: chunk.delta.text });
+            }
+          }
+        }
+
+        let iridologyText = "";
+        // CALL 5 — Iridology Health Reading
+        const irisImages: Anthropic.ImageBlockParam[] = [];
+        for (const k of ["right_iris","left_iris"]) {
+          if (imageMap[k]) {
+            irisImages.push({
+              type: "image",
+              source: { type: "base64", media_type: imageMap[k].mediaType as "image/jpeg", data: imageMap[k].b64 }
+            });
+          }
+        }
+
+        if (irisImages.length > 0) {
+          const call5Content: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] = [
+            ...irisImages,
+            {
+              type: "text",
+              text: `You are now performing an iridology reading — reading the iris as a map of constitutional health tendencies, vitality patterns, and areas of sensitivity. This is a mystical, holistic framing — not medical advice.
+
+Generate ONLY this single section:
+✦ IRIDOLOGY HEALTH READING — read the iris photographs using the principles of iridology. Observe iris coloration, fiber density and structure, zone patterns (digestive ring, autonomic nerve wreath, peripheral zones), any markings, lacunae, or density variations visible. Translate these into constitutional tendencies (constitution type — silk, linen, net), vitality signature, organ-system sensitivities, and emotional-energetic patterns. Frame everything in the Oracle's mystical holistic voice — this reveals what the body whispers, not what medicine measures. ${wordCount} words.
+
+Follow the IMAGE ANALYSIS RULE: first describe what is visually observable in the iris, then transition to interpretation of constitutional meaning. Do NOT invent symptoms or diagnose conditions.`
+            }
+          ];
+
+          const stream5 = anthropic.messages.stream({
+            model: MODEL,
+            max_tokens: 800,
+            system: systemPrompt,
+            messages: [{ role: "user", content: call5Content }]
+          });
+
+          for await (const chunk of stream5) {
+            if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
+              iridologyText += chunk.delta.text;
+              sendEvent({ section: "iridology", chunk: chunk.delta.text });
+            }
+          }
+        }
+
+        // Append new section outputs to session reading for chat context
+        if (chineseFaceText) session.reading += "\n" + chineseFaceText;
+        if (iridologyText) session.reading += "\n" + iridologyText;
+
         sendEvent({ event: "complete" });
       } catch (err) {
         req.log.error({ err }, "Anthropic call 2/3 failed");

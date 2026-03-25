@@ -97,6 +97,120 @@ function IrisDiagram() {
   );
 }
 
+// ── Iridology zone diagram ─────────────────────────────────────
+function IridologyDiagram() {
+  return (
+    <View style={diagStyles.container}>
+      <Svg width={100} height={100} viewBox="0 0 100 100" style={diagStyles.svg}>
+        {/* Eye white */}
+        <Ellipse cx={50} cy={50} rx={48} ry={28} fill="none" stroke={Colors.muted} strokeWidth={1.5} />
+        {/* Outer iris ring */}
+        <Circle cx={50} cy={50} r={22} fill="none" stroke={Colors.gold} strokeWidth={1.5} />
+        {/* Middle zone */}
+        <Circle cx={50} cy={50} r={15} fill="none" stroke={Colors.gold} strokeWidth={0.8} opacity={0.6} />
+        {/* Inner zone */}
+        <Circle cx={50} cy={50} r={9} fill="none" stroke={Colors.gold} strokeWidth={0.8} opacity={0.6} />
+        {/* Pupil */}
+        <Circle cx={50} cy={50} r={6} fill={Colors.muted} opacity={0.4} />
+        {/* Zone sector lines — 6 sectors */}
+        {Array.from({ length: 6 }, (_, i) => {
+          const a = (Math.PI / 6) * i * 2;
+          const x1 = 50 + 9 * Math.cos(a);
+          const y1 = 50 + 9 * Math.sin(a);
+          const x2 = 50 + 22 * Math.cos(a);
+          const y2 = 50 + 22 * Math.sin(a);
+          return <Line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={Colors.gold} strokeWidth={0.5} opacity={0.5} />;
+        })}
+      </Svg>
+      <View style={diagStyles.labels}>
+        <View style={diagStyles.labelItem}>
+          <View style={[diagStyles.labelDot, { backgroundColor: Colors.gold }]} />
+          <Text style={diagStyles.labelText}>Vitality</Text>
+        </View>
+        <View style={diagStyles.labelItem}>
+          <View style={[diagStyles.labelDot, { backgroundColor: Colors.gold }]} />
+          <Text style={diagStyles.labelText}>Organs</Text>
+        </View>
+        <View style={diagStyles.labelItem}>
+          <View style={[diagStyles.labelDot, { backgroundColor: Colors.gold }]} />
+          <Text style={diagStyles.labelText}>Nervous</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// ── Chinese Face diagram (front portrait) ──────────────────────
+function ChineseFaceDiagram() {
+  return (
+    <View style={diagStyles.container}>
+      <Svg width={90} height={120} viewBox="0 0 90 120" style={diagStyles.svg}>
+        {/* Face oval */}
+        <Ellipse cx={45} cy={62} rx={36} ry={50} fill="none" stroke={Colors.muted} strokeWidth={1.5} />
+        {/* Forehead zone */}
+        <Line x1={9} y1={30} x2={81} y2={30} stroke={Colors.gold} strokeWidth={0.7} strokeDasharray="4,3" opacity={0.6} />
+        {/* Mid-face zone */}
+        <Line x1={9} y1={66} x2={81} y2={66} stroke={Colors.gold} strokeWidth={0.7} strokeDasharray="4,3" opacity={0.6} />
+        {/* Lower face zone */}
+        <Line x1={9} y1={90} x2={81} y2={90} stroke={Colors.gold} strokeWidth={0.7} strokeDasharray="4,3" opacity={0.6} />
+        {/* Eyes */}
+        <Ellipse cx={31} cy={50} rx={8} ry={4} fill="none" stroke={Colors.muted} strokeWidth={1} />
+        <Ellipse cx={59} cy={50} rx={8} ry={4} fill="none" stroke={Colors.muted} strokeWidth={1} />
+        {/* Nose tip */}
+        <Circle cx={45} cy={72} r={3} fill="none" stroke={Colors.muted} strokeWidth={1} />
+        {/* Mouth */}
+        <Path d="M 35 90 Q 45 96 55 90" fill="none" stroke={Colors.muted} strokeWidth={1} />
+        {/* Ears */}
+        <Path d="M 9 54 Q 5 62 9 70" fill="none" stroke={Colors.muted} strokeWidth={1} />
+        <Path d="M 81 54 Q 85 62 81 70" fill="none" stroke={Colors.muted} strokeWidth={1} />
+      </Svg>
+      <View style={diagStyles.faceZoneLabels}>
+        <Text style={diagStyles.faceLabelText}>HEAVEN</Text>
+        <Text style={diagStyles.faceLabelText}>HUMAN</Text>
+        <Text style={diagStyles.faceLabelText}>EARTH</Text>
+        <Text style={diagStyles.faceLabelText}>DESTINY</Text>
+      </View>
+    </View>
+  );
+}
+
+// ── Chinese Face side profile diagram ─────────────────────────
+function ChineseFaceProfileDiagram() {
+  return (
+    <View style={diagStyles.container}>
+      <Svg width={90} height={120} viewBox="0 0 90 120" style={diagStyles.svg}>
+        {/* Profile outline */}
+        <Path
+          d="M 50 12 Q 65 14 68 28 Q 72 36 70 44 Q 72 50 68 56 Q 74 66 66 74 Q 68 82 62 90 Q 55 105 45 110 Q 35 112 28 105 L 28 12 Z"
+          fill="none" stroke={Colors.muted} strokeWidth={1.5}
+        />
+        {/* Eye */}
+        <Ellipse cx={58} cy={48} rx={6} ry={4} fill="none" stroke={Colors.muted} strokeWidth={1} />
+        {/* Nose bridge line */}
+        <Path d="M 68 28 L 66 56" fill="none" stroke={Colors.gold} strokeWidth={0.6} strokeDasharray="3,2" opacity={0.5} />
+        {/* Jaw line */}
+        <Path d="M 62 90 Q 50 108 35 110" fill="none" stroke={Colors.gold} strokeWidth={0.6} strokeDasharray="3,2" opacity={0.5} />
+        {/* Ear */}
+        <Path d="M 28 50 Q 22 58 28 68" fill="none" stroke={Colors.muted} strokeWidth={1} />
+      </Svg>
+      <View style={diagStyles.labels}>
+        <View style={diagStyles.labelItem}>
+          <View style={[diagStyles.labelDot, { backgroundColor: Colors.gold }]} />
+          <Text style={diagStyles.labelText}>Forehead</Text>
+        </View>
+        <View style={diagStyles.labelItem}>
+          <View style={[diagStyles.labelDot, { backgroundColor: Colors.gold }]} />
+          <Text style={diagStyles.labelText}>Nose</Text>
+        </View>
+        <View style={diagStyles.labelItem}>
+          <View style={[diagStyles.labelDot, { backgroundColor: Colors.gold }]} />
+          <Text style={diagStyles.labelText}>Jaw</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
 // ── Face diagram ──────────────────────────────────────────────
 function FaceDiagram() {
   return (
@@ -131,6 +245,7 @@ const diagStyles = StyleSheet.create({
   labelText: { fontFamily: "EBGaramond_400Regular", fontSize: 13, color: Colors.cream, opacity: 0.7 },
   faceLabels: { justifyContent: "space-between", height: 120, paddingVertical: 16 },
   faceLabelText: { fontFamily: "EBGaramond_400Regular", fontSize: 11, color: Colors.gold, opacity: 0.7, letterSpacing: 1 },
+  faceZoneLabels: { justifyContent: "space-between", height: 120, paddingVertical: 6 },
 });
 
 // ── Main screen ────────────────────────────────────────────────
@@ -139,10 +254,13 @@ interface StepConfig {
   key: keyof OracleImages | null;
   title: string;
   subtitle?: string;
+  sectionLabel?: string;
+  extraNote?: string;
   required?: boolean;
   instructions: string[];
-  diagram?: "palm" | "iris" | "face" | null;
+  diagram?: "palm" | "iris" | "iridology" | "face" | "face_chinese" | "face_profile" | null;
   intro?: boolean;
+  review?: boolean;
 }
 
 type OracleImages = {
@@ -151,6 +269,9 @@ type OracleImages = {
   right_iris?: CapturedImage;
   left_iris?: CapturedImage;
   face?: CapturedImage;
+  face_front?: CapturedImage;
+  face_left?: CapturedImage;
+  face_right?: CapturedImage;
 };
 
 const STEPS: StepConfig[] = [
@@ -186,24 +307,28 @@ const STEPS: StepConfig[] = [
   {
     key: "right_iris",
     title: "Your Right Iris",
+    sectionLabel: "Iridology Health Reading",
+    extraNote: "The iris maps to organ systems, vitality zones, and constitutional tendencies — revealing what the body holds in silence.",
     instructions: [
       "Use front-facing camera in bright light",
       "Hold phone at arm's length, look directly at lens",
       "Or ask someone to photograph your eye from 15cm",
       "Iris must fill at least 40% of the frame",
     ],
-    diagram: "iris",
+    diagram: "iridology",
   },
   {
     key: "left_iris",
     title: "Your Left Iris",
     subtitle: "The Receiving Eye",
+    sectionLabel: "Iridology Health Reading",
+    extraNote: "The left iris carries receptive energies and maps the body's hidden sensitivities.",
     instructions: [
       "Same technique as your right iris",
       "The left iris carries receptive energies",
       "Bright, even lighting works best",
     ],
-    diagram: "iris",
+    diagram: "iridology",
   },
   {
     key: "face",
@@ -216,6 +341,52 @@ const STEPS: StepConfig[] = [
       "Capture from forehead to chin",
     ],
     diagram: "face",
+  },
+  {
+    key: "face_front",
+    title: "Front Portrait",
+    subtitle: "The Heaven–Human–Earth Map",
+    sectionLabel: "Chinese Face Reading (面相)",
+    extraNote: "Mianxiang — the ancient art of physiognomy — reads destiny, character, and life phases from the five facial zones.",
+    instructions: [
+      "Face the camera directly, chin level",
+      "Neutral expression, eyes open naturally",
+      "Even, natural light with no harsh shadows",
+      "Capture from hairline to chin, shoulders visible",
+    ],
+    diagram: "face_chinese",
+  },
+  {
+    key: "face_left",
+    title: "Left Side Profile",
+    subtitle: "The Yin Face",
+    sectionLabel: "Chinese Face Reading (面相)",
+    instructions: [
+      "Turn fully to your right so the camera sees your left profile",
+      "Keep chin level — neither raised nor lowered",
+      "Hair behind ear if possible",
+      "Capture the full profile from forehead to chin",
+    ],
+    diagram: "face_profile",
+  },
+  {
+    key: "face_right",
+    title: "Right Side Profile",
+    subtitle: "The Yang Face",
+    sectionLabel: "Chinese Face Reading (面相)",
+    instructions: [
+      "Turn fully to your left so the camera sees your right profile",
+      "Keep chin level and expression neutral",
+      "Hair behind ear if possible",
+      "Capture the full profile from forehead to chin",
+    ],
+    diagram: "face_profile",
+  },
+  {
+    key: null,
+    title: "Review & Submit",
+    review: true,
+    instructions: [],
   },
 ];
 
@@ -250,6 +421,9 @@ export default function RitualScreen() {
             right_iris: images.right_iris?.uri,
             left_iris: images.left_iris?.uri,
             face: images.face?.uri,
+            face_front: images.face_front?.uri,
+            face_left: images.face_left?.uri,
+            face_right: images.face_right?.uri,
           },
         });
       }
@@ -305,7 +479,7 @@ export default function RitualScreen() {
     }
   };
 
-  const isReview = step === STEPS.length - 1;
+  const isReview = !!currentStep.review;
 
   return (
     <View style={[styles.container, { paddingTop: Platform.OS === "web" ? 67 : insets.top }]}>
@@ -367,9 +541,9 @@ export default function RitualScreen() {
             <Text style={styles.divider}>─── ✦ ───</Text>
 
             <View style={styles.photoGrid}>
-              {(["right_palm","left_palm","right_iris","left_iris","face"] as (keyof OracleImages)[]).map(key => {
+              {(["right_palm","left_palm","right_iris","left_iris","face","face_front","face_left","face_right"] as (keyof OracleImages)[]).map(key => {
                 const img = state.images[key];
-                const label = key.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase());
+                const label = key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
                 return (
                   <View key={key} style={styles.photoThumb}>
                     {img ? (
@@ -410,6 +584,11 @@ export default function RitualScreen() {
         ) : (
           /* Photo step card */
           <Animated.View entering={FadeIn.duration(500)} style={styles.card}>
+            {currentStep.sectionLabel && (
+              <View style={styles.sectionLabelBadge}>
+                <Text style={styles.sectionLabelText}>{currentStep.sectionLabel}</Text>
+              </View>
+            )}
             <Text style={styles.cardTitle}>{currentStep.title}</Text>
             {currentStep.subtitle && (
               <Text style={styles.cardSubtitle}>{currentStep.subtitle}</Text>
@@ -422,12 +601,19 @@ export default function RitualScreen() {
 
             <Text style={styles.divider}>─── ✦ ───</Text>
 
+            {currentStep.extraNote && (
+              <Text style={styles.extraNote}>{currentStep.extraNote}</Text>
+            )}
+
             {/* Diagram */}
             {currentStep.diagram && (
               <View style={styles.diagramContainer}>
                 {currentStep.diagram === "palm" && <PalmDiagram />}
                 {currentStep.diagram === "iris" && <IrisDiagram />}
+                {currentStep.diagram === "iridology" && <IridologyDiagram />}
                 {currentStep.diagram === "face" && <FaceDiagram />}
+                {currentStep.diagram === "face_chinese" && <ChineseFaceDiagram />}
+                {currentStep.diagram === "face_profile" && <ChineseFaceProfileDiagram />}
               </View>
             )}
 
@@ -553,6 +739,31 @@ const styles = StyleSheet.create({
     color: Colors.gold,
     textAlign: "center",
     marginBottom: 4,
+  },
+  sectionLabelBadge: {
+    alignSelf: "center",
+    backgroundColor: "rgba(201,168,76,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(201,168,76,0.4)",
+    borderRadius: 20,
+    paddingVertical: 4,
+    paddingHorizontal: 14,
+    marginBottom: 10,
+  },
+  sectionLabelText: {
+    fontFamily: "CinzelDecorative_400Regular",
+    fontSize: 10,
+    color: Colors.gold,
+    letterSpacing: 0.5,
+  },
+  extraNote: {
+    fontFamily: "EBGaramond_400Regular_Italic",
+    fontSize: 14,
+    color: Colors.muted,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 16,
+    paddingHorizontal: 4,
   },
   requiredBadge: {
     alignSelf: "center",

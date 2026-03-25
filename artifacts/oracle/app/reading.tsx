@@ -319,7 +319,7 @@ type Phase = "loading" | "streaming_free" | "paywall" | "streaming_paid" | "comp
 
 export default function ReadingScreen() {
   const insets = useSafeAreaInsets();
-  const { state, appendFreeReading, appendPaidReading, appendArchetype, setReadingComplete, resetAll } = useOracle();
+  const { state, appendFreeReading, appendPaidReading, appendArchetype, appendChineseFaceReading, appendIridologyReading, setReadingComplete, resetAll } = useOracle();
   const [phase, setPhase] = useState<Phase>("loading");
   const [errorMsg, setErrorMsg] = useState("");
   const hasStarted = useRef(false);
@@ -454,6 +454,10 @@ export default function ReadingScreen() {
             if (parsed.chunk) {
               if (parsed.section === "archetype") {
                 appendArchetype(parsed.chunk);
+              } else if (parsed.section === "chinese_face") {
+                appendChineseFaceReading(parsed.chunk);
+              } else if (parsed.section === "iridology") {
+                appendIridologyReading(parsed.chunk);
               } else {
                 appendPaidReading(parsed.chunk);
               }
@@ -567,6 +571,46 @@ export default function ReadingScreen() {
             </>
           )}
 
+          {/* Chinese Face Reading */}
+          {state.chineseFaceReading.length > 0 && (
+            <>
+              <Text style={sectionStyles.divider}>─── ✦ ───</Text>
+              <View style={styles.specialReadingCard}>
+                <View style={styles.specialReadingHeader}>
+                  <Text style={styles.specialReadingBadge}>Chinese Face Reading · 面相</Text>
+                </View>
+                <ReadingSection text={state.chineseFaceReading} />
+              </View>
+            </>
+          )}
+
+          {/* Streaming chinese face indicator */}
+          {phase === "streaming_paid" && state.chineseFaceReading.length > 0 && state.iridologyReading.length === 0 && (
+            <View style={styles.streamingDots}>
+              <Text style={styles.streamingText}>Reading the face of destiny...</Text>
+            </View>
+          )}
+
+          {/* Iridology Health Reading */}
+          {state.iridologyReading.length > 0 && (
+            <>
+              <Text style={sectionStyles.divider}>─── ✦ ───</Text>
+              <View style={styles.specialReadingCard}>
+                <View style={styles.specialReadingHeader}>
+                  <Text style={styles.specialReadingBadge}>Iridology Health Reading</Text>
+                </View>
+                <ReadingSection text={state.iridologyReading} />
+              </View>
+            </>
+          )}
+
+          {/* Streaming iridology indicator */}
+          {phase === "streaming_paid" && state.iridologyReading.length > 0 && (
+            <View style={styles.streamingDots}>
+              <Text style={styles.streamingText}>Reading the iris of the soul...</Text>
+            </View>
+          )}
+
           {/* Complete — chat CTA */}
           {phase === "complete" && (
             <Animated.View entering={FadeIn.duration(800)} style={styles.completeCta}>
@@ -676,6 +720,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(201,168,76,0.2)",
     padding: 20,
+  },
+  specialReadingCard: {
+    backgroundColor: "rgba(107,107,138,0.08)",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(201,168,76,0.15)",
+    padding: 20,
+    gap: 12,
+  },
+  specialReadingHeader: {
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  specialReadingBadge: {
+    fontFamily: "CinzelDecorative_400Regular",
+    fontSize: 10,
+    color: Colors.gold,
+    letterSpacing: 1,
+    textAlign: "center",
+    opacity: 0.85,
   },
   completeCta: {
     alignItems: "center",

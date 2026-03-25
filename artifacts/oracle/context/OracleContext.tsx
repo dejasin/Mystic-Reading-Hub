@@ -30,10 +30,15 @@ export interface OracleState {
     right_iris?: CapturedImage;
     left_iris?: CapturedImage;
     face?: CapturedImage;
+    face_front?: CapturedImage;
+    face_left?: CapturedImage;
+    face_right?: CapturedImage;
   };
   freeReading: string;
   paidReading: string;
   archetypeReading: string;
+  chineseFaceReading: string;
+  iridologyReading: string;
   readingComplete: boolean;
   isPaid: boolean;
 }
@@ -45,6 +50,8 @@ interface OracleContextValue {
   appendFreeReading: (text: string) => void;
   appendPaidReading: (text: string) => void;
   appendArchetype: (text: string) => void;
+  appendChineseFaceReading: (text: string) => void;
+  appendIridologyReading: (text: string) => void;
   setReadingComplete: (v: boolean) => void;
   setPaid: (v: boolean) => void;
   resetAll: () => void;
@@ -72,6 +79,8 @@ const defaultState: OracleState = {
   freeReading: "",
   paidReading: "",
   archetypeReading: "",
+  chineseFaceReading: "",
+  iridologyReading: "",
   readingComplete: false,
   isPaid: false,
 };
@@ -86,7 +95,16 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
   };
 
   const setImage = (key: keyof OracleState["images"], img: CapturedImage | undefined) => {
-    setState(prev => ({ ...prev, images: { ...prev.images, [key]: img } }));
+    setState(prev => {
+      const updated = { ...prev.images, [key]: img };
+      if (key === "face" && img && !prev.images.face_front) {
+        updated.face_front = img;
+      }
+      if (key === "face_front" && img && !prev.images.face) {
+        updated.face = img;
+      }
+      return { ...prev, images: updated };
+    });
   };
 
   const appendFreeReading = (text: string) => {
@@ -99,6 +117,14 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
 
   const appendArchetype = (text: string) => {
     setState(prev => ({ ...prev, archetypeReading: prev.archetypeReading + text }));
+  };
+
+  const appendChineseFaceReading = (text: string) => {
+    setState(prev => ({ ...prev, chineseFaceReading: prev.chineseFaceReading + text }));
+  };
+
+  const appendIridologyReading = (text: string) => {
+    setState(prev => ({ ...prev, iridologyReading: prev.iridologyReading + text }));
   };
 
   const setReadingComplete = (v: boolean) => {
@@ -120,6 +146,7 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
     <OracleContext.Provider value={{
       state, setUserData, setImage,
       appendFreeReading, appendPaidReading, appendArchetype,
+      appendChineseFaceReading, appendIridologyReading,
       setReadingComplete, setPaid, resetAll,
     }}>
       {children}

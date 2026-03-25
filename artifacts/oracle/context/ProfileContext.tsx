@@ -7,6 +7,9 @@ export interface ProfilePhoto {
   right_iris?: string;
   left_iris?: string;
   face?: string;
+  face_front?: string;
+  face_left?: string;
+  face_right?: string;
 }
 
 export interface OracleProfile {
