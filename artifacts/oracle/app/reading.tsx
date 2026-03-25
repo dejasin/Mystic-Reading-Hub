@@ -7,6 +7,7 @@ import {
   ScrollView,
   Platform,
   Share,
+  TextInput,
 } from "react-native";
 import Animated, {
   FadeIn,
@@ -316,16 +317,213 @@ const sectionStyles = StyleSheet.create({
   },
 });
 
+function OracleActivationCard({
+  onConfirm,
+  initialQ1 = "",
+  initialQ2 = "",
+  initialQ3 = "",
+}: {
+  onConfirm: (q1: string, q2: string, q3: string) => void;
+  initialQ1?: string;
+  initialQ2?: string;
+  initialQ3?: string;
+}) {
+  const [q1, setQ1] = useState(initialQ1);
+  const [q2, setQ2] = useState(initialQ2);
+  const [q3, setQ3] = useState(initialQ3);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  return (
+    <Animated.View entering={FadeIn.duration(800)} style={activationStyles.card}>
+      <Text style={activationStyles.title}>Awaken the Oracle</Text>
+      <Text style={activationStyles.subtitle}>
+        The Oracle seeks your questions to illuminate your path.
+      </Text>
+      <Text style={activationStyles.divider}>─── ✦ ───</Text>
+
+      <View style={activationStyles.fieldGroup}>
+        <Text style={activationStyles.fieldLabel}>What do you most want to understand?</Text>
+        <TextInput
+          value={q1}
+          onChangeText={setQ1}
+          placeholder="Speak your truth..."
+          placeholderTextColor={Colors.muted}
+          multiline
+          style={[
+            activationStyles.input,
+            focusedField === "q1" && activationStyles.inputFocused,
+          ]}
+          onFocus={() => setFocusedField("q1")}
+          onBlur={() => setFocusedField(null)}
+        />
+      </View>
+
+      <View style={activationStyles.fieldGroup}>
+        <Text style={activationStyles.fieldLabel}>What pattern keeps repeating in your life?</Text>
+        <TextInput
+          value={q2}
+          onChangeText={setQ2}
+          placeholder="The Oracle listens..."
+          placeholderTextColor={Colors.muted}
+          multiline
+          style={[
+            activationStyles.input,
+            focusedField === "q2" && activationStyles.inputFocused,
+          ]}
+          onFocus={() => setFocusedField("q2")}
+          onBlur={() => setFocusedField(null)}
+        />
+      </View>
+
+      <View style={activationStyles.fieldGroup}>
+        <Text style={activationStyles.fieldLabel}>What decision are you approaching?</Text>
+        <TextInput
+          value={q3}
+          onChangeText={setQ3}
+          placeholder="Name the crossroads..."
+          placeholderTextColor={Colors.muted}
+          multiline
+          style={[
+            activationStyles.input,
+            focusedField === "q3" && activationStyles.inputFocused,
+          ]}
+          onFocus={() => setFocusedField("q3")}
+          onBlur={() => setFocusedField(null)}
+        />
+      </View>
+
+      <Pressable
+        style={({ pressed }) => [activationStyles.confirmBtn, pressed && { opacity: 0.85 }]}
+        onPress={() => onConfirm(q1, q2, q3)}
+      >
+        <Text style={activationStyles.confirmText}>Awaken the Oracle</Text>
+      </Pressable>
+
+      <Pressable
+        style={activationStyles.skipBtn}
+        onPress={() => onConfirm("", "", "")}
+      >
+        <Text style={activationStyles.skipText}>Continue without questions</Text>
+      </Pressable>
+    </Animated.View>
+  );
+}
+
+const activationStyles = StyleSheet.create({
+  card: {
+    backgroundColor: Colors.surface,
+    borderRadius: 20,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: "rgba(201,168,76,0.35)",
+    gap: 16,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 6,
+  },
+  title: {
+    fontFamily: "CinzelDecorative_700Bold",
+    fontSize: 18,
+    color: Colors.gold,
+    textAlign: "center",
+    letterSpacing: 0.5,
+  },
+  subtitle: {
+    fontFamily: "EBGaramond_400Regular_Italic",
+    fontSize: 15,
+    color: Colors.cream,
+    textAlign: "center",
+    lineHeight: 24,
+    opacity: 0.85,
+  },
+  divider: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 13,
+    color: Colors.gold,
+    textAlign: "center",
+    letterSpacing: 4,
+    opacity: 0.5,
+  },
+  fieldGroup: {
+    gap: 8,
+  },
+  fieldLabel: {
+    fontFamily: "EBGaramond_500Medium",
+    fontSize: 14,
+    color: Colors.cream,
+    opacity: 0.75,
+    letterSpacing: 0.3,
+  },
+  input: {
+    backgroundColor: Colors.inputBg,
+    borderWidth: 1,
+    borderColor: Colors.inputBorder,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 15,
+    color: Colors.cream,
+    minHeight: 64,
+    textAlignVertical: "top",
+  },
+  inputFocused: {
+    borderColor: Colors.gold,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+  },
+  confirmBtn: {
+    backgroundColor: Colors.gold,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 52,
+  },
+  confirmText: {
+    fontFamily: "CinzelDecorative_400Regular",
+    fontSize: 13,
+    color: Colors.bg,
+    letterSpacing: 0.5,
+  },
+  skipBtn: {
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  skipText: {
+    fontFamily: "EBGaramond_400Regular_Italic",
+    fontSize: 13,
+    color: Colors.muted,
+  },
+});
+
 type Phase = "loading" | "streaming_free" | "paywall" | "streaming_paid" | "complete" | "error";
 
 export default function ReadingScreen() {
   const insets = useSafeAreaInsets();
-  const { state, appendFreeReading, appendPaidReading, appendArchetype, appendChineseFaceReading, appendIridologyReading, setReadingComplete, resetAll } = useOracle();
+  const { state, updateUserData, appendFreeReading, appendPaidReading, appendArchetype, appendChineseFaceReading, appendIridologyReading, setReadingComplete, resetAll } = useOracle();
   const { profiles, updateProfile } = useProfiles();
   const [phase, setPhase] = useState<Phase>("loading");
   const [errorMsg, setErrorMsg] = useState("");
+  const [activationDismissed, setActivationDismissed] = useState(false);
   const hasStarted = useRef(false);
   const scrollRef = useRef<ScrollView>(null);
+
+  const initiallyNeedsActivation = useRef(
+    !state.userData.q1.trim() || !state.userData.q2.trim() || !state.userData.q3.trim()
+  );
+
+  const needsActivation =
+    !activationDismissed && initiallyNeedsActivation.current;
+
+  const handleActivationConfirm = (q1: string, q2: string, q3: string) => {
+    updateUserData({ q1: q1.trim(), q2: q2.trim(), q3: q3.trim() });
+    setActivationDismissed(true);
+  };
 
   const saveReadingToVault = async (fullReading: string) => {
     const { name, dob } = state.userData;
@@ -488,11 +686,14 @@ export default function ReadingScreen() {
   };
 
   useEffect(() => {
+    if (initiallyNeedsActivation.current && !activationDismissed) {
+      return;
+    }
     if (!hasStarted.current) {
       hasStarted.current = true;
       streamFreeReading();
     }
-  }, []);
+  }, [activationDismissed]);
 
   useEffect(() => {
     if (phase === "complete") {
@@ -524,7 +725,20 @@ export default function ReadingScreen() {
         </View>
       )}
 
-      {phase === "loading" ? (
+      {phase === "loading" && needsActivation ? (
+        <ScrollView
+          contentContainerStyle={[styles.scroll, { paddingBottom: Platform.OS === "web" ? 34 : insets.bottom + 32 }]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <OracleActivationCard
+            onConfirm={handleActivationConfirm}
+            initialQ1={state.userData.q1}
+            initialQ2={state.userData.q2}
+            initialQ3={state.userData.q3}
+          />
+        </ScrollView>
+      ) : phase === "loading" ? (
         <LoadingView />
       ) : phase === "error" ? (
         <View style={styles.errorContainer}>

@@ -49,6 +49,7 @@ export interface OracleState {
 interface OracleContextValue {
   state: OracleState;
   setUserData: (data: UserData) => void;
+  updateUserData: (partial: Partial<UserData>) => void;
   setImage: (key: keyof OracleState["images"], img: CapturedImage | undefined) => void;
   appendFreeReading: (text: string) => void;
   appendPaidReading: (text: string) => void;
@@ -98,6 +99,10 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
 
   const setUserData = (data: UserData) => {
     setState(prev => ({ ...prev, userData: data }));
+  };
+
+  const updateUserData = (partial: Partial<UserData>) => {
+    setState(prev => ({ ...prev, userData: { ...prev.userData, ...partial } }));
   };
 
   const setImage = (key: keyof OracleState["images"], img: CapturedImage | undefined) => {
@@ -167,7 +172,7 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <OracleContext.Provider value={{
-      state, setUserData, setImage,
+      state, setUserData, updateUserData, setImage,
       appendFreeReading, appendPaidReading, appendArchetype,
       appendChineseFaceReading, appendIridologyReading,
       setReadingComplete, setPaid,
