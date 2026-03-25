@@ -25,6 +25,20 @@ import { useProfiles, OracleProfile, ProfilePhoto } from "@/context/ProfileConte
 const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"];
 const HAND_OPTIONS = ["Right", "Left", "Ambidextrous"];
 const EYE_OPTIONS = ["Brown", "Blue", "Green", "Hazel", "Gray", "Dark Brown", "Other"];
+
+const DEV_TEST_PROFILE: Omit<OracleProfile, "id" | "createdAt"> = {
+  name: "Luna Blackwood",
+  dob: "1990-06-21",
+  birthTime: "14:30",
+  birthCity: "New Orleans",
+  birthCountry: "United States",
+  gender: "Female",
+  dominantHand: "Right",
+  eyeColor: "Hazel",
+  notes: "Test profile — Cancer sun, deeply intuitive, loves tarot and midnight rituals.",
+  photos: {},
+};
+
 const PHOTO_SLOTS: { key: keyof ProfilePhoto; label: string; icon: string }[] = [
   { key: "face", label: "Face", icon: "user" },
   { key: "right_palm", label: "Right Palm", icon: "hand" },
@@ -334,6 +348,18 @@ export default function ProfilesScreen() {
     router.push({ pathname: "/synastry", params: { profileId: profile.id } });
   };
 
+  const handleLoadTestProfile = useCallback(async () => {
+    const existing = profiles.find(p => p.name === "Luna Blackwood");
+    if (existing) {
+      await updateProfile(existing.id, DEV_TEST_PROFILE);
+    } else {
+      await addProfile(DEV_TEST_PROFILE);
+    }
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  }, [profiles, addProfile, updateProfile]);
+
   const canStartSynastry = profiles.length >= 2;
 
   return (
@@ -378,6 +404,17 @@ export default function ProfilesScreen() {
           {isPaid && " · Unlimited"}
         </Text>
       </View>
+
+      {/* DEV ONLY: seed button */}
+      {__DEV__ && (
+        <Pressable
+          style={({ pressed }) => [styles.devSeedBtn, pressed && { opacity: 0.75 }]}
+          onPress={handleLoadTestProfile}
+        >
+          <Feather name="cpu" size={13} color="#7fdfb0" />
+          <Text style={styles.devSeedText}>Load Test Profile</Text>
+        </Pressable>
+      )}
 
       {profiles.length === 0 ? (
         <View style={styles.emptyState}>
@@ -455,4 +492,6 @@ const styles = StyleSheet.create({
   emptyText: { fontFamily: "EBGaramond_400Regular_Italic", fontSize: 15, color: Colors.muted, textAlign: "center", lineHeight: 24 },
   emptyAddBtn: { backgroundColor: Colors.gold, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 28, flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 },
   emptyAddText: { fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: Colors.bg },
+  devSeedBtn: { flexDirection: "row", alignItems: "center", gap: 6, marginHorizontal: 20, marginBottom: 10, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: "#7fdfb0", backgroundColor: "rgba(127,223,176,0.07)", alignSelf: "flex-start" },
+  devSeedText: { fontFamily: "EBGaramond_500Medium", fontSize: 13, color: "#7fdfb0", letterSpacing: 0.3 },
 });
