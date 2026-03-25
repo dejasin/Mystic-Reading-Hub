@@ -596,6 +596,23 @@ export default function ReadingScreen() {
                 <Feather name="message-circle" size={18} color={Colors.bg} />
                 <Text style={styles.chatBtnText}>Ask The Oracle a Question</Text>
               </Pressable>
+
+              <View style={styles.endDivider}>
+                <View style={styles.endDividerLine} />
+                <Text style={styles.endDividerText}>✦</Text>
+                <View style={styles.endDividerLine} />
+              </View>
+
+              <Pressable
+                style={({ pressed }) => [styles.newReadingBtn, pressed && { opacity: 0.75 }]}
+                onPress={() => {
+                  resetAll();
+                  router.replace("/");
+                }}
+              >
+                <Feather name="refresh-cw" size={15} color={Colors.muted} />
+                <Text style={styles.newReadingText}>Begin a New Reading</Text>
+              </Pressable>
             </Animated.View>
           )}
         </ScrollView>
@@ -747,5 +764,37 @@ const styles = StyleSheet.create({
     fontFamily: "EBGaramond_500Medium",
     fontSize: 15,
     color: Colors.gold,
+  },
+  endDivider: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    width: "100%",
+    marginVertical: 4,
+  },
+  endDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "rgba(107,107,138,0.25)",
+  },
+  endDividerText: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 12,
+    color: Colors.muted,
+    opacity: 0.6,
+  },
+  newReadingBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    minHeight: 44,
+  },
+  newReadingText: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 15,
+    color: Colors.muted,
   },
 });
