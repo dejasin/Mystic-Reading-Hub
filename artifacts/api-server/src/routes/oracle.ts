@@ -90,28 +90,38 @@ async function imageToBase64(buffer: Buffer, mimeType: string, maxPx: number): P
   return { b64: resized.toString("base64"), mediaType: "image/jpeg" };
 }
 
+const sseHeaders = (_req: Request, res: Response, next: () => void) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders();
+  next();
+};
+
+const imageFields = upload.fields([
+  { name: "right_palm", maxCount: 1 },
+  { name: "left_palm", maxCount: 1 },
+  { name: "right_iris", maxCount: 1 },
+  { name: "left_iris", maxCount: 1 },
+  { name: "face", maxCount: 1 },
+  { name: "face_front", maxCount: 1 },
+  { name: "face_left", maxCount: 1 },
+  { name: "face_right", maxCount: 1 },
+]);
+
 // POST /api/generate - SSE streaming endpoint
 router.post(
   "/generate",
-  upload.fields([
-    { name: "right_palm", maxCount: 1 },
-    { name: "left_palm", maxCount: 1 },
-    { name: "right_iris", maxCount: 1 },
-    { name: "left_iris", maxCount: 1 },
-    { name: "face", maxCount: 1 },
-    { name: "face_front", maxCount: 1 },
-    { name: "face_left", maxCount: 1 },
-    { name: "face_right", maxCount: 1 },
-  ]),
+  sseHeaders,
+  imageFields,
   async (req: Request, res: Response) => {
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache, no-transform");
-    res.setHeader("X-Accel-Buffering", "no");
-    res.flushHeaders();
-
     const sendEvent = (data: object) => {
       res.write(`data: ${JSON.stringify(data)}\n\n`);
     };
+
+    // Acknowledge immediately so client knows we're processing
+    sendEvent({ event: "ping" });
 
     try {
       if (!process.env.ANTHROPIC_API_KEY) {
@@ -312,25 +322,15 @@ End Section 2 with exactly this sentence: "You are approaching a phase where one
 // POST /api/generate/continue - Stream paid sections after unlock
 router.post(
   "/generate/continue",
-  upload.fields([
-    { name: "right_palm", maxCount: 1 },
-    { name: "left_palm", maxCount: 1 },
-    { name: "right_iris", maxCount: 1 },
-    { name: "left_iris", maxCount: 1 },
-    { name: "face", maxCount: 1 },
-    { name: "face_front", maxCount: 1 },
-    { name: "face_left", maxCount: 1 },
-    { name: "face_right", maxCount: 1 },
-  ]),
+  sseHeaders,
+  imageFields,
   async (req: Request, res: Response) => {
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache, no-transform");
-    res.setHeader("X-Accel-Buffering", "no");
-    res.flushHeaders();
-
     const sendEvent = (data: object) => {
       res.write(`data: ${JSON.stringify(data)}\n\n`);
     };
+
+    // Acknowledge immediately
+    sendEvent({ event: "ping" });
 
     try {
       if (!process.env.ANTHROPIC_API_KEY) {
