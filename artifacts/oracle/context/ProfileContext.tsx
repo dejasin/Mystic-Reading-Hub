@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DeepDiveCategory } from "./OracleContext";
 
 export interface ProfilePhoto {
   right_palm?: string;
@@ -25,6 +26,8 @@ export interface OracleProfile {
   eyeColor?: string;
   photos: ProfilePhoto;
   notes?: string;
+  mainReading?: string;
+  deepDives?: Partial<Record<DeepDiveCategory, string>>;
   createdAt: number;
 }
 

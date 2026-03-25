@@ -25,7 +25,8 @@ import { fetch } from "expo/fetch";
 import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import GoldSigil from "@/components/GoldSigil";
-import { useOracle } from "@/context/OracleContext";
+import { useOracle, DeepDiveCategory } from "@/context/OracleContext";
+import { useProfiles } from "@/context/ProfileContext";
 
 const LOADING_MESSAGES = [
   "Mapping your palm lines...",
@@ -320,10 +321,22 @@ type Phase = "loading" | "streaming_free" | "paywall" | "streaming_paid" | "comp
 export default function ReadingScreen() {
   const insets = useSafeAreaInsets();
   const { state, appendFreeReading, appendPaidReading, appendArchetype, appendChineseFaceReading, appendIridologyReading, setReadingComplete, resetAll } = useOracle();
+  const { profiles, updateProfile } = useProfiles();
   const [phase, setPhase] = useState<Phase>("loading");
   const [errorMsg, setErrorMsg] = useState("");
   const hasStarted = useRef(false);
   const scrollRef = useRef<ScrollView>(null);
+
+  const saveReadingToVault = async (fullReading: string) => {
+    const { name, dob } = state.userData;
+    if (!name || !dob) return;
+    const profile = profiles.find(
+      p => p.name.trim().toLowerCase() === name.trim().toLowerCase() && p.dob === dob
+    );
+    if (profile) {
+      await updateProfile(profile.id, { mainReading: fullReading });
+    }
+  };
 
   const getApiUrl = () => {
     const domain = process.env.EXPO_PUBLIC_DOMAIN;
@@ -481,6 +494,19 @@ export default function ReadingScreen() {
     }
   }, []);
 
+  useEffect(() => {
+    if (phase === "complete") {
+      const fullReading = [
+        state.freeReading,
+        state.paidReading,
+        state.archetypeReading,
+        state.chineseFaceReading,
+        state.iridologyReading,
+      ].filter(Boolean).join("\n\n");
+      saveReadingToVault(fullReading);
+    }
+  }, [phase]);
+
   const hasContent = state.freeReading.length > 0;
 
   return (
@@ -611,11 +637,97 @@ export default function ReadingScreen() {
             </View>
           )}
 
-          {/* Complete — chat CTA */}
+          {/* Complete — Deep Dive + chat CTA */}
           {phase === "complete" && (
             <Animated.View entering={FadeIn.duration(800)} style={styles.completeCta}>
               <Text style={styles.completeTitle}>Your reading is complete.</Text>
               <Text style={styles.completeDivider}>─── ✦ ───</Text>
+
+              {/* Deep Dive Section */}
+              <Animated.View entering={FadeIn.duration(600).delay(200)} style={styles.deepDiveSection}>
+                <Text style={styles.deepDiveTitle}>Explore Further</Text>
+                <Text style={styles.deepDiveSubtitle}>
+                  Select a life area for a targeted Oracle reading woven from your profile.
+                </Text>
+                <View style={styles.deepDiveGrid}>
+                  {(["career", "relationship", "finances", "fitness", "family"] as DeepDiveCategory[]).map((cat) => {
+                    type FeatherName = React.ComponentProps<typeof Feather>["name"];
+                    const ICONS: Record<DeepDiveCategory, FeatherName> = {
+                      career: "briefcase",
+                      relationship: "heart",
+                      finances: "trending-up",
+                      fitness: "activity",
+                      family: "users",
+                    };
+                    const LABELS: Record<DeepDiveCategory, string> = {
+                      career: "Career",
+                      relationship: "Relationship",
+                      finances: "Finances",
+                      fitness: "Fitness",
+                      family: "Family",
+                    };
+                    const hasDive = (state.deepDives[cat]?.length ?? 0) > 0;
+                    return (
+                      <Pressable
+                        key={cat}
+                        style={({ pressed }) => [
+                          styles.deepDiveCard,
+                          hasDive && styles.deepDiveCardDone,
+                          pressed && { opacity: 0.8 },
+                        ]}
+                        onPress={() => router.push({ pathname: "/deep-dive", params: { category: cat } })}
+                      >
+                        <Feather name={ICONS[cat]} size={18} color={hasDive ? Colors.bg : Colors.gold} />
+                        <Text style={[styles.deepDiveCardLabel, hasDive && styles.deepDiveCardLabelDone]}>
+                          {LABELS[cat]}
+                        </Text>
+                        {hasDive && (
+                          <Feather name="check-circle" size={12} color={Colors.bg} />
+                        )}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+
+                {/* Summary cards for completed dives */}
+                {(["career", "relationship", "finances", "fitness", "family"] as DeepDiveCategory[])
+                  .filter(cat => (state.deepDives[cat]?.length ?? 0) > 0)
+                  .map((cat) => {
+                    const LABELS: Record<DeepDiveCategory, string> = {
+                      career: "Career",
+                      relationship: "Relationship",
+                      finances: "Finances",
+                      fitness: "Fitness",
+                      family: "Family",
+                    };
+                    const text = state.deepDives[cat] ?? "";
+                    const firstSentence = text.replace(/✦[^\n]*\n?/g, "").trim().split(/[.!?]/)[0]?.trim() ?? "";
+                    const excerpt = firstSentence.length > 0 ? firstSentence + "." : text.substring(0, 120) + "…";
+                    return (
+                      <Animated.View key={cat} entering={FadeIn.duration(400)} style={styles.deepDiveSummaryCard}>
+                        <View style={styles.deepDiveSummaryHeader}>
+                          <Text style={styles.deepDiveSummaryLabel}>{LABELS[cat]}</Text>
+                          <Feather name="check" size={12} color={Colors.gold} />
+                        </View>
+                        <Text style={styles.deepDiveSummaryExcerpt} numberOfLines={2}>{excerpt}</Text>
+                        <Pressable
+                          style={({ pressed }) => [styles.deepDiveSummaryBtn, pressed && { opacity: 0.75 }]}
+                          onPress={() => router.push({ pathname: "/deep-dive", params: { category: cat } })}
+                        >
+                          <Text style={styles.deepDiveSummaryBtnText}>Re-read</Text>
+                          <Feather name="arrow-right" size={12} color={Colors.gold} />
+                        </Pressable>
+                      </Animated.View>
+                    );
+                  })
+                }
+              </Animated.View>
+
+              <View style={styles.endDivider}>
+                <View style={styles.endDividerLine} />
+                <Text style={styles.endDividerText}>✦</Text>
+                <View style={styles.endDividerLine} />
+              </View>
 
               {/* Share */}
               <Pressable
@@ -860,5 +972,90 @@ const styles = StyleSheet.create({
     fontFamily: "EBGaramond_400Regular",
     fontSize: 15,
     color: Colors.muted,
+  },
+  deepDiveSection: {
+    width: "100%",
+    gap: 12,
+  },
+  deepDiveTitle: {
+    fontFamily: "CinzelDecorative_700Bold",
+    fontSize: 15,
+    color: Colors.gold,
+    letterSpacing: 1,
+    textAlign: "center",
+  },
+  deepDiveSubtitle: {
+    fontFamily: "EBGaramond_400Regular_Italic",
+    fontSize: 14,
+    color: Colors.muted,
+    textAlign: "center",
+    lineHeight: 22,
+  },
+  deepDiveGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    justifyContent: "center",
+  },
+  deepDiveCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "rgba(201,168,76,0.3)",
+    borderRadius: 22,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: "rgba(201,168,76,0.05)",
+  },
+  deepDiveCardDone: {
+    backgroundColor: Colors.gold,
+    borderColor: Colors.gold,
+  },
+  deepDiveCardLabel: {
+    fontFamily: "EBGaramond_500Medium",
+    fontSize: 14,
+    color: Colors.cream,
+  },
+  deepDiveCardLabelDone: {
+    color: Colors.bg,
+  },
+  deepDiveSummaryCard: {
+    width: "100%",
+    backgroundColor: "rgba(201,168,76,0.06)",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(201,168,76,0.2)",
+    padding: 16,
+    gap: 8,
+  },
+  deepDiveSummaryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  deepDiveSummaryLabel: {
+    fontFamily: "CinzelDecorative_400Regular",
+    fontSize: 11,
+    color: Colors.gold,
+    letterSpacing: 1,
+  },
+  deepDiveSummaryExcerpt: {
+    fontFamily: "EBGaramond_400Regular_Italic",
+    fontSize: 14,
+    color: Colors.cream,
+    opacity: 0.8,
+    lineHeight: 22,
+  },
+  deepDiveSummaryBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    alignSelf: "flex-end",
+  },
+  deepDiveSummaryBtnText: {
+    fontFamily: "EBGaramond_500Medium",
+    fontSize: 13,
+    color: Colors.gold,
   },
 });

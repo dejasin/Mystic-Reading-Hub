@@ -21,6 +21,8 @@ export interface CapturedImage {
   base64?: string;
 }
 
+export type DeepDiveCategory = "career" | "relationship" | "finances" | "fitness" | "family";
+
 export interface OracleState {
   sessionId: string;
   userData: UserData;
@@ -41,6 +43,7 @@ export interface OracleState {
   iridologyReading: string;
   readingComplete: boolean;
   isPaid: boolean;
+  deepDives: Partial<Record<DeepDiveCategory, string>>;
 }
 
 interface OracleContextValue {
@@ -54,6 +57,8 @@ interface OracleContextValue {
   appendIridologyReading: (text: string) => void;
   setReadingComplete: (v: boolean) => void;
   setPaid: (v: boolean) => void;
+  appendDeepDive: (category: DeepDiveCategory, text: string) => void;
+  clearDeepDive: (category: DeepDiveCategory) => void;
   resetAll: () => void;
 }
 
@@ -83,6 +88,7 @@ const defaultState: OracleState = {
   iridologyReading: "",
   readingComplete: false,
   isPaid: false,
+  deepDives: {},
 };
 
 const OracleContext = createContext<OracleContextValue | null>(null);
@@ -135,6 +141,23 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
     setState(prev => ({ ...prev, isPaid: v }));
   };
 
+  const appendDeepDive = (category: DeepDiveCategory, text: string) => {
+    setState(prev => ({
+      ...prev,
+      deepDives: {
+        ...prev.deepDives,
+        [category]: (prev.deepDives[category] ?? "") + text,
+      },
+    }));
+  };
+
+  const clearDeepDive = (category: DeepDiveCategory) => {
+    setState(prev => ({
+      ...prev,
+      deepDives: { ...prev.deepDives, [category]: "" },
+    }));
+  };
+
   const resetAll = () => {
     setState({
       ...defaultState,
@@ -147,7 +170,9 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
       state, setUserData, setImage,
       appendFreeReading, appendPaidReading, appendArchetype,
       appendChineseFaceReading, appendIridologyReading,
-      setReadingComplete, setPaid, resetAll,
+      setReadingComplete, setPaid,
+      appendDeepDive, clearDeepDive,
+      resetAll,
     }}>
       {children}
     </OracleContext.Provider>

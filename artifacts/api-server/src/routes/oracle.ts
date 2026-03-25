@@ -9,11 +9,11 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = "claude-opus-4-5";
 
 // In-memory session store (keyed by sessionId)
-const sessions: Record<string, { paid: boolean; reading: string; messageCount: number }> = {};
+const sessions: Record<string, { paid: boolean; reading: string; messageCount: number; readingComplete: boolean }> = {};
 
 function getOrCreateSession(sessionId: string) {
   if (!sessions[sessionId]) {
-    sessions[sessionId] = { paid: false, reading: "", messageCount: 0 };
+    sessions[sessionId] = { paid: false, reading: "", messageCount: 0, readingComplete: false };
   }
   return sessions[sessionId];
 }
@@ -562,6 +562,7 @@ Follow the IMAGE ANALYSIS RULE: first describe what is visually observable in th
         if (chineseFaceText) session.reading += "\n" + chineseFaceText;
         if (iridologyText) session.reading += "\n" + iridologyText;
 
+        session.readingComplete = true;
         sendEvent({ event: "complete" });
       } catch (err) {
         req.log.error({ err }, "Anthropic call 2/3 failed");
@@ -810,6 +811,115 @@ As The Oracle, answer questions about this specific connection with depth, preci
     req.log.error({ err }, "Synastry chat error");
     sendEvent({ content: "The Oracle is temporarily unavailable. Please try again." });
     sendEvent({ event: "done" });
+    res.end();
+  }
+});
+
+// POST /api/deep-dive - SSE deep dive reading for a life category
+router.post("/deep-dive", async (req: Request, res: Response) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders();
+
+  const sendEvent = (data: object) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  try {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      sendEvent({ event: "error", message: "The Oracle is temporarily unavailable." });
+      res.end();
+      return;
+    }
+
+    const { sessionId, category, categoryData, userData } = req.body as {
+      sessionId: string;
+      category: string;
+      categoryData: Record<string, string>;
+      userData: Record<string, string>;
+    };
+
+    if (!category || !userData) {
+      sendEvent({ event: "error", message: "Missing required fields." });
+      res.end();
+      return;
+    }
+
+    const session = sessions[sessionId];
+    if (!session || !session.readingComplete) {
+      sendEvent({ event: "error", message: "Complete your full Oracle reading before accessing Deep Dives." });
+      res.end();
+      return;
+    }
+
+    const dob = userData.dob ?? "";
+    const name = userData.name ?? "Seeker";
+    const sunSign = dob ? computeSunSign(dob) : "Unknown";
+    const lifePath = dob ? computeLifePath(dob) : 0;
+    const expressionNum = name ? nameToNumber(name) : 0;
+    const soulUrge = name ? nameToNumber(name, true) : 0;
+    const personalYear = dob ? computePersonalYear(dob) : 0;
+    const chineseZodiac = dob ? computeChineseZodiac(dob) : "Unknown";
+    const tarotCard = computeTarotCard(lifePath);
+    const age = dob ? new Date().getUTCFullYear() - new Date(dob).getUTCFullYear() : 0;
+
+    const readingContext = session.reading
+      ? `\n\nThis person's main Oracle reading (key themes for context):\n${session.reading.substring(0, 700)}`
+      : "";
+
+    const categoryPrompts: Record<string, string> = {
+      career: `Perform a deep dive CAREER reading. Category data: Occupation/Industry: "${categoryData.occupation ?? "not specified"}", Career Goal: "${categoryData.goal ?? "not specified"}", Biggest Challenge: "${categoryData.challenge ?? "not specified"}", Timeline: "${categoryData.timeline ?? "not specified"}". Generate ONLY this single section: ✦ CAREER ORACLE — weave together their numerological path, sun sign, and Chinese zodiac in the context of their career. Address the specific goal and challenge they mentioned. Reveal hidden patterns driving their professional destiny. Deliver practical mystical guidance on timing and action. 200–260 words.`,
+      relationship: `Perform a deep dive RELATIONSHIP reading. Category data: Status: "${categoryData.status ?? "not specified"}", Partner Name: "${categoryData.partnerName ?? "none given"}", Relationship Goal: "${categoryData.goal ?? "not specified"}", Recurring Pattern: "${categoryData.pattern ?? "not specified"}". Generate ONLY this single section: ✦ LOVE ORACLE — weave their Venus and moon energetics (inferred from sun sign), life path compatibility signatures, and Chinese zodiac relational nature to address the goal and pattern they shared. Name what is drawing in and what is pushing away. Speak to the repeating pattern with precision. 200–260 words.`,
+      finances: `Perform a deep dive FINANCES reading. Category data: Current Situation: "${categoryData.situation ?? "not specified"}", Primary Goal: "${categoryData.goal ?? "not specified"}", Biggest Money Block: "${categoryData.block ?? "not specified"}", Timeline Goal: "${categoryData.timeline ?? "not specified"}". Generate ONLY this single section: ✦ WEALTH ORACLE — read the financial destiny through their life path number, personal year cycle, and elemental nature from their sun sign. Address the specific goal and block they named. Reveal the energetic pattern beneath the money pattern. Speak to timing windows for growth. 200–260 words.`,
+      fitness: `Perform a deep dive FITNESS reading. Category data: Current Routine: "${categoryData.routine ?? "not specified"}", Primary Goal: "${categoryData.goal ?? "not specified"}", Health Concerns: "${categoryData.concerns ?? "none specified"}", Desired Lifestyle Change: "${categoryData.lifestyle ?? "not specified"}". Generate ONLY this single section: ✦ BODY ORACLE — read their constitutional vitality through their sun sign's elemental nature, life path's physical expression, and Chinese zodiac's body signature. Address the goal and desired change. Speak to what the body is communicating through current patterns. Give timing guidance. 200–260 words.`,
+      family: `Perform a deep dive FAMILY reading. Category data: Children/Ages: "${categoryData.children ?? "not specified"}", Family Role: "${categoryData.role ?? "not specified"}", Biggest Challenge: "${categoryData.challenge ?? "not specified"}", Family Goal: "${categoryData.goal ?? "not specified"}". Generate ONLY this single section: ✦ FAMILY ORACLE — read the karmic family thread through their life path origin point, sun sign relational signature, and Chinese zodiac ancestral nature. Address the challenge they named as a pattern. Speak to the family goal with mystical precision about what must shift for it to manifest. 200–260 words.`,
+    };
+
+    const categoryPrompt = categoryPrompts[category];
+    if (!categoryPrompt) {
+      sendEvent({ event: "error", message: "Unknown category." });
+      res.end();
+      return;
+    }
+
+    const systemPrompt = `You are The Oracle — an advanced multi-system intelligence performing a targeted deep dive reading for one specific area of this person's life.
+
+PRIMARY OBJECTIVE: Emotional resonance, perceived precision, and psychological impact. They should feel seen in this specific area of their life with the same depth as their main reading.
+
+CRITICAL RULES:
+1. Second person only ("you")
+2. No generic language — every line must feel specific and personal
+3. Weave their astrological and numerological profile into the reading naturally
+4. Reference the main reading context if available — create continuity
+5. One recognition line per response: something that names a hidden truth about this category in their life
+6. Literary, immersive prose. No bullet points. Section title: ✦ [TITLE]
+
+PRE-CALCULATED PROFILE:
+Name: ${name}, Age: ${age}
+Sun Sign: ${sunSign} | Life Path: ${lifePath} | Expression: ${expressionNum} | Soul Urge: ${soulUrge}
+Personal Year: ${personalYear} | Chinese Zodiac: ${chineseZodiac} | Tarot Birth Card: ${tarotCard}
+${userData.gender ? `Gender: ${userData.gender}` : ""}
+${readingContext}`;
+
+    const stream = anthropic.messages.stream({
+      model: MODEL,
+      max_tokens: 800,
+      system: systemPrompt,
+      messages: [{ role: "user", content: categoryPrompt }],
+    });
+
+    for await (const chunk of stream) {
+      if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
+        sendEvent({ chunk: chunk.delta.text });
+      }
+    }
+
+    sendEvent({ event: "complete" });
+    res.end();
+  } catch (err) {
+    req.log.error({ err }, "Deep dive error");
+    sendEvent({ event: "error", message: "The Oracle could not complete this reading. Please try again." });
     res.end();
   }
 });
