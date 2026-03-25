@@ -345,7 +345,7 @@ export default function ProfilesScreen() {
   };
 
   const handleProfilePress = (profile: OracleProfile) => {
-    router.push({ pathname: "/synastry", params: { profileId: profile.id } });
+    router.push({ pathname: "/profile-action", params: { profileId: profile.id } });
   };
 
   const handleLoadTestProfile = useCallback(async () => {

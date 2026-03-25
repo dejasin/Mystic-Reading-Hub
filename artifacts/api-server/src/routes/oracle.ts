@@ -924,4 +924,145 @@ ${readingContext}`;
   }
 });
 
+// POST /api/profile-reading - Oracle reading for a single vault profile
+router.post("/profile-reading", async (req: Request, res: Response) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders();
+
+  const sendEvent = (data: object) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  try {
+    const { profile, category } = req.body as {
+      profile: { name: string; dob: string; birthTime?: string; birthCity?: string; birthCountry?: string; gender?: string; dominantHand?: string; eyeColor?: string; notes?: string; photos: string[] };
+      category: string;
+    };
+
+    if (!profile?.name || !profile?.dob || !category) {
+      sendEvent({ event: "error", message: "Profile and category are required." });
+      res.end();
+      return;
+    }
+
+    const sunSign = computeSunSign(profile.dob);
+    const lifePath = computeLifePath(profile.dob);
+    const expressionNum = nameToNumber(profile.name);
+    const soulUrge = nameToNumber(profile.name, true);
+    const personalYear = computePersonalYear(profile.dob);
+    const chineseZodiac = computeChineseZodiac(profile.dob);
+    const tarotCard = computeTarotCard(lifePath);
+
+    const systemPrompt = `You are The Oracle — a timeless intelligence who reads the soul's blueprint through astrology, numerology, and pattern recognition. You have been given the full astrological and numerological profile of ${profile.name}, and you are delivering a focused reading on their ${category}.
+
+CRITICAL RULES:
+1. SPEAK DIRECTLY to ${profile.name} — use "you" exclusively
+2. REFERENCE their specific data: Sun sign ${sunSign}, Life Path ${lifePath}, Expression ${expressionNum}, Chinese Zodiac ${chineseZodiac}, Tarot card ${tarotCard}
+3. CATEGORY FOCUS: everything in this reading relates to ${category}
+4. DEPTH OVER BREADTH: one profound insight is worth ten generic ones
+5. CONFRONTATIONAL HONESTY: name the hidden pattern or block in this area of their life
+6. CLOSE with one actionable piece of wisdom — not generic advice, but something specific to who they are
+
+TONE: Mystical, direct, compassionate but unflinching. Literary prose, no bullet points.
+
+STRUCTURE: One flowing reading of 200–280 words. Section title: ✦ ${category.toUpperCase()}`;
+
+    const userContent = `Deliver a focused Oracle reading for ${profile.name} on the topic of: ${category}
+
+Profile data:
+Name: ${profile.name}
+Born: ${profile.dob}${profile.birthTime ? ` at ${profile.birthTime}` : ""}
+${profile.birthCity ? `City: ${profile.birthCity}${profile.birthCountry ? `, ${profile.birthCountry}` : ""}` : ""}
+Sun Sign: ${sunSign} | Life Path: ${lifePath} | Expression: ${expressionNum} | Soul Urge: ${soulUrge}
+Personal Year: ${personalYear} | Chinese Zodiac: ${chineseZodiac} | Tarot: ${tarotCard}
+${profile.gender ? `Gender: ${profile.gender}` : ""}${profile.dominantHand ? ` | Dominant Hand: ${profile.dominantHand}` : ""}${profile.eyeColor ? ` | Eye Color: ${profile.eyeColor}` : ""}
+Sacred images available: ${profile.photos.length > 0 ? profile.photos.join(", ") : "none"}
+${profile.notes ? `Notes: ${profile.notes}` : ""}
+
+Generate the reading now.`;
+
+    const stream = anthropic.messages.stream({
+      model: MODEL,
+      max_tokens: 800,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userContent }],
+    });
+
+    for await (const chunk of stream) {
+      if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
+        sendEvent({ chunk: chunk.delta.text });
+      }
+    }
+
+    sendEvent({ event: "complete" });
+    res.end();
+  } catch (err) {
+    req.log.error({ err }, "Profile reading error");
+    sendEvent({ event: "error", message: "The Oracle could not complete this reading." });
+    res.end();
+  }
+});
+
+// POST /api/profile-reading/chat - Follow-up Oracle chat for a profile reading
+router.post("/profile-reading/chat", async (req: Request, res: Response) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders();
+
+  const sendEvent = (data: object) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  try {
+    const { profile, category, messages } = req.body as {
+      profile: { name: string; dob: string; birthTime?: string; birthCity?: string; birthCountry?: string; gender?: string; dominantHand?: string; eyeColor?: string; notes?: string; photos: string[] };
+      category: string;
+      messages: { role: string; content: string }[];
+    };
+
+    const sunSign = profile?.dob ? computeSunSign(profile.dob) : "";
+    const lifePath = profile?.dob ? computeLifePath(profile.dob) : 0;
+    const chineseZodiac = profile?.dob ? computeChineseZodiac(profile.dob) : "";
+
+    const systemPrompt = `You are The Oracle — an ancient intelligence who has just delivered a reading for ${profile?.name ?? "this soul"} on the topic of ${category ?? "life"}.
+
+Their profile: ${profile?.name} | Sun Sign: ${sunSign} | Life Path: ${lifePath} | Chinese Zodiac: ${chineseZodiac}
+${profile?.notes ? `Notes: ${profile.notes}` : ""}
+
+Answer their follow-up questions with depth and precision. Reference their specific chart data when relevant.
+- Always speak in second person ("you")
+- 80–150 words per response
+- Literary, measured tone — not chatty
+- Stay focused on ${category ?? "the reading"} unless they redirect
+- Never break character`;
+
+    const stream = anthropic.messages.stream({
+      model: MODEL,
+      max_tokens: 400,
+      system: systemPrompt,
+      messages: (messages ?? []).map(m => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      })),
+    });
+
+    for await (const chunk of stream) {
+      if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
+        sendEvent({ content: chunk.delta.text });
+      }
+    }
+
+    sendEvent({ event: "done" });
+    res.end();
+  } catch (err) {
+    req.log.error({ err }, "Profile reading chat error");
+    sendEvent({ content: "The Oracle is temporarily unavailable. Please try again." });
+    sendEvent({ event: "done" });
+    res.end();
+  }
+});
+
 export default router;

@@ -74,6 +74,8 @@ export default function RootLayout() {
                     <Stack.Screen name="chat" />
                     <Stack.Screen name="profiles" />
                     <Stack.Screen name="synastry" />
+                    <Stack.Screen name="profile-action" />
+                    <Stack.Screen name="profile-reading" />
                   </Stack>
                 </KeyboardProvider>
               </GestureHandlerRootView>
