@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -180,6 +180,21 @@ function ProfileFormModal({
   const [eyeColor, setEyeColor] = useState(initial?.eyeColor ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [photos, setPhotos] = useState<ProfilePhoto>(initial?.photos ?? {});
+
+  useEffect(() => {
+    if (visible) {
+      setName(initial?.name ?? "");
+      setDob(initial?.dob ?? "");
+      setBirthTime(initial?.birthTime ?? "");
+      setBirthCity(initial?.birthCity ?? "");
+      setBirthCountry(initial?.birthCountry ?? "");
+      setGender(initial?.gender ?? "");
+      setDominantHand(initial?.dominantHand ?? "");
+      setEyeColor(initial?.eyeColor ?? "");
+      setNotes(initial?.notes ?? "");
+      setPhotos(initial?.photos ?? {});
+    }
+  }, [visible, initial]);
 
   const handlePickPhoto = async (key: keyof ProfilePhoto) => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
