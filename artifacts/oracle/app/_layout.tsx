@@ -20,6 +20,7 @@ import { setBaseUrl } from "@workspace/api-client-react";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OracleProvider } from "@/context/OracleContext";
+import { ProfileProvider } from "@/context/ProfileContext";
 import Colors from "@/constants/colors";
 
 setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
@@ -55,25 +56,29 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <OracleProvider>
-            <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bg }}>
-              <KeyboardProvider>
-                <Stack
-                  screenOptions={{
-                    headerShown: false,
-                    contentStyle: { backgroundColor: Colors.bg },
-                    animation: "fade",
-                  }}
-                >
-                  <Stack.Screen name="index" />
-                  <Stack.Screen name="intake" />
-                  <Stack.Screen name="ritual" />
-                  <Stack.Screen name="reading" />
-                  <Stack.Screen name="chat" />
-                </Stack>
-              </KeyboardProvider>
-            </GestureHandlerRootView>
-          </OracleProvider>
+          <ProfileProvider>
+            <OracleProvider>
+              <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bg }}>
+                <KeyboardProvider>
+                  <Stack
+                    screenOptions={{
+                      headerShown: false,
+                      contentStyle: { backgroundColor: Colors.bg },
+                      animation: "fade",
+                    }}
+                  >
+                    <Stack.Screen name="index" />
+                    <Stack.Screen name="intake" />
+                    <Stack.Screen name="ritual" />
+                    <Stack.Screen name="reading" />
+                    <Stack.Screen name="chat" />
+                    <Stack.Screen name="profiles" />
+                    <Stack.Screen name="synastry" />
+                  </Stack>
+                </KeyboardProvider>
+              </GestureHandlerRootView>
+            </OracleProvider>
+          </ProfileProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </SafeAreaProvider>

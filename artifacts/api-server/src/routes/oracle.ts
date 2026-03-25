@@ -559,4 +559,166 @@ Rules:
   }
 });
 
+// POST /api/synastry - SSE compatibility reading for two profiles
+router.post("/synastry", async (req: Request, res: Response) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders();
+
+  const sendEvent = (data: object) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  try {
+    const { profile1, profile2 } = req.body as {
+      profile1: { name: string; dob: string; birthTime?: string; birthCity?: string; birthCountry?: string; gender?: string; dominantHand?: string; eyeColor?: string; photos: string[] };
+      profile2: { name: string; dob: string; birthTime?: string; birthCity?: string; birthCountry?: string; gender?: string; dominantHand?: string; eyeColor?: string; photos: string[] };
+    };
+
+    if (!profile1?.name || !profile1?.dob || !profile2?.name || !profile2?.dob) {
+      sendEvent({ event: "error", message: "Two complete profiles are required for synastry." });
+      res.end();
+      return;
+    }
+
+    // Pre-compute for both
+    const p1 = {
+      ...profile1,
+      sunSign: computeSunSign(profile1.dob),
+      lifePath: computeLifePath(profile1.dob),
+      expressionNum: nameToNumber(profile1.name),
+      soulUrge: nameToNumber(profile1.name, true),
+      personalYear: computePersonalYear(profile1.dob),
+      chineseZodiac: computeChineseZodiac(profile1.dob),
+    };
+    const p2 = {
+      ...profile2,
+      sunSign: computeSunSign(profile2.dob),
+      lifePath: computeLifePath(profile2.dob),
+      expressionNum: nameToNumber(profile2.name),
+      soulUrge: nameToNumber(profile2.name, true),
+      personalYear: computePersonalYear(profile2.dob),
+      chineseZodiac: computeChineseZodiac(profile2.dob),
+    };
+
+    const systemPrompt = `You are The Oracle — a multi-system intelligence specializing in synastry: the ancient art of comparing two soul blueprints to reveal the patterns, dynamics, and destiny of their connection.
+
+CRITICAL RULES:
+1. SPEAK DIRECTLY to both people — use "between you two", "in your connection", "for ${p1.name}", "for ${p2.name}"
+2. SPECIFIC OBSERVATIONS ONLY — reference actual data (life paths, sun signs, elements, Chinese zodiac)
+3. NO GENERIC LOVE ADVICE — reveal the hidden mechanics, karmic threads, and shadow dynamics
+4. CONFRONTATIONAL DEPTH — name what is beautiful AND what is dangerous about this combination
+5. UNIFY ALL SYSTEMS — blend astrology, numerology, Chinese zodiac, and elemental analysis into ONE narrative
+
+YOUR OUTPUT STRUCTURE (use these exact headers with ✦):
+✦ THE SOUL BRIDGE — what brings these two together (karmic origin)
+✦ THE MAGNETIC DYNAMIC — attraction and repulsion forces
+✦ THE CHALLENGE POINT — the one pattern that will test this bond
+✦ THE GIFT — what this connection uniquely activates in each person
+✦ THE DESTINY LINE — where this connection is heading
+
+Write each section as flowing prose, 100–150 words each. Second person always. Deep, precise, slightly unsettling.`;
+
+    const userContent = `Perform a complete synastry reading for these two souls:
+
+${p1.name.toUpperCase()}
+Born: ${p1.dob}${p1.birthTime ? ` at ${p1.birthTime}` : ""}
+${p1.birthCity ? `City: ${p1.birthCity}, ${p1.birthCountry}` : ""}
+Sun Sign: ${p1.sunSign} | Life Path: ${p1.lifePath} | Expression: ${p1.expressionNum} | Soul Urge: ${p1.soulUrge}
+Personal Year: ${p1.personalYear} | Chinese Zodiac: ${p1.chineseZodiac}
+${p1.gender ? `Gender: ${p1.gender}` : ""}${p1.dominantHand ? ` | Dominant Hand: ${p1.dominantHand}` : ""}${p1.eyeColor ? ` | Eye Color: ${p1.eyeColor}` : ""}
+Photos available: ${p1.photos.length > 0 ? p1.photos.join(", ") : "none"}
+
+${p2.name.toUpperCase()}
+Born: ${p2.dob}${p2.birthTime ? ` at ${p2.birthTime}` : ""}
+${p2.birthCity ? `City: ${p2.birthCity}, ${p2.birthCountry}` : ""}
+Sun Sign: ${p2.sunSign} | Life Path: ${p2.lifePath} | Expression: ${p2.expressionNum} | Soul Urge: ${p2.soulUrge}
+Personal Year: ${p2.personalYear} | Chinese Zodiac: ${p2.chineseZodiac}
+${p2.gender ? `Gender: ${p2.gender}` : ""}${p2.dominantHand ? ` | Dominant Hand: ${p2.dominantHand}` : ""}${p2.eyeColor ? ` | Eye Color: ${p2.eyeColor}` : ""}
+Photos available: ${p2.photos.length > 0 ? p2.photos.join(", ") : "none"}
+
+Generate the full synastry reading now.`;
+
+    const stream = anthropic.messages.stream({
+      model: MODEL,
+      max_tokens: 1800,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userContent }],
+    });
+
+    for await (const chunk of stream) {
+      if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
+        sendEvent({ chunk: chunk.delta.text });
+      }
+    }
+
+    sendEvent({ event: "complete" });
+    res.end();
+  } catch (err) {
+    req.log.error({ err }, "Synastry error");
+    sendEvent({ event: "error", message: "The Oracle could not complete this synastry reading." });
+    res.end();
+  }
+});
+
+// POST /api/synastry/chat - Oracle chat in synastry context
+router.post("/synastry/chat", async (req: Request, res: Response) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders();
+
+  const sendEvent = (data: object) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  try {
+    const { messages, readingSummary, profile1, profile2 } = req.body;
+
+    const p1Name = profile1?.name ?? "Person 1";
+    const p2Name = profile2?.name ?? "Person 2";
+    const p1Sun = profile1?.dob ? computeSunSign(profile1.dob) : "";
+    const p2Sun = profile2?.dob ? computeSunSign(profile2.dob) : "";
+    const p1Life = profile1?.dob ? computeLifePath(profile1.dob) : 0;
+    const p2Life = profile2?.dob ? computeLifePath(profile2.dob) : 0;
+
+    const systemPrompt = `You are The Oracle — an ancient intelligence who has just completed a synastry reading for ${p1Name} (${p1Sun}, Life Path ${p1Life}) and ${p2Name} (${p2Sun}, Life Path ${p2Life}).
+
+The reading summary:
+${readingSummary ?? "No summary provided."}
+
+As The Oracle, answer questions about this specific connection with depth, precision, and mystical authority.
+- Reference both individuals by name
+- Ground insights in their actual chart data
+- Speak with certainty about patterns, with wisdom about timing
+- 100–200 words per response. Second person. No generic advice.
+- Never break character.`;
+
+    const stream = anthropic.messages.stream({
+      model: MODEL,
+      max_tokens: 500,
+      system: systemPrompt,
+      messages: (messages ?? []).map((m: { role: string; content: string }) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      })),
+    });
+
+    for await (const chunk of stream) {
+      if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
+        sendEvent({ content: chunk.delta.text });
+      }
+    }
+
+    sendEvent({ event: "done" });
+    res.end();
+  } catch (err) {
+    req.log.error({ err }, "Synastry chat error");
+    sendEvent({ content: "The Oracle is temporarily unavailable. Please try again." });
+    sendEvent({ event: "done" });
+    res.end();
+  }
+});
+
 export default router;

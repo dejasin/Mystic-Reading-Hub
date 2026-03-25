@@ -104,6 +104,26 @@ export default function LandingScreen() {
             </Pressable>
           </Animated.View>
 
+          <View style={styles.secondaryRow}>
+            <Pressable
+              style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.75 }]}
+              onPress={() => router.push("/profiles")}
+            >
+              <Feather name="users" size={16} color={Colors.gold} />
+              <Text style={styles.secondaryText}>The Vault</Text>
+            </Pressable>
+
+            <View style={styles.secondarySep} />
+
+            <Pressable
+              style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.75 }]}
+              onPress={() => router.push("/synastry")}
+            >
+              <Text style={styles.secondaryIcon}>✦ ✦</Text>
+              <Text style={styles.secondaryText}>Synastry</Text>
+            </Pressable>
+          </View>
+
           <Text style={styles.privacyNote}>
             Your images are never stored or shared.
           </Text>
@@ -208,5 +228,37 @@ const styles = StyleSheet.create({
     color: Colors.muted,
     textAlign: "center",
     fontStyle: "italic",
+  },
+  secondaryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    gap: 0,
+  },
+  secondaryBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 12,
+    minHeight: 44,
+  },
+  secondaryText: {
+    fontFamily: "EBGaramond_500Medium",
+    fontSize: 15,
+    color: Colors.gold,
+  },
+  secondaryIcon: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 12,
+    color: Colors.gold,
+    letterSpacing: 4,
+  },
+  secondarySep: {
+    width: 1,
+    height: 20,
+    backgroundColor: "rgba(201,168,76,0.25)",
   },
 });
