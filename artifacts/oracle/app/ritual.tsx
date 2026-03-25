@@ -24,6 +24,7 @@ import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import GoldSigil from "@/components/GoldSigil";
 import { useOracle, CapturedImage } from "@/context/OracleContext";
+import { useProfiles } from "@/context/ProfileContext";
 import Svg, { Path, Circle, Line, Ellipse } from "react-native-svg";
 
 // ── Palm diagram ──────────────────────────────────────────────
@@ -221,8 +222,40 @@ const STEPS: StepConfig[] = [
 export default function RitualScreen() {
   const insets = useSafeAreaInsets();
   const { state, setImage } = useOracle();
+  const { profiles, addProfile } = useProfiles();
   const [step, setStep] = useState(0);
   const currentStep = STEPS[step];
+
+  const saveToVaultAndReveal = async () => {
+    const { userData, images } = state;
+    if (userData.name && userData.dob) {
+      const alreadySaved = profiles.some(
+        p => p.name.trim().toLowerCase() === userData.name.trim().toLowerCase() && p.dob === userData.dob
+      );
+      if (!alreadySaved) {
+        await addProfile({
+          name: userData.name,
+          dob: userData.dob,
+          birthTime: userData.birthTime ?? "",
+          birthTimeUnknown: userData.birthTimeUnknown ?? false,
+          birthCity: userData.birthCity ?? "",
+          birthCountry: userData.birthCountry ?? "",
+          gender: userData.gender ?? "",
+          dominantHand: userData.dominantHand ?? "",
+          eyeColor: userData.eyeColor ?? "",
+          notes: "",
+          photos: {
+            right_palm: images.right_palm?.uri,
+            left_palm: images.left_palm?.uri,
+            right_iris: images.right_iris?.uri,
+            left_iris: images.left_iris?.uri,
+            face: images.face?.uri,
+          },
+        });
+      }
+    }
+    router.push("/reading");
+  };
 
   const handlePickImage = async (key: keyof OracleImages) => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -268,7 +301,7 @@ export default function RitualScreen() {
     if (step < STEPS.length - 1) {
       setStep(step + 1);
     } else {
-      router.push("/reading");
+      await saveToVaultAndReveal();
     }
   };
 
@@ -368,7 +401,7 @@ export default function RitualScreen() {
 
             <Pressable
               style={({ pressed }) => [styles.revealBtn, pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }]}
-              onPress={() => router.push("/reading")}
+              onPress={saveToVaultAndReveal}
             >
               <Text style={styles.revealBtnText}>Reveal My Reading</Text>
               <Feather name="eye" size={18} color={Colors.bg} />
