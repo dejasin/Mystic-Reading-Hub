@@ -568,12 +568,12 @@ export default function ReadingScreen() {
     const { body, headers } = buildRequest(extra);
     try {
       return await fetch(url, { method: "POST", body, headers });
-    } catch {
+    } catch (fetchErr) {
       if (Platform.OS !== "web") {
         const json = buildJsonRequest(extra);
         return await fetch(url, { method: "POST", body: json.body, headers: json.headers });
       }
-      throw;
+      throw fetchErr;
     }
   };
 
