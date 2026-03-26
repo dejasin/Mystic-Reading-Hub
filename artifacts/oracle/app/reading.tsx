@@ -254,6 +254,16 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
           <Text style={paywallStyles.legalLink}>Privacy Policy</Text>
         </Pressable>
       </View>
+
+      {__DEV__ && (
+        <Pressable
+          style={paywallStyles.devSkipBtn}
+          onPress={onUnlock}
+          accessibilityLabel="Skip payment (testing only)"
+        >
+          <Text style={paywallStyles.devSkipText}>Skip Payment (Dev)</Text>
+        </Pressable>
+      )}
     </Animated.View>
   );
 }
@@ -438,6 +448,21 @@ const paywallStyles = StyleSheet.create({
     fontFamily: "EBGaramond_400Regular",
     fontSize: 12,
     color: Colors.muted,
+  },
+  devSkipBtn: {
+    alignItems: "center",
+    paddingVertical: 10,
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: "#7fdfb0",
+    borderRadius: 8,
+    backgroundColor: "rgba(127,223,176,0.07)",
+  },
+  devSkipText: {
+    fontFamily: "EBGaramond_500Medium",
+    fontSize: 13,
+    color: "#7fdfb0",
+    letterSpacing: 0.3,
   },
 });
 
