@@ -1,6 +1,8 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import multer from "multer";
 import Anthropic from "@anthropic-ai/sdk";
+import { getUncachableRevenueCatClient } from "../lib/revenueCatClient.js";
+import { listCustomerActiveEntitlements } from "@replit/revenuecat-sdk";
 
 const router: IRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -356,15 +358,33 @@ router.post(
       const sessionId = req.body.sessionId ?? "default";
       const session = getOrCreateSession(sessionId);
 
-      // TODO: STRIPE — replace DEV bypass with real Stripe Checkout session creation
-      //   Use STRIPE_SECRET_KEY from Replit Secrets
-      //   Price ID: create $7.99 one-time product in Stripe Dashboard
-      //   On success webhook → set session.paid = true → continue stream
-      const devBypass = req.body.devBypass === "true";
-      if (!devBypass && !session.paid) {
-        sendEvent({ event: "error", message: "Payment required." });
-        res.end();
-        return;
+      const rcAppUserId = req.body.rcAppUserId as string | undefined;
+
+      if (!session.paid) {
+        if (rcAppUserId) {
+          try {
+            const rcClient = await getUncachableRevenueCatClient();
+            const projectId = process.env.REVENUECAT_PROJECT_ID ?? "";
+            const { data: entitlements, error: entError } = await listCustomerActiveEntitlements({
+              client: rcClient,
+              path: { project_id: projectId, customer_id: rcAppUserId },
+            });
+            if (!entError && entitlements) {
+              const hasAccess = entitlements.items?.some((e: any) => e.lookup_key === "full_reading");
+              if (hasAccess) {
+                session.paid = true;
+              }
+            }
+          } catch (e) {
+            console.error("RevenueCat verification error:", e);
+          }
+        }
+
+        if (!session.paid) {
+          sendEvent({ event: "error", message: "Payment required." });
+          res.end();
+          return;
+        }
       }
 
       const dob = userData.dob ?? "";

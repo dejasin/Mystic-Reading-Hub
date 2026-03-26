@@ -22,8 +22,10 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OracleProvider } from "@/context/OracleContext";
 import { ProfileProvider } from "@/context/ProfileContext";
 import Colors from "@/constants/colors";
+import { initializeRevenueCat, SubscriptionProvider } from "@/lib/revenuecat";
 
 setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
+initializeRevenueCat();
 
 SplashScreen.preventAutoHideAsync();
 
@@ -56,6 +58,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
+          <SubscriptionProvider>
           <ProfileProvider>
             <OracleProvider>
               <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bg }}>
@@ -81,6 +84,7 @@ export default function RootLayout() {
               </GestureHandlerRootView>
             </OracleProvider>
           </ProfileProvider>
+          </SubscriptionProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </SafeAreaProvider>

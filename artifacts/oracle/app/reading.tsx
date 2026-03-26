@@ -8,6 +8,8 @@ import {
   Platform,
   Share,
   TextInput,
+  Modal,
+  ActivityIndicator,
 } from "react-native";
 import Animated, {
   FadeIn,
@@ -28,6 +30,7 @@ import StarField from "@/components/StarField";
 import GoldSigil from "@/components/GoldSigil";
 import { useOracle, DeepDiveCategory } from "@/context/OracleContext";
 import { useProfiles } from "@/context/ProfileContext";
+import { useSubscription } from "@/lib/revenuecat";
 
 const LOADING_MESSAGES = [
   "Mapping your palm lines...",
@@ -86,6 +89,9 @@ const loadStyles = StyleSheet.create({
 });
 
 function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
+  const { offerings, isLoading, purchase, isPurchasing, restore, isRestoring, purchaseError } = useSubscription();
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
   const glowOpacity = useSharedValue(0.5);
 
   useEffect(() => {
@@ -104,8 +110,71 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
     borderColor: `rgba(201,168,76,${glowOpacity.value * 0.7})`,
   }));
 
+  const currentOffering = offerings?.current;
+  const packageToPurchase = currentOffering?.availablePackages[0];
+  const priceString = packageToPurchase?.product.priceString ?? "$7.99";
+
+  const handlePurchase = async () => {
+    if (!packageToPurchase) return;
+    setErrorMsg(null);
+    try {
+      await purchase(packageToPurchase);
+      onUnlock();
+    } catch (e: any) {
+      if (e?.userCancelled) return;
+      setErrorMsg("Purchase failed. Please try again.");
+    }
+  };
+
+  const handleRestore = async () => {
+    setErrorMsg(null);
+    try {
+      const info = await restore();
+      if (info.entitlements.active["full_reading"]) {
+        onUnlock();
+      } else {
+        setErrorMsg("No previous purchase found for this account.");
+      }
+    } catch {
+      setErrorMsg("Restore failed. Please try again.");
+    }
+  };
+
   return (
     <Animated.View entering={FadeIn.duration(800)} style={paywallStyles.card}>
+      <Modal
+        visible={showConfirm}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowConfirm(false)}
+      >
+        <View style={paywallStyles.modalOverlay}>
+          <View style={paywallStyles.modalCard}>
+            <Text style={paywallStyles.modalTitle}>Confirm Purchase</Text>
+            <Text style={paywallStyles.modalBody}>
+              Purchase Full Oracle Reading for {priceString}?
+            </Text>
+            <View style={paywallStyles.modalBtns}>
+              <Pressable
+                style={paywallStyles.modalCancelBtn}
+                onPress={() => setShowConfirm(false)}
+              >
+                <Text style={paywallStyles.modalCancelText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={paywallStyles.modalConfirmBtn}
+                onPress={() => {
+                  setShowConfirm(false);
+                  handlePurchase();
+                }}
+              >
+                <Text style={paywallStyles.modalConfirmText}>Purchase</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <Text style={paywallStyles.title}>The Oracle sees more.</Text>
       <Text style={paywallStyles.cliffhanger}>
         You are approaching a phase where one decision will define the next 3–5 years of your life. The Oracle can already see the pattern forming.
@@ -115,25 +184,37 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
         Unlock your complete reading — 4 remaining sections + your Archetype + Oracle Chat access.
       </Text>
       <View style={paywallStyles.priceRow}>
-        <Text style={paywallStyles.price}>$7.99</Text>
-        <Text style={paywallStyles.priceDesc}>Full Reading + Lifetime Chat</Text>
+        {isLoading ? (
+          <ActivityIndicator color={Colors.gold} />
+        ) : (
+          <>
+            <Text style={paywallStyles.price}>{priceString}</Text>
+            <Text style={paywallStyles.priceDesc}>Full Reading + Lifetime Chat</Text>
+          </>
+        )}
       </View>
 
-      {/* TODO: STRIPE — replace DEV bypass with real Stripe Checkout session creation
-          Use STRIPE_SECRET_KEY from Replit Secrets
-          Price ID: create $7.99 one-time product in Stripe Dashboard
-          On success webhook → set session.paid = true → continue stream */}
+      {errorMsg && (
+        <Text style={paywallStyles.errorText}>{errorMsg}</Text>
+      )}
+
       <Animated.View style={[paywallStyles.unlockWrapper, glowStyle]}>
         <Pressable
-          style={({ pressed }) => [paywallStyles.unlockBtn, pressed && { opacity: 0.85 }]}
-          onPress={onUnlock}
+          style={({ pressed }) => [paywallStyles.unlockBtn, (pressed || isPurchasing) && { opacity: 0.85 }]}
+          onPress={() => setShowConfirm(true)}
+          disabled={isPurchasing || isLoading}
         >
-          <Feather name="unlock" size={18} color={Colors.bg} />
-          <Text style={paywallStyles.unlockText}>Unlock Full Reading</Text>
+          {isPurchasing ? (
+            <ActivityIndicator color={Colors.bg} size="small" />
+          ) : (
+            <>
+              <Feather name="unlock" size={18} color={Colors.bg} />
+              <Text style={paywallStyles.unlockText}>Unlock Full Reading</Text>
+            </>
+          )}
         </Pressable>
       </Animated.View>
 
-      {/* TODO: SHARE-TO-UNLOCK — generate unique share URL, track clicks, unlock on 3 shares */}
       <Pressable
         style={paywallStyles.shareBtn}
         onPress={async () => {
@@ -148,11 +229,17 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
         <Text style={paywallStyles.shareBtnText}>Share to Unlock</Text>
       </Pressable>
 
-      {__DEV__ && (
-        <Pressable style={paywallStyles.devBtn} onPress={onUnlock}>
-          <Text style={paywallStyles.devBtnText}>DEV: Skip Payment</Text>
-        </Pressable>
-      )}
+      <Pressable
+        style={paywallStyles.restoreBtn}
+        onPress={handleRestore}
+        disabled={isRestoring}
+      >
+        {isRestoring ? (
+          <ActivityIndicator color={Colors.muted} size="small" />
+        ) : (
+          <Text style={paywallStyles.restoreBtnText}>Restore Purchase</Text>
+        )}
+      </Pressable>
     </Animated.View>
   );
 }
@@ -248,18 +335,81 @@ const paywallStyles = StyleSheet.create({
     fontSize: 14,
     color: Colors.muted,
   },
-  devBtn: {
+  errorText: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 13,
+    color: "#ff6b6b",
+    textAlign: "center",
+  },
+  restoreBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+  },
+  restoreBtnText: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 13,
+    color: Colors.muted,
+    textDecorationLine: "underline",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 32,
+  },
+  modalCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    padding: 24,
+    width: "100%",
+    gap: 16,
+    borderWidth: 1,
+    borderColor: "rgba(201,168,76,0.3)",
+  },
+  modalTitle: {
+    fontFamily: "CinzelDecorative_700Bold",
+    fontSize: 16,
+    color: Colors.gold,
+    textAlign: "center",
+  },
+  modalBody: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 15,
+    color: Colors.cream,
+    textAlign: "center",
+    lineHeight: 24,
+  },
+  modalBtns: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  modalCancelBtn: {
+    flex: 1,
     borderWidth: 1,
     borderColor: Colors.inputBorder,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    alignSelf: "center",
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center",
   },
-  devBtnText: {
+  modalCancelText: {
     fontFamily: "EBGaramond_400Regular",
-    fontSize: 12,
+    fontSize: 14,
     color: Colors.muted,
+  },
+  modalConfirmBtn: {
+    flex: 1,
+    backgroundColor: Colors.gold,
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  modalConfirmText: {
+    fontFamily: "CinzelDecorative_400Regular",
+    fontSize: 12,
+    color: Colors.bg,
   },
 });
 
@@ -507,6 +657,7 @@ export default function ReadingScreen() {
   const insets = useSafeAreaInsets();
   const { state, updateUserData, appendFreeReading, appendPaidReading, appendArchetype, appendChineseFaceReading, appendIridologyReading, setReadingComplete, resetAll } = useOracle();
   const { profiles, updateProfile } = useProfiles();
+  const { customerInfo } = useSubscription();
   const [phase, setPhase] = useState<Phase>("loading");
   const [errorMsg, setErrorMsg] = useState("");
   const [activationDismissed, setActivationDismissed] = useState(false);
@@ -637,7 +788,8 @@ export default function ReadingScreen() {
     const baseUrl = getApiUrl();
 
     try {
-      const response = await doFetch(`${baseUrl}api/generate/continue`, { devBypass: "true" });
+      const rcAppUserId = customerInfo?.originalAppUserId ?? "";
+      const response = await doFetch(`${baseUrl}api/generate/continue`, { rcAppUserId });
 
       if (!response.ok) throw new Error("API error");
       const reader = response.body?.getReader();

@@ -57,6 +57,7 @@ waitForPort = 19943
 [agent]
 stack = "PNPM_WORKSPACE"
 expertMode = true
+integrations = ["revenuecat:1.0.0"]
 
 [postMerge]
 path = "scripts/post-merge.sh"
@@ -64,3 +65,14 @@ timeoutMs = 20000
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+EXPO_PUBLIC_REVENUECAT_TEST_API_KEY = "test_ZHqUsgLlRoZHrJMXYuORqTifJkI"
+EXPO_PUBLIC_REVENUECAT_IOS_API_KEY = "appl_MVjqmiOHiNJOrJOEQYUMwxGAabe"
+EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY = "goog_qLeXmqpifiVQkGExwqzLnGDrTCY"
+REVENUECAT_PROJECT_ID = "proj0d2e3f19"
+REVENUECAT_TEST_STORE_APP_ID = "app287375fed1"
+REVENUECAT_APPLE_APP_STORE_APP_ID = "appef53412c9f"
+REVENUECAT_GOOGLE_PLAY_STORE_APP_ID = "app3b21753f01"
