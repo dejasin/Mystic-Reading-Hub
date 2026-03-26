@@ -14,7 +14,12 @@
       "backgroundColor": "#04040f"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.theoracle.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "The Oracle uses your camera to capture your face for a personalized reading session.",
+        "NSPhotoLibraryUsageDescription": "The Oracle accesses your photo library so you can choose a photo for your reading."
+      }
     },
     "android": {
       "backgroundColor": "#04040f"
@@ -31,7 +36,8 @@
       ],
       "expo-font",
       "expo-web-browser",
-      "expo-image-picker"
+      "expo-image-picker",
+      "expo-camera"
     ],
     "experiments": {
       "typedRoutes": true,
