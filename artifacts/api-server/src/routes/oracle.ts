@@ -63,12 +63,141 @@ const PYTHAGOREAN: Record<string, number> = {
   s:1,t:2,u:3,v:4,w:5,x:6,y:7,z:8
 };
 
+const CHALDEAN: Record<string, number> = {
+  a:1,b:2,c:3,d:4,e:5,f:8,g:3,h:5,i:1,
+  j:1,k:2,l:3,m:4,n:5,o:7,p:8,q:1,r:2,
+  s:3,t:4,u:6,v:6,w:6,x:5,y:1,z:7
+};
+
+const VOWELS = new Set(["a","e","i","o","u"]);
+
 function nameToNumber(name: string, onlyVowels = false): number {
-  const vowels = new Set(["a","e","i","o","u"]);
   const chars = name.toLowerCase().replace(/[^a-z]/g, "").split("");
-  const filtered = onlyVowels ? chars.filter(c => vowels.has(c)) : chars;
+  const filtered = onlyVowels ? chars.filter(c => VOWELS.has(c)) : chars;
   const sum = filtered.reduce((a, c) => a + (PYTHAGOREAN[c] ?? 0), 0);
   return reduceDigits(sum);
+}
+
+function nameToNumberConsonants(name: string): number {
+  const chars = name.toLowerCase().replace(/[^a-z]/g, "").split("");
+  const consonants = chars.filter(c => !VOWELS.has(c));
+  const sum = consonants.reduce((a, c) => a + (PYTHAGOREAN[c] ?? 0), 0);
+  return reduceDigits(sum);
+}
+
+function chaldeanNameNumber(name: string): number {
+  const chars = name.toLowerCase().replace(/[^a-z]/g, "").split("");
+  const sum = chars.reduce((a, c) => a + (CHALDEAN[c] ?? 0), 0);
+  return reduceDigits(sum);
+}
+
+function chaldeanHeartsDesire(name: string): number {
+  const chars = name.toLowerCase().replace(/[^a-z]/g, "").split("");
+  const vowels = chars.filter(c => VOWELS.has(c));
+  const sum = vowels.reduce((a, c) => a + (CHALDEAN[c] ?? 0), 0);
+  return reduceDigits(sum);
+}
+
+function chaldeanPersonality(name: string): number {
+  const chars = name.toLowerCase().replace(/[^a-z]/g, "").split("");
+  const consonants = chars.filter(c => !VOWELS.has(c));
+  const sum = consonants.reduce((a, c) => a + (CHALDEAN[c] ?? 0), 0);
+  return reduceDigits(sum);
+}
+
+function computeBirthdayNumber(dob: string): number {
+  const day = new Date(dob).getUTCDate();
+  return day;
+}
+
+function computeMaturityNumber(lifePath: number, expressionNum: number): number {
+  return reduceDigits(lifePath + expressionNum);
+}
+
+const KARMIC_DEBT_NUMBERS = new Set([13, 14, 16, 19]);
+
+function detectKarmicDebt(dob: string, name: string): number[] {
+  const debts: number[] = [];
+
+  // Life Path raw sum
+  const lifePathDigits = dob.replace(/-/g, "").split("").map(Number);
+  const rawLifePath = lifePathDigits.reduce((a, b) => a + b, 0);
+  if (KARMIC_DEBT_NUMBERS.has(rawLifePath)) debts.push(rawLifePath);
+
+  const letters = name.toLowerCase().replace(/[^a-z]/g, "").split("");
+
+  // Expression (full name) raw sum
+  const rawExpression = letters.reduce((a, c) => a + (PYTHAGOREAN[c] ?? 0), 0);
+  if (KARMIC_DEBT_NUMBERS.has(rawExpression)) debts.push(rawExpression);
+
+  // Soul Urge (vowels) raw sum
+  const rawSoulUrge = letters.filter(c => VOWELS.has(c)).reduce((a, c) => a + (PYTHAGOREAN[c] ?? 0), 0);
+  if (KARMIC_DEBT_NUMBERS.has(rawSoulUrge)) debts.push(rawSoulUrge);
+
+  // Personality (consonants) raw sum
+  const rawPersonality = letters.filter(c => !VOWELS.has(c)).reduce((a, c) => a + (PYTHAGOREAN[c] ?? 0), 0);
+  if (KARMIC_DEBT_NUMBERS.has(rawPersonality)) debts.push(rawPersonality);
+
+  return [...new Set(debts)];
+}
+
+interface NumerologyProfile {
+  lifePath: number;
+  expressionNum: number;
+  soulUrge: number;
+  personalityNum: number;
+  birthdayNum: number;
+  maturityNum: number;
+  karmicDebts: number[];
+  chaldeanName: number;
+  chaldeanHeartsDesire: number;
+  chaldeanPersonality: number;
+}
+
+function computeFullNumerology(dob: string, name: string): NumerologyProfile {
+  const lifePath = dob ? computeLifePath(dob) : 0;
+  const expressionNum = name ? nameToNumber(name) : 0;
+  const soulUrge = name ? nameToNumber(name, true) : 0;
+  const personalityNum = name ? nameToNumberConsonants(name) : 0;
+  const birthdayNum = dob ? computeBirthdayNumber(dob) : 0;
+  const maturityNum = computeMaturityNumber(lifePath, expressionNum);
+  const karmicDebts = (dob && name) ? detectKarmicDebt(dob, name) : [];
+  const chaldName = name ? chaldeanNameNumber(name) : 0;
+  const chaldHD = name ? chaldeanHeartsDesire(name) : 0;
+  const chaldPers = name ? chaldeanPersonality(name) : 0;
+  return {
+    lifePath,
+    expressionNum,
+    soulUrge,
+    personalityNum,
+    birthdayNum,
+    maturityNum,
+    karmicDebts,
+    chaldeanName: chaldName,
+    chaldeanHeartsDesire: chaldHD,
+    chaldeanPersonality: chaldPers,
+  };
+}
+
+function buildNumerologyBlock(n: NumerologyProfile): string {
+  const karmicLine = n.karmicDebts.length > 0
+    ? `\nKarmic Debt Signatures: ${n.karmicDebts.join(", ")} — ancient soul lessons encoded in this lifetime`
+    : "";
+  const chaldContrast = (n.chaldeanName !== n.expressionNum)
+    ? ` (Chaldean resonance: ${n.chaldeanName} — a contrasting frequency that creates inner tension)`
+    : ` (Chaldean resonance: ${n.chaldeanName} — both systems confirm this vibration)`;
+  const chaldHDContrast = (n.chaldeanHeartsDesire !== n.soulUrge)
+    ? ` (Chaldean inner drive: ${n.chaldeanHeartsDesire} — diverges, revealing hidden desire layer)`
+    : ` (Chaldean inner drive: ${n.chaldeanHeartsDesire} — aligned with Pythagorean reading)`;
+  const chaldPersContrast = (n.chaldeanPersonality !== n.personalityNum)
+    ? ` (Chaldean outer mask: ${n.chaldeanPersonality} — differs, suggesting a split between inner self and outer presentation)`
+    : ` (Chaldean outer mask: ${n.chaldeanPersonality} — consistent with surface self)`;
+  return `Destiny Vibration (Life Path): ${n.lifePath}
+Name Frequency (Expression): ${n.expressionNum}${chaldContrast}
+Inner Drive (Soul Urge): ${n.soulUrge}${chaldHDContrast}
+Outer Mask (Personality): ${n.personalityNum}${chaldPersContrast}
+Birthday Power: ${n.birthdayNum}
+Maturity Signature: ${n.maturityNum}${karmicLine}`;
 }
 
 function computePersonalYear(dob: string): number {
@@ -151,13 +280,13 @@ router.post(
       const dob = userData.dob ?? "";
       const name = userData.name ?? "Seeker";
       const sunSign = dob ? computeSunSign(dob) : "Unknown";
-      const lifePath = dob ? computeLifePath(dob) : 0;
-      const expressionNum = name ? nameToNumber(name) : 0;
-      const soulUrge = name ? nameToNumber(name, true) : 0;
+      const numerology = computeFullNumerology(dob, name);
+      const { lifePath, expressionNum, soulUrge } = numerology;
       const personalYear = dob ? computePersonalYear(dob) : 0;
       const chineseZodiac = dob ? computeChineseZodiac(dob) : "Unknown";
       const tarotCard = computeTarotCard(lifePath);
       const age = dob ? new Date().getUTCFullYear() - new Date(dob).getUTCFullYear() : 0;
+      const numerologyBlock = buildNumerologyBlock(numerology);
 
       // Process images
       const files = req.files as Record<string, Express.Multer.File[]> | undefined;
@@ -212,9 +341,7 @@ PRE-CALCULATED USER DATA — integrate naturally, never restate mechanically. Us
 Name: ${name}
 Age: ${age}
 Elemental/Seasonal Signature: ${sunSign}
-Destiny Vibration: ${lifePath}
-Name Frequency: ${expressionNum}
-Inner Drive: ${soulUrge}
+${numerologyBlock}
 Current Cycle: ${personalYear}
 Ancestral Animal: ${chineseZodiac}
 Archetypal Card: ${tarotCard}
@@ -390,13 +517,15 @@ router.post(
       const dob = userData.dob ?? "";
       const name = userData.name ?? "Seeker";
       const sunSign = dob ? computeSunSign(dob) : "Unknown";
-      const lifePath = dob ? computeLifePath(dob) : 0;
-      const expressionNum = nameToNumber(name);
-      const soulUrge = nameToNumber(name, true);
+      const numerologyCont = computeFullNumerology(dob, name);
+      const lifePath = numerologyCont.lifePath;
+      const expressionNum = numerologyCont.expressionNum;
+      const soulUrge = numerologyCont.soulUrge;
       const personalYear = dob ? computePersonalYear(dob) : 0;
       const chineseZodiac = dob ? computeChineseZodiac(dob) : "Unknown";
       const tarotCard = computeTarotCard(lifePath);
       const age = dob ? new Date().getUTCFullYear() - new Date(dob).getUTCFullYear() : 0;
+      const numerologyBlockCont = buildNumerologyBlock(numerologyCont);
 
       const files = req.files as Record<string, Express.Multer.File[]> | undefined;
       const photoKeys: string[] = [];
@@ -426,7 +555,9 @@ FORBIDDEN TERMINOLOGY — never use these words or phrases in your output:
 life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces, Chinese zodiac, Tarot, tarot, soul urge, expression number, personal year, numerology, astrology, zodiac
 
 PRE-CALCULATED DATA — use the qualities encoded in this data without naming the system that produced it:
-Name: ${name}, Age: ${age}, Elemental/Seasonal Signature: ${sunSign}, Destiny Vibration: ${lifePath}, Name Frequency: ${expressionNum}, Inner Drive: ${soulUrge}, Current Cycle: ${personalYear}, Ancestral Animal: ${chineseZodiac}, Archetypal Card: ${tarotCard}
+Name: ${name}, Age: ${age}, Elemental/Seasonal Signature: ${sunSign}
+${numerologyBlockCont}
+Current Cycle: ${personalYear}, Ancestral Animal: ${chineseZodiac}, Archetypal Card: ${tarotCard}
 Photos: ${photoKeys.join(", ") || "none"}
 
 For the archetype block use this exact format:
@@ -772,23 +903,27 @@ router.post("/synastry", sseHeaders, async (req: Request, res: Response) => {
     }
 
     // Pre-compute for both
+    const p1num = computeFullNumerology(profile1.dob, profile1.name);
+    const p2num = computeFullNumerology(profile2.dob, profile2.name);
     const p1 = {
       ...profile1,
       sunSign: computeSunSign(profile1.dob),
-      lifePath: computeLifePath(profile1.dob),
-      expressionNum: nameToNumber(profile1.name),
-      soulUrge: nameToNumber(profile1.name, true),
+      lifePath: p1num.lifePath,
+      expressionNum: p1num.expressionNum,
+      soulUrge: p1num.soulUrge,
       personalYear: computePersonalYear(profile1.dob),
       chineseZodiac: computeChineseZodiac(profile1.dob),
+      numerologyBlock: buildNumerologyBlock(p1num),
     };
     const p2 = {
       ...profile2,
       sunSign: computeSunSign(profile2.dob),
-      lifePath: computeLifePath(profile2.dob),
-      expressionNum: nameToNumber(profile2.name),
-      soulUrge: nameToNumber(profile2.name, true),
+      lifePath: p2num.lifePath,
+      expressionNum: p2num.expressionNum,
+      soulUrge: p2num.soulUrge,
       personalYear: computePersonalYear(profile2.dob),
       chineseZodiac: computeChineseZodiac(profile2.dob),
+      numerologyBlock: buildNumerologyBlock(p2num),
     };
 
     const systemPrompt = `You are The Oracle — a multi-system intelligence specializing in synastry: the ancient art of comparing two soul blueprints to reveal the patterns, dynamics, and destiny of their connection.
@@ -817,7 +952,8 @@ Write each section as flowing prose, 100–150 words each. Second person always.
 ${p1.name.toUpperCase()}
 Born: ${p1.dob}${p1.birthTime ? ` at ${p1.birthTime}` : ""}
 ${p1.birthCity ? `City: ${p1.birthCity}, ${p1.birthCountry}` : ""}
-Elemental/Seasonal Signature: ${p1.sunSign} | Destiny Vibration: ${p1.lifePath} | Name Frequency: ${p1.expressionNum} | Inner Drive: ${p1.soulUrge}
+Elemental/Seasonal Signature: ${p1.sunSign}
+${p1.numerologyBlock}
 Current Cycle: ${p1.personalYear} | Ancestral Animal: ${p1.chineseZodiac}
 ${p1.gender ? `Gender: ${p1.gender}` : ""}${p1.dominantHand ? ` | Dominant Hand: ${p1.dominantHand}` : ""}${p1.eyeColor ? ` | Eye Color: ${p1.eyeColor}` : ""}
 Photos available: ${p1.photos.length > 0 ? p1.photos.join(", ") : "none"}
@@ -825,7 +961,8 @@ Photos available: ${p1.photos.length > 0 ? p1.photos.join(", ") : "none"}
 ${p2.name.toUpperCase()}
 Born: ${p2.dob}${p2.birthTime ? ` at ${p2.birthTime}` : ""}
 ${p2.birthCity ? `City: ${p2.birthCity}, ${p2.birthCountry}` : ""}
-Elemental/Seasonal Signature: ${p2.sunSign} | Destiny Vibration: ${p2.lifePath} | Name Frequency: ${p2.expressionNum} | Inner Drive: ${p2.soulUrge}
+Elemental/Seasonal Signature: ${p2.sunSign}
+${p2.numerologyBlock}
 Current Cycle: ${p2.personalYear} | Ancestral Animal: ${p2.chineseZodiac}
 ${p2.gender ? `Gender: ${p2.gender}` : ""}${p2.dominantHand ? ` | Dominant Hand: ${p2.dominantHand}` : ""}${p2.eyeColor ? ` | Eye Color: ${p2.eyeColor}` : ""}
 Photos available: ${p2.photos.length > 0 ? p2.photos.join(", ") : "none"}
@@ -957,13 +1094,15 @@ router.post("/deep-dive", sseHeaders, async (req: Request, res: Response) => {
     const dob = userData.dob ?? "";
     const name = userData.name ?? "Seeker";
     const sunSign = dob ? computeSunSign(dob) : "Unknown";
-    const lifePath = dob ? computeLifePath(dob) : 0;
-    const expressionNum = name ? nameToNumber(name) : 0;
-    const soulUrge = name ? nameToNumber(name, true) : 0;
+    const numerologyDD = computeFullNumerology(dob, name);
+    const lifePath = numerologyDD.lifePath;
+    const expressionNum = numerologyDD.expressionNum;
+    const soulUrge = numerologyDD.soulUrge;
     const personalYear = dob ? computePersonalYear(dob) : 0;
     const chineseZodiac = dob ? computeChineseZodiac(dob) : "Unknown";
     const tarotCard = computeTarotCard(lifePath);
     const age = dob ? new Date().getUTCFullYear() - new Date(dob).getUTCFullYear() : 0;
+    const numerologyBlockDD = buildNumerologyBlock(numerologyDD);
 
     const readingContext = session.reading
       ? `\n\nThis person's main Oracle reading (key themes for context):\n${session.reading.substring(0, 700)}`
@@ -1001,7 +1140,8 @@ life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, 
 
 PRE-CALCULATED PROFILE — use the qualities encoded in this data without naming the system that produced it:
 Name: ${name}, Age: ${age}
-Elemental/Seasonal Signature: ${sunSign} | Destiny Vibration: ${lifePath} | Name Frequency: ${expressionNum} | Inner Drive: ${soulUrge}
+Elemental/Seasonal Signature: ${sunSign}
+${numerologyBlockDD}
 Current Cycle: ${personalYear} | Ancestral Animal: ${chineseZodiac} | Archetypal Card: ${tarotCard}
 ${userData.gender ? `Gender: ${userData.gender}` : ""}
 ${readingContext}`;
@@ -1048,12 +1188,14 @@ router.post("/profile-reading", sseHeaders, async (req: Request, res: Response) 
     }
 
     const sunSign = computeSunSign(profile.dob);
-    const lifePath = computeLifePath(profile.dob);
-    const expressionNum = nameToNumber(profile.name);
-    const soulUrge = nameToNumber(profile.name, true);
+    const numerologyPR = computeFullNumerology(profile.dob, profile.name);
+    const lifePath = numerologyPR.lifePath;
+    const expressionNum = numerologyPR.expressionNum;
+    const soulUrge = numerologyPR.soulUrge;
     const personalYear = computePersonalYear(profile.dob);
     const chineseZodiac = computeChineseZodiac(profile.dob);
     const tarotCard = computeTarotCard(lifePath);
+    const numerologyBlockPR = buildNumerologyBlock(numerologyPR);
 
     const systemPrompt = `You are The Oracle — a timeless intelligence who reads the soul's blueprint through pattern recognition and symbolic insight. You have been given the full profile of ${profile.name}, and you are delivering a focused reading on their ${category}.
 
@@ -1078,7 +1220,8 @@ Profile data:
 Name: ${profile.name}
 Born: ${profile.dob}${profile.birthTime ? ` at ${profile.birthTime}` : ""}
 ${profile.birthCity ? `City: ${profile.birthCity}${profile.birthCountry ? `, ${profile.birthCountry}` : ""}` : ""}
-Elemental/Seasonal Signature: ${sunSign} | Destiny Vibration: ${lifePath} | Name Frequency: ${expressionNum} | Inner Drive: ${soulUrge}
+Elemental/Seasonal Signature: ${sunSign}
+${numerologyBlockPR}
 Current Cycle: ${personalYear} | Ancestral Animal: ${chineseZodiac} | Archetypal Card: ${tarotCard}
 ${profile.gender ? `Gender: ${profile.gender}` : ""}${profile.dominantHand ? ` | Dominant Hand: ${profile.dominantHand}` : ""}${profile.eyeColor ? ` | Eye Color: ${profile.eyeColor}` : ""}
 Sacred images available: ${profile.photos.length > 0 ? profile.photos.join(", ") : "none"}
