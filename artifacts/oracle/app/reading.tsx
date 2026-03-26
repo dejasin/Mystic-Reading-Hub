@@ -153,9 +153,10 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
       >
         <View style={paywallStyles.modalOverlay}>
           <View style={paywallStyles.modalCard}>
-            <Text style={paywallStyles.modalTitle}>Confirm Subscription</Text>
+            <Text style={paywallStyles.modalTitle}>Confirm Purchase</Text>
+            <Text style={paywallStyles.modalOneTime}>One-time purchase</Text>
             <Text style={paywallStyles.modalBody}>
-              Subscribe to Full Oracle Reading for {priceString}/month?{"\n\n"}Auto-renews monthly. Cancel anytime in Settings → Apple ID → Subscriptions.
+              Purchase Full Oracle Reading for {priceString}?
             </Text>
             <View style={paywallStyles.modalBtns}>
               <Pressable
@@ -379,6 +380,15 @@ const paywallStyles = StyleSheet.create({
     fontSize: 16,
     color: Colors.gold,
     textAlign: "center",
+  },
+  modalOneTime: {
+    fontFamily: "EBGaramond_500Medium",
+    fontSize: 13,
+    color: Colors.gold,
+    textAlign: "center",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    opacity: 0.8,
   },
   modalBody: {
     fontFamily: "EBGaramond_400Regular",

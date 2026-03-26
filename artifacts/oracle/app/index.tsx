@@ -7,6 +7,8 @@ import {
   ScrollView,
   Platform,
   Dimensions,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import Animated, {
   useSharedValue,
@@ -24,6 +26,7 @@ import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import GoldSigil from "@/components/GoldSigil";
+import { useSubscription } from "@/lib/revenuecat";
 
 const { width } = Dimensions.get("window");
 
@@ -37,6 +40,7 @@ export default function LandingScreen() {
   const insets = useSafeAreaInsets();
   const glowOpacity = useSharedValue(0.5);
   const buttonScale = useSharedValue(1);
+  const { restore, isRestoring, isConfigured } = useSubscription();
 
   useEffect(() => {
     glowOpacity.value = withRepeat(
@@ -59,6 +63,20 @@ export default function LandingScreen() {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
     router.push("/intake");
+  };
+
+  const handleRestore = async () => {
+    if (!isConfigured) return;
+    try {
+      const info = await restore();
+      if (info.entitlements.active["full_reading"]) {
+        Alert.alert("Purchase Restored", "Your full reading has been restored.");
+      } else {
+        Alert.alert("No Purchase Found", "No previous purchase was found for this account.");
+      }
+    } catch {
+      Alert.alert("Restore Failed", "Could not restore purchase. Please try again.");
+    }
   };
 
   return (
@@ -124,6 +142,20 @@ export default function LandingScreen() {
             >
               <Text style={styles.secondaryIcon}>✦ ✦</Text>
               <Text style={styles.secondaryText}>Synastry</Text>
+            </Pressable>
+
+            <View style={styles.secondarySep} />
+
+            <Pressable
+              style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.75 }]}
+              onPress={handleRestore}
+              disabled={isRestoring || !isConfigured}
+            >
+              {isRestoring ? (
+                <ActivityIndicator size="small" color={Colors.gold} />
+              ) : (
+                <Text style={styles.secondaryText}>Restore</Text>
+              )}
             </Pressable>
           </View>
 

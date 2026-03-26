@@ -8,6 +8,7 @@ import {
   listAppPublicApiKeys,
   listProducts,
   createProduct,
+  archiveProduct,
   listEntitlements,
   createEntitlement,
   attachProductsToEntitlement,
@@ -33,7 +34,6 @@ const PLAY_STORE_PRODUCT_IDENTIFIER = "oracle_full_reading:full-reading";
 
 const PRODUCT_DISPLAY_NAME = "Full Reading";
 const PRODUCT_USER_FACING_TITLE = "Full Oracle Reading";
-const PRODUCT_DURATION = "P1M";
 
 const APP_STORE_APP_NAME = "The Oracle iOS";
 const APP_STORE_BUNDLE_ID = "com.theoracle.app.ios";
@@ -150,19 +150,32 @@ async function seedRevenueCat() {
     const existingProduct = existingProducts.items?.find((p) => p.store_identifier === productIdentifier && p.app_id === targetApp.id);
 
     if (existingProduct) {
-      console.log(label + " product already exists:", existingProduct.id);
-      return existingProduct;
+      if (existingProduct.type === "one_time") {
+        console.log(label + " product already exists with correct type:", existingProduct.id);
+        return existingProduct;
+      }
+      console.log(label + " product exists but has wrong type (" + existingProduct.type + "). Archiving and recreating...");
+      const { error: archiveError } = await archiveProduct({
+        client,
+        path: { project_id: project.id, product_id: existingProduct.id },
+      });
+      if (archiveError) {
+        throw new Error(
+          "Failed to archive old " + label + " product (" + existingProduct.id + ") with wrong type (" + existingProduct.type + "). " +
+          "Please manually archive or delete the product in the RevenueCat dashboard and re-run this script."
+        );
+      }
+      console.log("Archived old product:", existingProduct.id);
     }
 
     const body: CreateProductData["body"] = {
       store_identifier: productIdentifier,
       app_id: targetApp.id,
-      type: "subscription",
+      type: "one_time",
       display_name: PRODUCT_DISPLAY_NAME,
     };
 
     if (isTestStore) {
-      body.subscription = { duration: PRODUCT_DURATION };
       body.title = PRODUCT_USER_FACING_TITLE;
     }
 
