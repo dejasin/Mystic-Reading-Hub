@@ -14,6 +14,7 @@ import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import { useProfiles } from "@/context/ProfileContext";
+import { useOracle } from "@/context/OracleContext";
 
 function computeSunSign(dob: string): string {
   if (!dob || !dob.includes("-")) return "";
@@ -39,6 +40,7 @@ export default function ProfileActionScreen() {
   const insets = useSafeAreaInsets();
   const { profileId } = useLocalSearchParams<{ profileId: string }>();
   const { profiles } = useProfiles();
+  const { resetAll, setUserData, setImage } = useOracle();
 
   const profile = profiles.find(p => p.id === profileId);
 
@@ -100,14 +102,39 @@ export default function ProfileActionScreen() {
 
         <Pressable
           style={({ pressed }) => [styles.actionCard, pressed && { opacity: 0.85 }]}
-          onPress={() => router.push({ pathname: "/profile-reading", params: { profileId: profile.id } })}
+          onPress={() => {
+            resetAll();
+            setUserData({
+              name: profile.name,
+              dob: profile.dob ?? "",
+              birthTime: profile.birthTime ?? "",
+              birthTimeUnknown: !profile.birthTime,
+              birthCity: profile.birthCity ?? "",
+              birthCountry: profile.birthCountry ?? "",
+              gender: profile.gender ?? "",
+              dominantHand: profile.dominantHand ?? "",
+              eyeColor: profile.eyeColor ?? "",
+              q1: "",
+              q2: "",
+              q3: "",
+            });
+            if (profile.photos.right_palm) setImage("right_palm", { uri: profile.photos.right_palm });
+            if (profile.photos.left_palm) setImage("left_palm", { uri: profile.photos.left_palm });
+            if (profile.photos.right_iris) setImage("right_iris", { uri: profile.photos.right_iris });
+            if (profile.photos.left_iris) setImage("left_iris", { uri: profile.photos.left_iris });
+            if (profile.photos.face) setImage("face", { uri: profile.photos.face });
+            if (profile.photos.face_front) setImage("face_front", { uri: profile.photos.face_front });
+            if (profile.photos.face_left) setImage("face_left", { uri: profile.photos.face_left });
+            if (profile.photos.face_right) setImage("face_right", { uri: profile.photos.face_right });
+            router.push("/reading");
+          }}
         >
           <View style={styles.actionIconWrap}>
             <Feather name="book-open" size={22} color={Colors.gold} />
           </View>
           <View style={styles.actionInfo}>
             <Text style={styles.actionTitle}>View Reading</Text>
-            <Text style={styles.actionSub}>Oracle-guided Q&A tailored to {profile.name}</Text>
+            <Text style={styles.actionSub}>New reading tailored to {profile.name}</Text>
           </View>
           <Feather name="arrow-right" size={18} color={Colors.gold} />
         </Pressable>
