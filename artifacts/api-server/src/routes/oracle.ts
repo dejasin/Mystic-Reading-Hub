@@ -1,11 +1,16 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import multer from "multer";
 import Anthropic from "@anthropic-ai/sdk";
+import { eq } from "drizzle-orm";
+import { db, sessionsTable } from "@workspace/db";
 import { getUncachableRevenueCatClient } from "../lib/revenueCatClient.js";
 import { listCustomerActiveEntitlements } from "@replit/revenuecat-sdk";
 
 const router: IRouter = Router();
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
 const anthropicApiKey = process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY ?? process.env.ANTHROPIC_API_KEY;
 const anthropicBaseUrl = process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL;
@@ -17,14 +22,49 @@ const anthropic = new Anthropic({
 
 const MODEL = "claude-opus-4-5";
 
-// In-memory session store (keyed by sessionId)
-const sessions: Record<string, { paid: boolean; reading: string; messageCount: number; readingComplete: boolean; hadPalmImages: boolean }> = {};
+interface SessionData { paid: boolean; reading: string; messageCount: number; readingComplete: boolean; hadPalmImages: boolean }
+const sessionCache: Record<string, SessionData> = {};
 
-function getOrCreateSession(sessionId: string) {
-  if (!sessions[sessionId]) {
-    sessions[sessionId] = { paid: false, reading: "", messageCount: 0, readingComplete: false, hadPalmImages: false };
+async function getOrCreateSession(sessionId: string): Promise<SessionData> {
+  if (sessionCache[sessionId]) return sessionCache[sessionId];
+  try {
+    const rows = await db.select().from(sessionsTable).where(eq(sessionsTable.sessionId, sessionId)).limit(1);
+    if (rows.length > 0) {
+      const r = rows[0];
+      sessionCache[sessionId] = { paid: r.paid, reading: r.reading, messageCount: r.messageCount, readingComplete: r.readingComplete, hadPalmImages: r.hadPalmImages };
+      return sessionCache[sessionId];
+    }
+  } catch (e) {
+    console.error("Failed to load session from DB:", e);
   }
-  return sessions[sessionId];
+  sessionCache[sessionId] = { paid: false, reading: "", messageCount: 0, readingComplete: false, hadPalmImages: false };
+  return sessionCache[sessionId];
+}
+
+async function saveSession(sessionId: string, data: SessionData): Promise<void> {
+  try {
+    await db.insert(sessionsTable).values({
+      sessionId,
+      paid: data.paid,
+      reading: data.reading,
+      messageCount: data.messageCount,
+      readingComplete: data.readingComplete,
+      hadPalmImages: data.hadPalmImages,
+      updatedAt: new Date(),
+    }).onConflictDoUpdate({
+      target: sessionsTable.sessionId,
+      set: {
+        paid: data.paid,
+        reading: data.reading,
+        messageCount: data.messageCount,
+        readingComplete: data.readingComplete,
+        hadPalmImages: data.hadPalmImages,
+        updatedAt: new Date(),
+      },
+    });
+  } catch (e) {
+    console.error("Failed to save session to DB:", e);
+  }
 }
 
 function computeSunSign(dob: string): string {
@@ -237,7 +277,7 @@ const sseHeaders = (_req: Request, res: Response, next: () => void) => {
   next();
 };
 
-const imageFields = upload.fields([
+const imageFieldsRaw = upload.fields([
   { name: "right_palm", maxCount: 1 },
   { name: "left_palm", maxCount: 1 },
   { name: "right_iris", maxCount: 1 },
@@ -248,11 +288,26 @@ const imageFields = upload.fields([
   { name: "face_right", maxCount: 1 },
 ]);
 
+const imageFields = (req: Request, res: Response, next: Function) => {
+  imageFieldsRaw(req, res, (err: any) => {
+    if (err) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        res.status(413).json({ error: "File too large. Maximum size is 10MB per image." });
+        return;
+      }
+      console.error("Upload error:", err);
+      res.status(400).json({ error: "File upload failed." });
+      return;
+    }
+    next();
+  });
+};
+
 // POST /api/generate - SSE streaming endpoint
 router.post(
   "/generate",
-  sseHeaders,
   imageFields,
+  sseHeaders,
   async (req: Request, res: Response) => {
     const sendEvent = (data: object) => {
       res.write(`data: ${JSON.stringify(data)}\n\n`);
@@ -270,10 +325,10 @@ router.post(
 
       const userDataRaw = req.body.userData;
       let userData: Record<string, string> = {};
-      try { userData = JSON.parse(userDataRaw); } catch {}
+      try { userData = JSON.parse(userDataRaw); } catch (e) { console.error("Failed to parse userData:", e); }
 
       const sessionId = req.body.sessionId ?? "default";
-      const session = getOrCreateSession(sessionId);
+      const session = await getOrCreateSession(sessionId);
       session.paid = false;
 
       // Pre-compute numerology
@@ -470,9 +525,9 @@ End Section 2 with exactly this sentence: "You are approaching a phase where one
         }
       }
 
-      // Store partial reading and signal paywall
       session.reading = fullReading;
       session.hadPalmImages = hasPalmImages;
+      await saveSession(sessionId, session);
       sendEvent({ event: "paywall" });
 
       // Wait for unlock signal (poll session.paid)
@@ -491,8 +546,8 @@ End Section 2 with exactly this sentence: "You are approaching a phase where one
 // POST /api/generate/continue - Stream paid sections after unlock
 router.post(
   "/generate/continue",
-  sseHeaders,
   imageFields,
+  sseHeaders,
   async (req: Request, res: Response) => {
     const sendEvent = (data: object) => {
       res.write(`data: ${JSON.stringify(data)}\n\n`);
@@ -510,10 +565,10 @@ router.post(
 
       const userDataRaw = req.body.userData;
       let userData: Record<string, string> = {};
-      try { userData = JSON.parse(userDataRaw); } catch {}
+      try { userData = JSON.parse(userDataRaw); } catch (e) { console.error("Failed to parse userData:", e); }
 
       const sessionId = req.body.sessionId ?? "default";
-      const session = getOrCreateSession(sessionId);
+      const session = await getOrCreateSession(sessionId);
 
       const rcAppUserId = req.body.rcAppUserId as string | undefined;
 
@@ -530,6 +585,7 @@ router.post(
               const hasAccess = entitlements.items?.some((e: any) => e.lookup_key === "full_reading");
               if (hasAccess) {
                 session.paid = true;
+                await saveSession(sessionId, session);
               }
             }
           } catch (e) {
@@ -696,6 +752,7 @@ ${sectionReading ? `\nPrevious sections: ${sectionReading.substring(0, 400)}` : 
 
         const call3Text = call3.content[0].type === "text" ? call3.content[0].text : "";
         session.reading = session.reading + "\n" + sectionReading + "\n" + call3Text;
+        await saveSession(sessionId, session);
 
         sendEvent({ section: "archetype", chunk: call3Text });
 
@@ -786,6 +843,7 @@ Follow the IMAGE ANALYSIS RULE: first describe what is visually observable in th
         if (iridologyText) session.reading += "\n" + iridologyText;
 
         session.readingComplete = true;
+        await saveSession(sessionId, session);
         sendEvent({ event: "complete" });
       } catch (err) {
         req.log.error({ err }, "Anthropic call 2/3 failed");
@@ -817,10 +875,10 @@ router.post("/chat", sseHeaders, async (req: Request, res: Response) => {
     }
 
     const sessionId = req.body.sessionId ?? "default";
-    const session = getOrCreateSession(sessionId);
+    const session = await getOrCreateSession(sessionId);
 
-    // Rate limit: 10 messages per session
     session.messageCount = (session.messageCount ?? 0) + 1;
+    await saveSession(sessionId, session);
     if (session.messageCount > 10) {
       sendEvent({ content: "The Oracle must rest. Return tomorrow for more." });
       sendEvent({ event: "done" });
@@ -1143,7 +1201,7 @@ router.post("/deep-dive", sseHeaders, async (req: Request, res: Response) => {
       return;
     }
 
-    const session = sessions[sessionId];
+    const session = sessionId ? await getOrCreateSession(sessionId) : null;
     if (!session || !session.readingComplete) {
       sendEvent({ event: "error", message: "Complete your full Oracle reading before accessing Deep Dives." });
       res.end();
@@ -1397,9 +1455,9 @@ router.post("/expand", sseHeaders, async (req: Request, res: Response) => {
     }
 
     let userData: Record<string, string> = {};
-    try { if (userDataRaw) userData = JSON.parse(userDataRaw); } catch {}
+    try { if (userDataRaw) userData = JSON.parse(userDataRaw); } catch (e) { console.error("Failed to parse userData:", e); }
 
-    const session = sessionId ? getOrCreateSession(sessionId) : null;
+    const session = sessionId ? await getOrCreateSession(sessionId) : null;
 
     if (!session?.paid) {
       sendEvent({ event: "error", message: "This feature requires the full reading." });

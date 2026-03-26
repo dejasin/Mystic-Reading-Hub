@@ -202,7 +202,9 @@ export default function ProfileReadingScreen() {
               }
               scrollRef.current?.scrollToEnd({ animated: true });
             }
-          } catch {}
+          } catch (e) {
+            console.warn("SSE parse error (profile reading):", e);
+          }
         }
       }
 
@@ -282,7 +284,9 @@ export default function ProfileReadingScreen() {
                 });
               }
             }
-          } catch {}
+          } catch (e) {
+            console.warn("SSE parse error (profile chat):", e);
+          }
         }
       }
     } catch {

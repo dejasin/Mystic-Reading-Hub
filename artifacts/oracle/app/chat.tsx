@@ -135,7 +135,10 @@ export default function ChatScreen() {
       if (Array.isArray(data.followups) && data.followups.length > 0) {
         setFollowupChips(data.followups);
       }
-    } catch {
+    } catch (e) {
+      if (!(e instanceof Error && e.name === "AbortError")) {
+        console.error("Failed to fetch followup suggestions:", e);
+      }
     }
   };
 
@@ -217,7 +220,9 @@ export default function ChatScreen() {
                 });
               }
             }
-          } catch {}
+          } catch (e) {
+            console.warn("SSE parse error:", e);
+          }
         }
       }
 

@@ -6,7 +6,6 @@ import {
   Pressable,
   ScrollView,
   Platform,
-  Linking,
   TextInput,
   Modal,
   ActivityIndicator,
@@ -26,6 +25,7 @@ import * as Haptics from "expo-haptics";
 import { Feather } from "@expo/vector-icons";
 import { fetch } from "expo/fetch";
 import Colors from "@/constants/colors";
+import { safeOpenURL } from "@/lib/safeOpenURL";
 import StarField from "@/components/StarField";
 import GoldSigil from "@/components/GoldSigil";
 import ExpandableParagraph from "@/components/ExpandableParagraph";
@@ -246,11 +246,11 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
       </Pressable>
 
       <View style={paywallStyles.legalRow}>
-        <Pressable onPress={() => Linking.openURL("https://theoracle.app/api/terms")} accessibilityLabel="Terms of Use" accessibilityRole="link">
+        <Pressable onPress={() => safeOpenURL("https://theoracle.app/api/terms")} accessibilityLabel="Terms of Use" accessibilityRole="link">
           <Text style={paywallStyles.legalLink}>Terms of Use</Text>
         </Pressable>
         <Text style={paywallStyles.legalSep}> · </Text>
-        <Pressable onPress={() => Linking.openURL("https://theoracle.app/api/privacy")} accessibilityLabel="Privacy Policy" accessibilityRole="link">
+        <Pressable onPress={() => safeOpenURL("https://theoracle.app/api/privacy")} accessibilityLabel="Privacy Policy" accessibilityRole="link">
           <Text style={paywallStyles.legalLink}>Privacy Policy</Text>
         </Pressable>
       </View>
@@ -822,7 +822,9 @@ export default function ReadingScreen() {
               appendFreeReading(parsed.chunk);
               scrollRef.current?.scrollToEnd({ animated: true });
             }
-          } catch {}
+          } catch (e) {
+            console.warn("SSE parse error (free reading):", e);
+          }
         }
       }
       // If stream ended without paywall event, still show paywall
@@ -892,7 +894,9 @@ export default function ReadingScreen() {
               }
               scrollRef.current?.scrollToEnd({ animated: true });
             }
-          } catch {}
+          } catch (e) {
+            console.warn("SSE parse error (paid reading):", e);
+          }
         }
       }
       setReadingComplete(true);
@@ -1218,7 +1222,9 @@ export default function ReadingScreen() {
                     await Share.share({
                       message: `My Oracle archetype: ${archetype.trim()}. Discover yours at theoracle.app`,
                     });
-                  } catch {}
+                  } catch (e) {
+                    console.warn("Share failed:", e);
+                  }
                 }}
                 accessibilityLabel="Share your archetype"
                 accessibilityRole="button"

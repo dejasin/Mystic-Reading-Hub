@@ -252,7 +252,9 @@ export default function SynastryScreen() {
               setReading(prev => prev + parsed.chunk);
               scrollRef.current?.scrollToEnd({ animated: true });
             }
-          } catch {}
+          } catch (e) {
+            console.warn("SSE parse error (synastry):", e);
+          }
         }
       }
       setPhase("complete");
@@ -313,7 +315,9 @@ export default function SynastryScreen() {
                 setMessages(prev => { const u = [...prev]; u[u.length - 1] = { ...u[u.length - 1], content: full }; return u; });
               }
             }
-          } catch {}
+          } catch (e) {
+            console.warn("SSE parse error (synastry chat):", e);
+          }
         }
       }
     } catch {

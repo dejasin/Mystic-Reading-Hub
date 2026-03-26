@@ -424,7 +424,9 @@ export default function DeepDiveScreen() {
               setStreamedText(prev => prev + parsed.chunk);
               scrollRef.current?.scrollToEnd({ animated: true });
             }
-          } catch {}
+          } catch (e) {
+            console.warn("SSE parse error (deep dive):", e);
+          }
         }
       }
 

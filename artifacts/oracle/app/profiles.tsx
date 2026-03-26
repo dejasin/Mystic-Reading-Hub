@@ -11,7 +11,6 @@ import {
   TextInput,
   ScrollView,
   Modal,
-  Linking,
 } from "react-native";
 import Animated, { FadeIn, FadeOut, Layout } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -20,6 +19,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
 import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/colors";
+import { safeOpenURL } from "@/lib/safeOpenURL";
 import StarField from "@/components/StarField";
 import { useProfiles, OracleProfile, ProfilePhoto } from "@/context/ProfileContext";
 import { useSubscription } from "@/lib/revenuecat";
@@ -28,35 +28,6 @@ const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"];
 const HAND_OPTIONS = ["Right", "Left", "Ambidextrous"];
 const EYE_OPTIONS = ["Brown", "Blue", "Green", "Hazel", "Gray", "Dark Brown", "Other"];
 
-const SAMPLE_FACE = require("@/assets/images/sample/face.png");
-const SAMPLE_RIGHT_PALM = require("@/assets/images/sample/right_palm.png");
-const SAMPLE_LEFT_PALM = require("@/assets/images/sample/left_palm.png");
-const SAMPLE_RIGHT_IRIS = require("@/assets/images/sample/right_iris.png");
-const SAMPLE_LEFT_IRIS = require("@/assets/images/sample/left_iris.png");
-
-function resolveAsset(mod: number): string {
-  if (Platform.OS === "web") return "";
-  try { return (Image as any).resolveAssetSource(mod)?.uri ?? ""; } catch { return ""; }
-}
-
-const DEV_TEST_PROFILE: Omit<OracleProfile, "id" | "createdAt"> = {
-  name: "Luna Blackwood",
-  dob: "1990-06-21",
-  birthTime: "14:30",
-  birthCity: "New Orleans",
-  birthCountry: "United States",
-  gender: "Female",
-  dominantHand: "Right",
-  eyeColor: "Hazel",
-  notes: "Test profile — Cancer sun, deeply intuitive, loves tarot and midnight rituals.",
-  photos: {
-    face: resolveAsset(SAMPLE_FACE),
-    right_palm: resolveAsset(SAMPLE_RIGHT_PALM),
-    left_palm: resolveAsset(SAMPLE_LEFT_PALM),
-    right_iris: resolveAsset(SAMPLE_RIGHT_IRIS),
-    left_iris: resolveAsset(SAMPLE_LEFT_IRIS),
-  },
-};
 
 const PHOTO_SLOTS: { key: keyof ProfilePhoto; label: string; icon: string }[] = [
   { key: "face", label: "Face", icon: "user" },
@@ -403,18 +374,6 @@ export default function ProfilesScreen() {
     router.push({ pathname: "/profile-action", params: { profileId: profile.id } });
   };
 
-  const handleLoadTestProfile = useCallback(async () => {
-    const existing = profiles.find(p => p.name === "Luna Blackwood");
-    if (existing) {
-      await updateProfile(existing.id, DEV_TEST_PROFILE);
-    } else {
-      await addProfile(DEV_TEST_PROFILE);
-    }
-    if (Platform.OS !== "web") {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-  }, [profiles, addProfile, updateProfile]);
-
   const canStartSynastry = profiles.length >= 2;
 
   return (
@@ -462,19 +421,6 @@ export default function ProfilesScreen() {
         </Text>
       </View>
 
-      {/* DEV ONLY: seed button */}
-      {__DEV__ && (
-        <Pressable
-          style={({ pressed }) => [styles.devSeedBtn, pressed && { opacity: 0.75 }]}
-          onPress={handleLoadTestProfile}
-          accessibilityLabel="Load Test Profile (dev only)"
-          accessibilityRole="button"
-        >
-          <Feather name="cpu" size={13} color="#7fdfb0" />
-          <Text style={styles.devSeedText}>Load Test Profile</Text>
-        </Pressable>
-      )}
-
       {profiles.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyIcon}>✦</Text>
@@ -514,7 +460,7 @@ export default function ProfilesScreen() {
       <View style={styles.accountSection}>
         <Pressable
           style={styles.accountBtn}
-          onPress={() => Linking.openURL("https://apps.apple.com/account/subscriptions")}
+          onPress={() => safeOpenURL("https://apps.apple.com/account/subscriptions")}
           accessibilityLabel="Manage your subscription"
         >
           <Feather name="credit-card" size={14} color={Colors.muted} />
@@ -574,8 +520,6 @@ const styles = StyleSheet.create({
   emptyText: { fontFamily: "EBGaramond_400Regular_Italic", fontSize: 15, color: Colors.muted, textAlign: "center", lineHeight: 24 },
   emptyAddBtn: { backgroundColor: Colors.gold, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 28, flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 },
   emptyAddText: { fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: Colors.bg },
-  devSeedBtn: { flexDirection: "row", alignItems: "center", gap: 6, marginHorizontal: 20, marginBottom: 10, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: "#7fdfb0", backgroundColor: "rgba(127,223,176,0.07)", alignSelf: "flex-start" },
-  devSeedText: { fontFamily: "EBGaramond_500Medium", fontSize: 13, color: "#7fdfb0", letterSpacing: 0.3 },
   accountSection: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 16, gap: 8, borderTopWidth: 1, borderTopColor: "rgba(201,168,76,0.1)", marginHorizontal: 20, marginTop: 8 },
   accountBtn: { flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 6, paddingHorizontal: 8 },
   accountBtnText: { fontFamily: "EBGaramond_400Regular", fontSize: 12, color: Colors.muted, textDecorationLine: "underline" },

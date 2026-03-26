@@ -140,7 +140,9 @@ export default function ExpandableParagraph({
               setErrorMsg(parsed.message ?? "An error occurred.");
               setIsStreaming(false);
             }
-          } catch {}
+          } catch (e) {
+            console.warn("SSE parse error:", e);
+          }
         }
       }
       setIsStreaming(false);

@@ -63,23 +63,25 @@ export default function RootLayout() {
             <OracleProvider>
               <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bg }}>
                 <KeyboardProvider>
-                  <Stack
-                    screenOptions={{
-                      headerShown: false,
-                      contentStyle: { backgroundColor: Colors.bg },
-                      animation: "fade",
-                    }}
-                  >
-                    <Stack.Screen name="index" />
-                    <Stack.Screen name="intake" />
-                    <Stack.Screen name="ritual" />
-                    <Stack.Screen name="reading" />
-                    <Stack.Screen name="chat" />
-                    <Stack.Screen name="profiles" />
-                    <Stack.Screen name="synastry" />
-                    <Stack.Screen name="profile-action" />
-                    <Stack.Screen name="profile-reading" />
-                  </Stack>
+                  <ErrorBoundary>
+                    <Stack
+                      screenOptions={{
+                        headerShown: false,
+                        contentStyle: { backgroundColor: Colors.bg },
+                        animation: "fade",
+                      }}
+                    >
+                      <Stack.Screen name="index" />
+                      <Stack.Screen name="intake" />
+                      <Stack.Screen name="ritual" />
+                      <Stack.Screen name="reading" />
+                      <Stack.Screen name="chat" />
+                      <Stack.Screen name="profiles" />
+                      <Stack.Screen name="synastry" />
+                      <Stack.Screen name="profile-action" />
+                      <Stack.Screen name="profile-reading" />
+                    </Stack>
+                  </ErrorBoundary>
                 </KeyboardProvider>
               </GestureHandlerRootView>
             </OracleProvider>

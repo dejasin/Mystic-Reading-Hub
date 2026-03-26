@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Alert } from "react-native";
 import { DeepDiveCategory } from "./OracleContext";
 
 export interface ProfilePhoto {
@@ -61,15 +62,27 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         try {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) setProfiles(parsed);
-        } catch {}
+        } catch (e) {
+          console.error("Failed to parse saved profiles:", e);
+          Alert.alert("Data Error", "Your saved profiles could not be loaded. They may have been corrupted.");
+        }
       }
+    }).catch(e => {
+      console.error("Failed to read profiles from storage:", e);
+      Alert.alert("Storage Error", "Could not access saved data. Please restart the app.");
+    }).finally(() => {
       setIsLoaded(true);
     });
   }, []);
 
   const persist = useCallback(async (updated: OracleProfile[]) => {
     setProfiles(updated);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch (e) {
+      console.error("Failed to save profiles:", e);
+      Alert.alert("Save Failed", "Your profile changes could not be saved. Please try again.");
+    }
   }, []);
 
   const addProfile = useCallback(async (p: Omit<OracleProfile, "id" | "createdAt">) => {
