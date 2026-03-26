@@ -26,6 +26,12 @@ const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"];
 const HAND_OPTIONS = ["Right", "Left", "Ambidextrous"];
 const EYE_OPTIONS = ["Brown", "Blue", "Green", "Hazel", "Gray", "Dark Brown", "Other"];
 
+const SAMPLE_FACE = require("@/assets/images/sample/face.png");
+const SAMPLE_RIGHT_PALM = require("@/assets/images/sample/right_palm.png");
+const SAMPLE_LEFT_PALM = require("@/assets/images/sample/left_palm.png");
+const SAMPLE_RIGHT_IRIS = require("@/assets/images/sample/right_iris.png");
+const SAMPLE_LEFT_IRIS = require("@/assets/images/sample/left_iris.png");
+
 const DEV_TEST_PROFILE: Omit<OracleProfile, "id" | "createdAt"> = {
   name: "Luna Blackwood",
   dob: "1990-06-21",
@@ -36,7 +42,13 @@ const DEV_TEST_PROFILE: Omit<OracleProfile, "id" | "createdAt"> = {
   dominantHand: "Right",
   eyeColor: "Hazel",
   notes: "Test profile — Cancer sun, deeply intuitive, loves tarot and midnight rituals.",
-  photos: {},
+  photos: {
+    face: Image.resolveAssetSource(SAMPLE_FACE).uri,
+    right_palm: Image.resolveAssetSource(SAMPLE_RIGHT_PALM).uri,
+    left_palm: Image.resolveAssetSource(SAMPLE_LEFT_PALM).uri,
+    right_iris: Image.resolveAssetSource(SAMPLE_RIGHT_IRIS).uri,
+    left_iris: Image.resolveAssetSource(SAMPLE_LEFT_IRIS).uri,
+  },
 };
 
 const PHOTO_SLOTS: { key: keyof ProfilePhoto; label: string; icon: string }[] = [
