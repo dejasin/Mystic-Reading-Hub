@@ -967,7 +967,7 @@ export default function ReadingScreen() {
               <Pressable
                 style={styles.shareBtn}
                 onPress={async () => {
-                  const archetype = state.archetypeReading.match(/✦ YOUR ARCHETYPE[^\n]*\n([^\n]+)/)?.[1] ?? "The Oracle";
+                  const archetype = state.archetypeReading.match(/✦ YOUR ARCHETYPE\s*—\s*([^\n]+)/)?.[1] ?? "your archetype";
                   try {
                     await Share.share({
                       message: `My Oracle archetype: ${archetype.trim()}. Discover yours at theoracle.app`,
