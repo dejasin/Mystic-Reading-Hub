@@ -65,6 +65,10 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - `EXPO_PUBLIC_REVENUECAT_TEST_API_KEY`, `EXPO_PUBLIC_REVENUECAT_IOS_API_KEY`, `EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY`
 - `REVENUECAT_PROJECT_ID`, `REVENUECAT_TEST_STORE_APP_ID`, `REVENUECAT_APPLE_APP_STORE_APP_ID`, `REVENUECAT_GOOGLE_PLAY_STORE_APP_ID`
 
+**RevenueCat initialization is graceful**: missing keys log a warning listing the missing variable names instead of crashing. The paywall disables purchase/restore buttons when RevenueCat is unconfigured.
+
+**Backend client** (`artifacts/api-server/src/lib/revenueCatClient.ts`): uses Replit integration credentials (via `REPL_IDENTITY` + connectors API) with `REVENUECAT_SECRET_KEY` env var as fallback. API server starts without errors even if credentials are unavailable — entitlement errors surface per-request.
+
 ## Structure
 
 ```text

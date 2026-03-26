@@ -89,7 +89,7 @@ const loadStyles = StyleSheet.create({
 });
 
 function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
-  const { offerings, isLoading, purchase, isPurchasing, restore, isRestoring, purchaseError } = useSubscription();
+  const { offerings, isLoading, purchase, isPurchasing, restore, isRestoring, isConfigured } = useSubscription();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const glowOpacity = useSharedValue(0.5);
@@ -113,6 +113,7 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
   const currentOffering = offerings?.current;
   const packageToPurchase = currentOffering?.availablePackages[0];
   const priceString = packageToPurchase?.product.priceString ?? "$7.99";
+  const purchasesAvailable = isConfigured && !!packageToPurchase;
 
   const handlePurchase = async () => {
     if (!packageToPurchase) return;
@@ -127,6 +128,7 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
   };
 
   const handleRestore = async () => {
+    if (!isConfigured) return;
     setErrorMsg(null);
     try {
       const info = await restore();
@@ -198,11 +200,11 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
         <Text style={paywallStyles.errorText}>{errorMsg}</Text>
       )}
 
-      <Animated.View style={[paywallStyles.unlockWrapper, glowStyle]}>
+      <Animated.View style={[paywallStyles.unlockWrapper, glowStyle, !purchasesAvailable && { opacity: 0.5 }]}>
         <Pressable
           style={({ pressed }) => [paywallStyles.unlockBtn, (pressed || isPurchasing) && { opacity: 0.85 }]}
           onPress={() => setShowConfirm(true)}
-          disabled={isPurchasing || isLoading}
+          disabled={isPurchasing || isLoading || !purchasesAvailable}
         >
           {isPurchasing ? (
             <ActivityIndicator color={Colors.bg} size="small" />
@@ -215,6 +217,10 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
         </Pressable>
       </Animated.View>
 
+      {!isConfigured && !isLoading && (
+        <Text style={paywallStyles.errorText}>Payments are not available right now.</Text>
+      )}
+
       <Pressable
         style={paywallStyles.shareBtn}
         onPress={async () => {
@@ -226,13 +232,13 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
         }}
       >
         <Feather name="share-2" size={14} color={Colors.muted} />
-        <Text style={paywallStyles.shareBtnText}>Share to Unlock</Text>
+        <Text style={paywallStyles.shareBtnText}>Share The Oracle</Text>
       </Pressable>
 
       <Pressable
         style={paywallStyles.restoreBtn}
         onPress={handleRestore}
-        disabled={isRestoring}
+        disabled={isRestoring || !isConfigured}
       >
         {isRestoring ? (
           <ActivityIndicator color={Colors.muted} size="small" />

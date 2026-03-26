@@ -10,44 +10,62 @@ const REVENUECAT_ANDROID_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_AP
 
 export const REVENUECAT_ENTITLEMENT_IDENTIFIER = "full_reading";
 
-function getRevenueCatApiKey() {
-  if (!REVENUECAT_TEST_API_KEY || !REVENUECAT_IOS_API_KEY || !REVENUECAT_ANDROID_API_KEY) {
-    throw new Error("RevenueCat Public API Keys not found");
-  }
+let revenueCatInitialized = false;
 
-  if (!REVENUECAT_ENTITLEMENT_IDENTIFIER) {
-    throw new Error("RevenueCat Entitlement Identifier not provided");
-  }
-
+function getRevenueCatApiKey(): string | null {
   if (__DEV__ || Platform.OS === "web" || Constants.executionEnvironment === "storeClient") {
+    if (!REVENUECAT_TEST_API_KEY) {
+      console.warn("RevenueCat: EXPO_PUBLIC_REVENUECAT_TEST_API_KEY is not set. Set it in the Replit Secrets panel to enable purchases.");
+      return null;
+    }
     return REVENUECAT_TEST_API_KEY;
   }
 
   if (Platform.OS === "ios") {
+    if (!REVENUECAT_IOS_API_KEY) {
+      console.warn("RevenueCat: EXPO_PUBLIC_REVENUECAT_IOS_API_KEY is not set. Set it in the Replit Secrets panel to enable purchases.");
+      return null;
+    }
     return REVENUECAT_IOS_API_KEY;
   }
 
   if (Platform.OS === "android") {
+    if (!REVENUECAT_ANDROID_API_KEY) {
+      console.warn("RevenueCat: EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY is not set. Set it in the Replit Secrets panel to enable purchases.");
+      return null;
+    }
     return REVENUECAT_ANDROID_API_KEY;
   }
 
+  if (!REVENUECAT_TEST_API_KEY) {
+    console.warn("RevenueCat: EXPO_PUBLIC_REVENUECAT_TEST_API_KEY is not set. Set it in the Replit Secrets panel to enable purchases.");
+    return null;
+  }
   return REVENUECAT_TEST_API_KEY;
 }
 
 export function initializeRevenueCat() {
-  const apiKey = getRevenueCatApiKey();
-  if (!apiKey) throw new Error("RevenueCat Public API Key not found");
+  try {
+    const apiKey = getRevenueCatApiKey();
+    if (!apiKey) {
+      return;
+    }
 
-  Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
-  Purchases.configure({ apiKey });
+    Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
+    Purchases.configure({ apiKey });
+    revenueCatInitialized = true;
 
-  console.log("Configured RevenueCat");
+    console.log("RevenueCat: configured successfully");
+  } catch (e) {
+    console.warn("RevenueCat: initialization failed —", e);
+  }
 }
 
 function useSubscriptionContext() {
   const customerInfoQuery = useQuery({
     queryKey: ["revenuecat", "customer-info"],
     queryFn: async () => {
+      if (!revenueCatInitialized) return null;
       const info = await Purchases.getCustomerInfo();
       return info;
     },
@@ -57,6 +75,7 @@ function useSubscriptionContext() {
   const offeringsQuery = useQuery({
     queryKey: ["revenuecat", "offerings"],
     queryFn: async () => {
+      if (!revenueCatInitialized) return null;
       const offerings = await Purchases.getOfferings();
       return offerings;
     },
@@ -81,8 +100,8 @@ function useSubscriptionContext() {
   const isSubscribed = customerInfoQuery.data?.entitlements.active?.[REVENUECAT_ENTITLEMENT_IDENTIFIER] !== undefined;
 
   return {
-    customerInfo: customerInfoQuery.data,
-    offerings: offeringsQuery.data,
+    customerInfo: customerInfoQuery.data ?? null,
+    offerings: offeringsQuery.data ?? null,
     isSubscribed,
     isLoading: customerInfoQuery.isLoading || offeringsQuery.isLoading,
     purchase: purchaseMutation.mutateAsync,
@@ -90,6 +109,7 @@ function useSubscriptionContext() {
     isPurchasing: purchaseMutation.isPending,
     isRestoring: restoreMutation.isPending,
     purchaseError: purchaseMutation.error,
+    isConfigured: revenueCatInitialized,
   };
 }
 
