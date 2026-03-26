@@ -73,6 +73,29 @@ function TypingIndicator() {
   );
 }
 
+function FollowupChips({
+  chips,
+  onChipPress,
+}: {
+  chips: string[];
+  onChipPress: (chip: string) => void;
+}) {
+  if (chips.length === 0) return null;
+  return (
+    <Animated.View entering={FadeIn.duration(500)} style={styles.followupContainer}>
+      {chips.map((chip, i) => (
+        <Pressable
+          key={i}
+          style={({ pressed }) => [styles.followupChip, pressed && { opacity: 0.7 }]}
+          onPress={() => onChipPress(chip)}
+        >
+          <Text style={styles.followupChipText}>{chip}</Text>
+        </Pressable>
+      ))}
+    </Animated.View>
+  );
+}
+
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const { state } = useOracle();
@@ -80,12 +103,38 @@ export default function ChatScreen() {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [showTyping, setShowTyping] = useState(false);
+  const [followupChips, setFollowupChips] = useState<string[]>([]);
+  const followupAbortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<TextInput>(null);
 
   const getApiUrl = () => {
     const domain = process.env.EXPO_PUBLIC_DOMAIN;
     if (domain) return `https://${domain}/`;
     return "/";
+  };
+
+  const fetchFollowups = async (lastResponse: string, conversationContext: string) => {
+    followupAbortRef.current?.abort();
+    const controller = new AbortController();
+    followupAbortRef.current = controller;
+
+    try {
+      const baseUrl = getApiUrl();
+      const res = await fetch(`${baseUrl}api/chat/followups`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lastResponse, conversationContext }),
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
+      if (!res.ok) return;
+      const data = await res.json() as { followups?: string[] };
+      if (controller.signal.aborted) return;
+      if (Array.isArray(data.followups) && data.followups.length > 0) {
+        setFollowupChips(data.followups);
+      }
+    } catch {
+    }
   };
 
   const handleSend = async (text: string) => {
@@ -95,6 +144,9 @@ export default function ChatScreen() {
       await Haptics.selectionAsync();
     }
 
+    setFollowupChips([]);
+    followupAbortRef.current?.abort();
+
     const currentMessages = [...messages];
     const userMsg: Message = { id: generateId(), role: "user", content: trimmed };
     setMessages(prev => [...prev, userMsg]);
@@ -102,6 +154,8 @@ export default function ChatScreen() {
     setIsStreaming(true);
     setShowTyping(true);
     inputRef.current?.focus();
+
+    let finalContent = "";
 
     try {
       const baseUrl = getApiUrl();
@@ -164,6 +218,8 @@ export default function ChatScreen() {
           } catch {}
         }
       }
+
+      finalContent = fullContent;
     } catch {
       setShowTyping(false);
       setMessages(prev => [
@@ -174,6 +230,26 @@ export default function ChatScreen() {
       setIsStreaming(false);
       setShowTyping(false);
     }
+
+    if (finalContent) {
+      const conversationContext = [
+        ...currentMessages.slice(-4).map(m => `${m.role}: ${m.content}`),
+        `user: ${trimmed}`,
+      ].join("\n");
+      fetchFollowups(finalContent, conversationContext);
+    }
+  };
+
+  const handleChipPress = (chip: string) => {
+    setFollowupChips([]);
+    handleSend(chip);
+  };
+
+  const handleInputChange = (text: string) => {
+    if (followupChips.length > 0 && text.length > 0) {
+      setFollowupChips([]);
+    }
+    setInput(text);
   };
 
   const reversedMessages = [...messages].reverse();
@@ -204,7 +280,14 @@ export default function ChatScreen() {
         <FlatList
           data={reversedMessages}
           keyExtractor={item => item.id}
-          renderItem={({ item }) => <MessageBubble msg={item} />}
+          renderItem={({ item, index }) => (
+            <>
+              <MessageBubble msg={item} />
+              {index === 0 && item.role === "assistant" && followupChips.length > 0 && !isStreaming && (
+                <FollowupChips chips={followupChips} onChipPress={handleChipPress} />
+              )}
+            </>
+          )}
           inverted={messages.length > 0}
           ListHeaderComponent={showTyping ? <TypingIndicator /> : null}
           keyboardDismissMode="interactive"
@@ -236,7 +319,7 @@ export default function ChatScreen() {
             ref={inputRef}
             style={styles.input}
             value={input}
-            onChangeText={setInput}
+            onChangeText={handleInputChange}
             placeholder="Ask The Oracle..."
             placeholderTextColor={Colors.muted}
             multiline
@@ -370,6 +453,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.gold,
     letterSpacing: 4,
+  },
+  followupContainer: {
+    marginTop: -6,
+    marginBottom: 14,
+    marginLeft: 36,
+    gap: 8,
+    alignItems: "flex-start",
+  },
+  followupChip: {
+    borderWidth: 1,
+    borderColor: "rgba(201,168,76,0.25)",
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    backgroundColor: "rgba(201,168,76,0.04)",
+    maxWidth: 280,
+  },
+  followupChipText: {
+    fontFamily: "EBGaramond_400Regular_Italic",
+    fontSize: 13,
+    color: Colors.cream,
+    opacity: 0.8,
+    lineHeight: 18,
   },
   startersContainer: {
     paddingBottom: 24,

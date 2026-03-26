@@ -649,6 +649,73 @@ Rules:
   }
 });
 
+// POST /api/chat/followups - Generate 3 follow-up question chips after Oracle response
+router.post("/chat/followups", async (req: Request, res: Response) => {
+  try {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      res.status(200).json({ followups: [] });
+      return;
+    }
+
+    const { lastResponse, conversationContext } = req.body as {
+      lastResponse: string;
+      conversationContext?: string;
+    };
+
+    if (!lastResponse || typeof lastResponse !== "string") {
+      res.status(400).json({ error: "lastResponse is required" });
+      return;
+    }
+
+    const systemPrompt = `You are The Oracle's inner voice, crafting questions that pull the seeker deeper into self-discovery.
+
+Generate exactly 3 follow-up questions the seeker might want to ask next. Each question must:
+- Explore a DISTINCT facet: one probing the past root, one the present pattern, one the future becoming — or vary as fear / desire / truth, or shadow / gift / threshold
+- Be written in the Oracle's voice — evocative, slightly unsettling, emotionally charged
+- Be 8–14 words, no filler, no pleasantries
+- Feel like it was ripped from the seeker's own unspoken thoughts
+
+Return ONLY a JSON array of exactly 3 strings. No other text. No explanation. Example format:
+["Question one here?", "Question two here?", "Question three here?"]`;
+
+    const contextNote = conversationContext
+      ? `\n\nConversation context:\n${conversationContext.substring(0, 400)}`
+      : "";
+
+    const result = await anthropic.messages.create({
+      model: MODEL,
+      max_tokens: 200,
+      system: systemPrompt,
+      messages: [{
+        role: "user",
+        content: `The Oracle just said:\n\n${lastResponse.substring(0, 1000)}${contextNote}\n\nGenerate 3 follow-up questions now.`
+      }]
+    });
+
+    const text = result.content[0].type === "text" ? result.content[0].text.trim() : "[]";
+
+    let followups: string[] = [];
+    try {
+      const match = text.match(/\[[\s\S]*\]/);
+      const parsed = match ? JSON.parse(match[0]) : [];
+      if (
+        Array.isArray(parsed) &&
+        parsed.length === 3 &&
+        parsed.every((q): q is string => typeof q === "string" && q.trim().length > 0)
+      ) {
+        followups = parsed.map((q: string) => q.trim());
+      }
+    } catch {
+      followups = [];
+    }
+
+    res.status(200).json({ followups });
+  } catch (err) {
+    req.log.error({ err }, "Followups error");
+    res.status(200).json({ followups: [] });
+  }
+});
+
 // POST /api/synastry - SSE compatibility reading for two profiles
 router.post("/synastry", sseHeaders, async (req: Request, res: Response) => {
   const sendEvent = (data: object) => {
