@@ -6,6 +6,7 @@ import {
   Pressable,
   Image,
   ScrollView,
+  Modal,
   Platform,
   Alert,
 } from "react-native";
@@ -23,6 +24,7 @@ import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import GoldSigil from "@/components/GoldSigil";
+import MultishotFaceCamera, { MultishotResult } from "@/components/MultishotFaceCamera";
 import { useOracle, CapturedImage } from "@/context/OracleContext";
 import { useProfiles } from "@/context/ProfileContext";
 import Svg, { Path, Circle, Line, Ellipse } from "react-native-svg";
@@ -261,6 +263,7 @@ interface StepConfig {
   diagram?: "palm" | "iris" | "iridology" | "face" | "face_chinese" | "face_profile" | null;
   intro?: boolean;
   review?: boolean;
+  multishot?: boolean;
 }
 
 type OracleImages = {
@@ -344,43 +347,18 @@ const STEPS: StepConfig[] = [
   },
   {
     key: "face_front",
-    title: "Front Portrait",
-    subtitle: "The Heaven–Human–Earth Map",
+    title: "Face Reading Session",
+    subtitle: "Front · Left · Right",
     sectionLabel: "Chinese Face Reading (面相)",
-    extraNote: "Mianxiang — the ancient art of physiognomy — reads destiny, character, and life phases from the five facial zones.",
+    extraNote: "Mianxiang — the ancient art of physiognomy — reads destiny, character, and life phases from the five facial zones. Three photos will be captured in a single guided session.",
     instructions: [
-      "Face the camera directly, chin level",
-      "Neutral expression, eyes open naturally",
-      "Even, natural light with no harsh shadows",
-      "Capture from hairline to chin, shoulders visible",
+      "Find even, natural light with no harsh shadows",
+      "Hair pulled back, ears visible for profiles",
+      "Follow the on-screen prompts to turn for each shot",
+      "All three photos are captured automatically",
     ],
     diagram: "face_chinese",
-  },
-  {
-    key: "face_left",
-    title: "Left Side Profile",
-    subtitle: "The Yin Face",
-    sectionLabel: "Chinese Face Reading (面相)",
-    instructions: [
-      "Turn fully to your right so the camera sees your left profile",
-      "Keep chin level — neither raised nor lowered",
-      "Hair behind ear if possible",
-      "Capture the full profile from forehead to chin",
-    ],
-    diagram: "face_profile",
-  },
-  {
-    key: "face_right",
-    title: "Right Side Profile",
-    subtitle: "The Yang Face",
-    sectionLabel: "Chinese Face Reading (面相)",
-    instructions: [
-      "Turn fully to your left so the camera sees your right profile",
-      "Keep chin level and expression neutral",
-      "Hair behind ear if possible",
-      "Capture the full profile from forehead to chin",
-    ],
-    diagram: "face_profile",
+    multishot: true,
   },
   {
     key: null,
@@ -390,11 +368,18 @@ const STEPS: StepConfig[] = [
   },
 ];
 
+const FRONT_CAMERA_KEYS: (keyof OracleImages)[] = [
+  "face", "face_front", "face_left", "face_right",
+  "right_iris", "left_iris",
+];
+
 export default function RitualScreen() {
   const insets = useSafeAreaInsets();
   const { state, setImage } = useOracle();
   const { profiles, addProfile } = useProfiles();
   const [step, setStep] = useState(0);
+  const [showMultishot, setShowMultishot] = useState(false);
+  const [multishotKey, setMultishotKey] = useState(0);
   const currentStep = STEPS[step];
 
   const saveToVaultAndReveal = async () => {
@@ -435,11 +420,16 @@ export default function RitualScreen() {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     let result;
 
+    const useFront = FRONT_CAMERA_KEYS.includes(key);
+
     if (permission.granted) {
       result = await ImagePicker.launchCameraAsync({
         mediaTypes: ["images"],
         quality: 0.85,
         allowsEditing: false,
+        cameraType: useFront
+          ? ImagePicker.CameraType.front
+          : ImagePicker.CameraType.back,
       });
     } else {
       result = await ImagePicker.launchImageLibraryAsync({
@@ -457,9 +447,32 @@ export default function RitualScreen() {
     }
   };
 
+  const handleMultishotComplete = async (result: MultishotResult) => {
+    setShowMultishot(false);
+    setImage("face_front", { uri: result.face_front });
+    setImage("face_left", { uri: result.face_left });
+    setImage("face_right", { uri: result.face_right });
+    if (Platform.OS !== "web") {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    if (step < STEPS.length - 1) {
+      setStep(s => s + 1);
+    } else {
+      await saveToVaultAndReveal();
+    }
+  };
+
+  const openMultishot = () => {
+    setMultishotKey(k => k + 1);
+    setShowMultishot(true);
+  };
+
   const canProceed = () => {
     if (!currentStep) return false;
     if (currentStep.intro) return true;
+    if (currentStep.multishot) {
+      return !!(state.images.face_front && state.images.face_left && state.images.face_right);
+    }
     if (currentStep.required) return !!state.images[currentStep.key!];
     return true;
   };
@@ -484,6 +497,20 @@ export default function RitualScreen() {
   return (
     <View style={[styles.container, { paddingTop: Platform.OS === "web" ? 67 : insets.top }]}>
       <StarField />
+
+      {/* Multishot Face Camera Modal */}
+      <Modal
+        visible={showMultishot}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        statusBarTranslucent
+      >
+        <MultishotFaceCamera
+          key={multishotKey}
+          onComplete={handleMultishotComplete}
+          onCancel={() => setShowMultishot(false)}
+        />
+      </Modal>
 
       {/* Header */}
       <View style={styles.header}>
@@ -628,7 +655,45 @@ export default function RitualScreen() {
             </View>
 
             {/* Preview or capture */}
-            {state.images[currentStep.key!] ? (
+            {currentStep.multishot ? (
+              canProceed() ? (
+                <View>
+                  <View style={styles.multishotPreviews}>
+                    {(["face_front", "face_left", "face_right"] as (keyof OracleImages)[]).map(k => {
+                      const img = state.images[k];
+                      const label = k === "face_front" ? "Front" : k === "face_left" ? "Left" : "Right";
+                      return (
+                        <View key={k} style={styles.multishotThumb}>
+                          {img ? (
+                            <Image source={{ uri: img.uri }} style={styles.multishotThumbImg} />
+                          ) : (
+                            <View style={[styles.multishotThumbImg, styles.thumbEmpty]}>
+                              <Feather name="minus" size={14} color={Colors.muted} />
+                            </View>
+                          )}
+                          <Text style={styles.multishotLabel}>{label}</Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                  <Pressable
+                    style={styles.retakeBtn}
+                    onPress={openMultishot}
+                  >
+                    <Feather name="refresh-cw" size={14} color={Colors.gold} />
+                    <Text style={styles.retakeText}>Retake Session</Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <Pressable
+                  style={({ pressed }) => [styles.captureBtn, pressed && { opacity: 0.8 }]}
+                  onPress={openMultishot}
+                >
+                  <Feather name="camera" size={20} color={Colors.bg} />
+                  <Text style={styles.captureBtnText}>Begin Face Reading Session</Text>
+                </Pressable>
+              )
+            ) : state.images[currentStep.key!] ? (
               <View style={styles.previewContainer}>
                 <Image
                   source={{ uri: state.images[currentStep.key!]!.uri }}
@@ -867,6 +932,30 @@ const styles = StyleSheet.create({
     fontFamily: "EBGaramond_400Regular",
     fontSize: 14,
     color: Colors.gold,
+  },
+  multishotPreviews: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 6,
+    justifyContent: "center",
+  },
+  multishotThumb: {
+    flex: 1,
+    alignItems: "center",
+    gap: 4,
+  },
+  multishotThumbImg: {
+    width: "100%",
+    aspectRatio: 0.75,
+    borderRadius: 8,
+    resizeMode: "cover",
+  },
+  multishotLabel: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 11,
+    color: Colors.cream,
+    opacity: 0.7,
+    textAlign: "center",
   },
   navRow: {
     flexDirection: "row",
