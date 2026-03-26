@@ -542,23 +542,26 @@ export default function ReadingScreen() {
     return "/";
   };
 
-  const buildFormData = () => {
+  const buildRequest = (extra: Record<string, string> = {}): { body: FormData | string; headers: Record<string, string> } => {
+    if (Platform.OS === "web") {
+      // Web can't send local file URIs via FormData — send JSON without images
+      return {
+        body: JSON.stringify({ userData: JSON.stringify(state.userData), sessionId: state.sessionId, ...extra }),
+        headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+      };
+    }
+    // Native: send FormData with image files
     const fd = new FormData();
-    const ud = { ...state.userData };
-    fd.append("userData", JSON.stringify(ud));
+    fd.append("userData", JSON.stringify(state.userData));
     fd.append("sessionId", state.sessionId);
-
+    for (const [k, v] of Object.entries(extra)) fd.append(k, v);
     for (const [key, img] of Object.entries(state.images)) {
       if (img?.uri) {
-        const ext = img.uri.split(".").pop() ?? "jpg";
-        fd.append(key, {
-          uri: img.uri,
-          name: `${key}.${ext}`,
-          type: `image/${ext === "jpg" ? "jpeg" : ext}`,
-        } as unknown as Blob);
+        const ext = img.uri.split(".").pop()?.replace("jpeg", "jpg") ?? "jpg";
+        fd.append(key, { uri: img.uri, name: `${key}.${ext}`, type: `image/jpeg` } as unknown as Blob);
       }
     }
-    return fd;
+    return { body: fd, headers: { Accept: "text/event-stream" } };
   };
 
   const streamFreeReading = async () => {
@@ -566,11 +569,11 @@ export default function ReadingScreen() {
     const baseUrl = getApiUrl();
 
     try {
-      const fd = buildFormData();
+      const { body, headers } = buildRequest();
       const response = await fetch(`${baseUrl}api/generate`, {
         method: "POST",
-        body: fd,
-        headers: { Accept: "text/event-stream" },
+        body,
+        headers,
       });
 
       if (!response.ok) throw new Error("API error");
@@ -621,13 +624,11 @@ export default function ReadingScreen() {
     const baseUrl = getApiUrl();
 
     try {
-      const fd = buildFormData();
-      fd.append("devBypass", "true");
-
+      const { body, headers } = buildRequest({ devBypass: "true" });
       const response = await fetch(`${baseUrl}api/generate/continue`, {
         method: "POST",
-        body: fd,
-        headers: { Accept: "text/event-stream" },
+        body,
+        headers,
       });
 
       if (!response.ok) throw new Error("API error");

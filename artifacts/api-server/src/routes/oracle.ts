@@ -579,15 +579,11 @@ Follow the IMAGE ANALYSIS RULE: first describe what is visually observable in th
 );
 
 // POST /api/chat - Oracle chat with reading context
-router.post("/chat", async (req: Request, res: Response) => {
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache, no-transform");
-  res.setHeader("X-Accel-Buffering", "no");
-  res.flushHeaders();
-
+router.post("/chat", sseHeaders, async (req: Request, res: Response) => {
   const sendEvent = (data: object) => {
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   };
+  sendEvent({ event: "ping" });
 
   try {
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -654,15 +650,11 @@ Rules:
 });
 
 // POST /api/synastry - SSE compatibility reading for two profiles
-router.post("/synastry", async (req: Request, res: Response) => {
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache, no-transform");
-  res.setHeader("X-Accel-Buffering", "no");
-  res.flushHeaders();
-
+router.post("/synastry", sseHeaders, async (req: Request, res: Response) => {
   const sendEvent = (data: object) => {
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   };
+  sendEvent({ event: "ping" });
 
   try {
     const { profile1, profile2 } = req.body as {
@@ -757,15 +749,11 @@ Generate the full synastry reading now.`;
 });
 
 // POST /api/synastry/chat - Oracle chat in synastry context
-router.post("/synastry/chat", async (req: Request, res: Response) => {
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache, no-transform");
-  res.setHeader("X-Accel-Buffering", "no");
-  res.flushHeaders();
-
+router.post("/synastry/chat", sseHeaders, async (req: Request, res: Response) => {
   const sendEvent = (data: object) => {
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   };
+  sendEvent({ event: "ping" });
 
   try {
     const { messages, readingSummary, profile1, profile2 } = req.body;
@@ -816,15 +804,11 @@ As The Oracle, answer questions about this specific connection with depth, preci
 });
 
 // POST /api/deep-dive - SSE deep dive reading for a life category
-router.post("/deep-dive", async (req: Request, res: Response) => {
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache, no-transform");
-  res.setHeader("X-Accel-Buffering", "no");
-  res.flushHeaders();
-
+router.post("/deep-dive", sseHeaders, async (req: Request, res: Response) => {
   const sendEvent = (data: object) => {
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   };
+  sendEvent({ event: "ping" });
 
   try {
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -925,15 +909,11 @@ ${readingContext}`;
 });
 
 // POST /api/profile-reading - Oracle reading for a single vault profile
-router.post("/profile-reading", async (req: Request, res: Response) => {
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache, no-transform");
-  res.setHeader("X-Accel-Buffering", "no");
-  res.flushHeaders();
-
+router.post("/profile-reading", sseHeaders, async (req: Request, res: Response) => {
   const sendEvent = (data: object) => {
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   };
+  sendEvent({ event: "ping" });
 
   try {
     const { profile, category } = req.body as {
@@ -1006,15 +986,11 @@ Generate the reading now.`;
 });
 
 // POST /api/profile-reading/chat - Follow-up Oracle chat for a profile reading
-router.post("/profile-reading/chat", async (req: Request, res: Response) => {
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache, no-transform");
-  res.setHeader("X-Accel-Buffering", "no");
-  res.flushHeaders();
-
+router.post("/profile-reading/chat", sseHeaders, async (req: Request, res: Response) => {
   const sendEvent = (data: object) => {
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   };
+  sendEvent({ event: "ping" });
 
   try {
     const { profile, category, messages } = req.body as {
