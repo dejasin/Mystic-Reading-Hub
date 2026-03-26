@@ -162,6 +162,8 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
               <Pressable
                 style={paywallStyles.modalCancelBtn}
                 onPress={() => setShowConfirm(false)}
+                accessibilityLabel="Cancel purchase"
+                accessibilityRole="button"
               >
                 <Text style={paywallStyles.modalCancelText}>Cancel</Text>
               </Pressable>
@@ -171,6 +173,8 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
                   setShowConfirm(false);
                   handlePurchase();
                 }}
+                accessibilityLabel={`Confirm purchase for ${priceString}`}
+                accessibilityRole="button"
               >
                 <Text style={paywallStyles.modalConfirmText}>Purchase</Text>
               </Pressable>
@@ -210,7 +214,8 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
           style={({ pressed }) => [paywallStyles.unlockBtn, (pressed || isPurchasing) && { opacity: 0.85 }]}
           onPress={() => setShowConfirm(true)}
           disabled={isPurchasing || isLoading || !purchasesAvailable}
-          accessibilityLabel="Unlock full reading with subscription"
+          accessibilityLabel={`Unlock Full Reading for ${priceString}`}
+          accessibilityRole="button"
         >
           {isPurchasing ? (
             <ActivityIndicator color={Colors.bg} size="small" />
@@ -231,7 +236,8 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
         style={paywallStyles.restoreBtn}
         onPress={handleRestore}
         disabled={isRestoring || !isConfigured}
-        accessibilityLabel="Restore previous purchase"
+        accessibilityLabel="Restore Purchase"
+        accessibilityRole="button"
       >
         {isRestoring ? (
           <ActivityIndicator color={Colors.muted} size="small" />
@@ -241,11 +247,11 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
       </Pressable>
 
       <View style={paywallStyles.legalRow}>
-        <Pressable onPress={() => Linking.openURL("https://theoracle.app/api/terms")}>
+        <Pressable onPress={() => Linking.openURL("https://theoracle.app/api/terms")} accessibilityLabel="Terms of Use" accessibilityRole="link">
           <Text style={paywallStyles.legalLink}>Terms of Use</Text>
         </Pressable>
         <Text style={paywallStyles.legalSep}> · </Text>
-        <Pressable onPress={() => Linking.openURL("https://theoracle.app/api/privacy")}>
+        <Pressable onPress={() => Linking.openURL("https://theoracle.app/api/privacy")} accessibilityLabel="Privacy Policy" accessibilityRole="link">
           <Text style={paywallStyles.legalLink}>Privacy Policy</Text>
         </Pressable>
       </View>
@@ -598,6 +604,8 @@ function OracleActivationCard({
       <Pressable
         style={({ pressed }) => [activationStyles.confirmBtn, pressed && { opacity: 0.85 }]}
         onPress={() => onConfirm(q1, q2, q3)}
+        accessibilityLabel="Awaken the Oracle — begin reading"
+        accessibilityRole="button"
       >
         <Text style={activationStyles.confirmText}>Awaken the Oracle</Text>
       </Pressable>
@@ -605,6 +613,8 @@ function OracleActivationCard({
       <Pressable
         style={activationStyles.skipBtn}
         onPress={() => onConfirm("", "", "")}
+        accessibilityLabel="Continue without questions"
+        accessibilityRole="button"
       >
         <Text style={activationStyles.skipText}>Continue without questions</Text>
       </Pressable>
@@ -713,9 +723,9 @@ export default function ReadingScreen() {
   const { customerInfo } = useSubscription();
   const [phase, setPhase] = useState<Phase>("loading");
   const [errorMsg, setErrorMsg] = useState("");
+  const [errorSource, setErrorSource] = useState<"free" | "paid">("free");
   const [activationDismissed, setActivationDismissed] = useState(false);
   const hasStarted = useRef(false);
-  const lastFailedPhase = useRef<"free" | "paid">("free");
   const scrollRef = useRef<ScrollView>(null);
 
   const initiallyNeedsActivation = useRef(
@@ -810,6 +820,7 @@ export default function ReadingScreen() {
             const parsed = JSON.parse(raw);
             if (parsed.event === "error") {
               setErrorMsg(parsed.message ?? "The Oracle is temporarily unavailable.");
+              setErrorSource("free");
               setPhase("error");
               return;
             }
@@ -833,7 +844,7 @@ export default function ReadingScreen() {
           ? "The connection to the Oracle was severed. Check your network and try again."
           : "A veil fell between you and the Oracle. The signal was lost."
       );
-      lastFailedPhase.current = "free";
+      setErrorSource("free");
       setPhase("error");
     }
   };
@@ -867,6 +878,7 @@ export default function ReadingScreen() {
             const parsed = JSON.parse(raw);
             if (parsed.event === "error") {
               setErrorMsg(parsed.message ?? "The Oracle is temporarily unavailable.");
+              setErrorSource("paid");
               setPhase("error");
               return;
             }
@@ -902,7 +914,7 @@ export default function ReadingScreen() {
           ? "The thread was cut before the full vision could be delivered. Check your network."
           : "The Oracle's vision was interrupted. The second sight requires stillness — try again."
       );
-      lastFailedPhase.current = "paid";
+      setErrorSource("paid");
       setPhase("error");
     }
   };
@@ -939,7 +951,7 @@ export default function ReadingScreen() {
       {/* Header */}
       {hasContent && (
         <View style={styles.header}>
-          <Pressable onPress={() => router.replace("/intake")} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back to intake">
+          <Pressable onPress={() => router.replace("/intake")} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back to intake" accessibilityRole="button">
             <Feather name="arrow-left" size={20} color={Colors.gold} />
           </Pressable>
           <Text style={styles.headerTitle}>Your Reading</Text>
@@ -972,8 +984,8 @@ export default function ReadingScreen() {
             <Pressable
               style={styles.retryBtn}
               onPress={() => {
-                setErrorMsg("");
-                if (lastFailedPhase.current === "paid") {
+                if (errorSource === "paid") {
+                  setPhase("streaming_paid");
                   streamPaidReading();
                 } else {
                   hasStarted.current = false;
@@ -981,10 +993,17 @@ export default function ReadingScreen() {
                   streamFreeReading();
                 }
               }}
+              accessibilityLabel="Try Again — retry Oracle connection"
+              accessibilityRole="button"
             >
               <Text style={styles.retryText}>Try Again</Text>
             </Pressable>
-            <Pressable style={styles.errorBackBtn} onPress={() => router.back()}>
+            <Pressable
+              style={styles.errorBackBtn}
+              onPress={() => router.back()}
+              accessibilityLabel="Return to previous screen"
+              accessibilityRole="button"
+            >
               <Text style={styles.errorBackText}>Return</Text>
             </Pressable>
           </View>
@@ -1143,6 +1162,8 @@ export default function ReadingScreen() {
                           pressed && { opacity: 0.8 },
                         ]}
                         onPress={() => router.push({ pathname: "/deep-dive", params: { category: cat } })}
+                        accessibilityLabel={hasDive ? `${LABELS[cat]} deep dive — completed` : `${LABELS[cat]} deep dive`}
+                        accessibilityRole="button"
                       >
                         <Feather name={ICONS[cat]} size={18} color={hasDive ? Colors.bg : Colors.gold} />
                         <Text style={[styles.deepDiveCardLabel, hasDive && styles.deepDiveCardLabelDone]}>
@@ -1180,6 +1201,8 @@ export default function ReadingScreen() {
                         <Pressable
                           style={({ pressed }) => [styles.deepDiveSummaryBtn, pressed && { opacity: 0.75 }]}
                           onPress={() => router.push({ pathname: "/deep-dive", params: { category: cat } })}
+                          accessibilityLabel={`Re-read ${LABELS[cat]} deep dive`}
+                          accessibilityRole="button"
                         >
                           <Text style={styles.deepDiveSummaryBtnText}>Re-read</Text>
                           <Feather name="arrow-right" size={12} color={Colors.gold} />
@@ -1207,6 +1230,8 @@ export default function ReadingScreen() {
                     });
                   } catch {}
                 }}
+                accessibilityLabel="Share your archetype"
+                accessibilityRole="button"
               >
                 <Feather name="share-2" size={16} color={Colors.gold} />
                 <Text style={styles.shareText}>Share your archetype</Text>
@@ -1215,6 +1240,8 @@ export default function ReadingScreen() {
               <Pressable
                 style={({ pressed }) => [styles.chatBtn, pressed && { opacity: 0.85 }]}
                 onPress={() => router.push("/chat")}
+                accessibilityLabel="Ask The Oracle a Question — open chat"
+                accessibilityRole="button"
               >
                 <Feather name="message-circle" size={18} color={Colors.bg} />
                 <Text style={styles.chatBtnText}>Ask The Oracle a Question</Text>
@@ -1232,6 +1259,8 @@ export default function ReadingScreen() {
                   resetAll();
                   router.replace("/");
                 }}
+                accessibilityLabel="Begin a New Reading"
+                accessibilityRole="button"
               >
                 <Feather name="refresh-cw" size={15} color={Colors.muted} />
                 <Text style={styles.newReadingText}>Begin a New Reading</Text>

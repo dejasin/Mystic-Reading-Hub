@@ -49,7 +49,7 @@ export default function ProfileActionScreen() {
       <View style={[styles.container, { paddingTop: Platform.OS === "web" ? 67 : insets.top }]}>
         <StarField />
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
+          <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back" accessibilityRole="button">
             <Feather name="arrow-left" size={20} color={Colors.gold} />
           </Pressable>
           <Text style={styles.headerTitle}>Profile</Text>
@@ -71,7 +71,7 @@ export default function ProfileActionScreen() {
       <StarField />
 
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
+        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back to The Vault" accessibilityRole="button">
           <Feather name="arrow-left" size={20} color={Colors.gold} />
         </Pressable>
         <Text style={styles.headerTitle}>The Vault</Text>
@@ -102,6 +102,8 @@ export default function ProfileActionScreen() {
 
         <Pressable
           style={({ pressed }) => [styles.actionCard, pressed && { opacity: 0.85 }]}
+          accessibilityLabel={`View Reading for ${profile.name}`}
+          accessibilityRole="button"
           onPress={() => {
             resetAll();
             setUserData({
@@ -142,6 +144,8 @@ export default function ProfileActionScreen() {
         <Pressable
           style={({ pressed }) => [styles.actionCard, pressed && { opacity: 0.85 }]}
           onPress={() => router.push({ pathname: "/synastry", params: { profileId: profile.id } })}
+          accessibilityLabel={`View Synastry for ${profile.name}`}
+          accessibilityRole="button"
         >
           <View style={styles.actionIconWrap}>
             <Feather name="users" size={22} color={Colors.gold} />

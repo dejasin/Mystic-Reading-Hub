@@ -45,7 +45,7 @@ export default function GoldSigil({ size = 120, style }: Props) {
   const tri2 = `M ${pts[1][0]} ${pts[1][1]} L ${pts[3][0]} ${pts[3][1]} L ${pts[5][0]} ${pts[5][1]} Z`;
 
   return (
-    <View style={style} accessible={false} importantForAccessibility="no">
+    <View style={style} accessible={false} importantForAccessibility="no-hide-descendants">
       <Animated.View style={animStyle}>
         <Svg width={size} height={size}>
           {/* Outer ring */}

@@ -106,6 +106,9 @@ function ProfileCard({
         style={({ pressed }) => [styles.profileCard, pressed && { opacity: 0.85 }]}
         onPress={onPress}
         onLongPress={onLongPress}
+        accessibilityLabel={`${profile.name}${sunSign ? `, ${sunSign}` : ""}, born ${profile.dob}`}
+        accessibilityRole="button"
+        accessibilityHint="Double tap to view, long press for more options"
       >
         {faceUri ? (
           <Image source={{ uri: faceUri }} style={styles.avatar} />
@@ -142,6 +145,9 @@ function ChipSelect({ options, value, onSelect }: { options: string[]; value: st
           key={opt}
           style={[chipStyles.chip, value === opt && chipStyles.selected]}
           onPress={() => onSelect(opt)}
+          accessibilityLabel={opt}
+          accessibilityRole="radio"
+          accessibilityState={{ selected: value === opt }}
         >
           <Text style={[chipStyles.text, value === opt && chipStyles.selectedText]}>{opt}</Text>
         </Pressable>
@@ -246,11 +252,11 @@ function ProfileFormModal({
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <View style={[modalStyles.container, { paddingTop: Platform.OS === "web" ? 20 : insets.top }]}>
         <View style={modalStyles.header}>
-          <Pressable onPress={onClose} hitSlop={12}>
+          <Pressable onPress={onClose} hitSlop={12} accessibilityLabel="Cancel" accessibilityRole="button">
             <Text style={modalStyles.cancelText}>Cancel</Text>
           </Pressable>
           <Text style={modalStyles.title}>{initial ? "Edit Profile" : "New Profile"}</Text>
-          <Pressable onPress={handleSave} hitSlop={12}>
+          <Pressable onPress={handleSave} hitSlop={12} accessibilityLabel="Save profile" accessibilityRole="button">
             <Text style={modalStyles.saveText}>Save</Text>
           </Pressable>
         </View>
@@ -262,7 +268,7 @@ function ProfileFormModal({
             {PHOTO_SLOTS.map(slot => {
               const uri = photos[slot.key];
               return (
-                <Pressable key={slot.key} style={modalStyles.photoSlot} onPress={() => handlePickPhoto(slot.key)}>
+                <Pressable key={slot.key} style={modalStyles.photoSlot} onPress={() => handlePickPhoto(slot.key)} accessibilityLabel={`Add ${slot.label} photo`} accessibilityRole="button">
                   {uri ? (
                     <Image source={{ uri }} style={modalStyles.photoThumb} />
                   ) : (
@@ -303,7 +309,7 @@ function ProfileFormModal({
           <Text style={modalStyles.sectionLabel}>NOTES</Text>
           <SInput value={notes} onChangeText={setNotes} placeholder="Add any notes (optional)" multiline />
 
-          <Pressable style={({ pressed }) => [modalStyles.saveBtn, pressed && { opacity: 0.85 }]} onPress={handleSave}>
+          <Pressable style={({ pressed }) => [modalStyles.saveBtn, pressed && { opacity: 0.85 }]} onPress={handleSave} accessibilityLabel={initial ? "Save Changes" : "Add to Vault"} accessibilityRole="button">
             <Text style={modalStyles.saveBtnText}>{initial ? "Save Changes" : "Add to Vault"}</Text>
           </Pressable>
 
@@ -417,11 +423,11 @@ export default function ProfilesScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back">
+        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back" accessibilityRole="button">
           <Feather name="arrow-left" size={20} color={Colors.gold} />
         </Pressable>
         <Text style={styles.headerTitle}>The Vault</Text>
-        <Pressable onPress={handleAddNew} style={styles.addBtn} hitSlop={12} accessibilityLabel="Add new profile">
+        <Pressable onPress={handleAddNew} style={styles.addBtn} hitSlop={12} accessibilityLabel="Add new profile" accessibilityRole="button">
           <Feather name="plus" size={22} color={Colors.gold} />
         </Pressable>
       </View>
@@ -432,6 +438,8 @@ export default function ProfilesScreen() {
           <Pressable
             style={({ pressed }) => [styles.synastryBtn, pressed && { opacity: 0.85 }]}
             onPress={() => router.push("/synastry")}
+            accessibilityLabel="Open Synastry Reading — combine two profiles"
+            accessibilityRole="button"
           >
             <View style={styles.synastryBtnLeft}>
               <Text style={styles.synastryIcon}>✦ ✦</Text>
@@ -459,6 +467,8 @@ export default function ProfilesScreen() {
         <Pressable
           style={({ pressed }) => [styles.devSeedBtn, pressed && { opacity: 0.75 }]}
           onPress={handleLoadTestProfile}
+          accessibilityLabel="Load Test Profile (dev only)"
+          accessibilityRole="button"
         >
           <Feather name="cpu" size={13} color="#7fdfb0" />
           <Text style={styles.devSeedText}>Load Test Profile</Text>
@@ -475,6 +485,8 @@ export default function ProfilesScreen() {
           <Pressable
             style={({ pressed }) => [styles.emptyAddBtn, pressed && { opacity: 0.85 }]}
             onPress={handleAddNew}
+            accessibilityLabel="Add First Profile"
+            accessibilityRole="button"
           >
             <Feather name="plus" size={16} color={Colors.bg} />
             <Text style={styles.emptyAddText}>Add First Profile</Text>

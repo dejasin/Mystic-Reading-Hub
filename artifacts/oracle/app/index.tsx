@@ -117,6 +117,7 @@ export default function LandingScreen() {
               ]}
               onPress={handleBegin}
               accessibilityLabel="Begin your Oracle reading"
+              accessibilityRole="button"
             >
               <Text style={styles.ctaText}>Begin Your Reading</Text>
               <Feather name="arrow-right" size={20} color={Colors.bg} style={{ marginLeft: 8 }} />
@@ -128,6 +129,7 @@ export default function LandingScreen() {
               style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.75 }]}
               onPress={() => router.push("/profiles")}
               accessibilityLabel="Open the profile vault"
+              accessibilityRole="button"
             >
               <Feather name="users" size={16} color={Colors.gold} />
               <Text style={styles.secondaryText}>The Vault</Text>
@@ -139,6 +141,7 @@ export default function LandingScreen() {
               style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.75 }]}
               onPress={() => router.push("/synastry")}
               accessibilityLabel="Start a synastry reading"
+              accessibilityRole="button"
             >
               <Text style={styles.secondaryIcon}>✦ ✦</Text>
               <Text style={styles.secondaryText}>Synastry</Text>

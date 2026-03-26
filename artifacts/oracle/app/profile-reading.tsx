@@ -299,7 +299,7 @@ export default function ProfileReadingScreen() {
       <View style={[styles.container, { paddingTop: Platform.OS === "web" ? 67 : insets.top }]}>
         <StarField />
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
+          <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back" accessibilityRole="button">
             <Feather name="arrow-left" size={20} color={Colors.gold} />
           </Pressable>
           <Text style={styles.headerTitle}>Reading</Text>
@@ -320,7 +320,7 @@ export default function ProfileReadingScreen() {
       <StarField />
 
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
+        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back" accessibilityRole="button">
           <Feather name="arrow-left" size={20} color={Colors.gold} />
         </Pressable>
         <View style={styles.headerCenter}>
@@ -362,7 +362,7 @@ export default function ProfileReadingScreen() {
                 <Animated.View entering={FadeIn.duration(300)} style={styles.readErrorBox}>
                   <Feather name="alert-circle" size={14} color={Colors.error} />
                   <Text style={styles.readErrorText}>{readError}</Text>
-                  <Pressable onPress={() => setReadError(null)} hitSlop={8}>
+                  <Pressable onPress={() => setReadError(null)} hitSlop={8} accessibilityLabel="Dismiss error message" accessibilityRole="button">
                     <Feather name="x" size={13} color={Colors.muted} />
                   </Pressable>
                 </Animated.View>
@@ -374,6 +374,8 @@ export default function ProfileReadingScreen() {
                     key={cat.label}
                     style={({ pressed }) => [styles.categoryChip, pressed && { opacity: 0.75 }]}
                     onPress={() => handleSelectCategory(cat.label)}
+                    accessibilityLabel={cat.label}
+                    accessibilityRole="button"
                   >
                     <Feather name={cat.icon as any} size={14} color={Colors.gold} />
                     <Text style={styles.categoryChipText}>{cat.label}</Text>
@@ -404,6 +406,8 @@ export default function ProfileReadingScreen() {
               style={({ pressed }) => [styles.sendBtn, (!input.trim() || isStreaming) && styles.sendBtnDisabled, pressed && input.trim() && !isStreaming && { opacity: 0.8 }]}
               onPress={() => handleSendChat(input)}
               disabled={!input.trim() || isStreaming}
+              accessibilityLabel="Send message"
+              accessibilityRole="button"
             >
               <Feather name="send" size={18} color={input.trim() && !isStreaming ? Colors.bg : Colors.muted} />
             </Pressable>

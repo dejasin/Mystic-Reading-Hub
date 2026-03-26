@@ -38,6 +38,9 @@ function SelectOption({
           key={opt}
           style={[selectStyles.option, value === opt && selectStyles.selected]}
           onPress={() => onSelect(opt)}
+          accessibilityLabel={opt}
+          accessibilityRole="radio"
+          accessibilityState={{ selected: value === opt }}
         >
           <Text style={[selectStyles.optionText, value === opt && selectStyles.selectedText]}>
             {opt}
@@ -227,7 +230,7 @@ export default function IntakeScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
+        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back" accessibilityRole="button">
           <Feather name="arrow-left" size={20} color={Colors.gold} />
         </Pressable>
         <Text style={styles.headerTitle}>Tell The Oracle Who You Are</Text>
@@ -267,6 +270,9 @@ export default function IntakeScreen() {
               onPress={() => setBirthTimeUnknown(!birthTimeUnknown)}
               style={[styles.checkbox, birthTimeUnknown && styles.checkboxChecked]}
               hitSlop={8}
+              accessibilityLabel="Birth time unknown"
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: birthTimeUnknown }}
             >
               {birthTimeUnknown && <Feather name="check" size={12} color={Colors.bg} />}
             </Pressable>
@@ -330,6 +336,8 @@ export default function IntakeScreen() {
         <Pressable
           style={({ pressed }) => [styles.submitBtn, pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }]}
           onPress={handleSubmit}
+          accessibilityLabel="Prepare My Sacred Images — proceed to photo capture"
+          accessibilityRole="button"
         >
           <Text style={styles.submitText}>Prepare My Sacred Images</Text>
           <Feather name="arrow-right" size={18} color={Colors.bg} />

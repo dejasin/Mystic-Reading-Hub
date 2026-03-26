@@ -63,7 +63,7 @@ export default function StarField() {
   const tri2 = `M ${hexPoints[1][0]} ${hexPoints[1][1]} L ${hexPoints[3][0]} ${hexPoints[3][1]} L ${hexPoints[5][0]} ${hexPoints[5][1]} Z`;
 
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none" accessible={false} importantForAccessibility="no">
+    <View style={StyleSheet.absoluteFill} pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants">
       {/* Stars */}
       <Svg width={W} height={H} style={StyleSheet.absoluteFill}>
         {stars.map((s, i) => (

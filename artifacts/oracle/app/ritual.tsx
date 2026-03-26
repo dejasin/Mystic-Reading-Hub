@@ -388,7 +388,11 @@ export default function RitualScreen() {
   const [step, setStep] = useState(0);
   const [showMultishot, setShowMultishot] = useState(false);
   const [multishotKey, setMultishotKey] = useState(0);
+  const [biometricConsentGiven, setBiometricConsentGiven] = useState(false);
   const currentStep = STEPS[step];
+
+  const isIrisStep = currentStep?.key === "right_iris" || currentStep?.key === "left_iris";
+  const showBiometricConsent = isIrisStep && !biometricConsentGiven;
 
   const saveToVaultAndReveal = async () => {
     const { userData, images } = state;
@@ -530,6 +534,8 @@ export default function RitualScreen() {
           onPress={() => (step > 0 ? setStep(step - 1) : router.back())}
           style={styles.backBtn}
           hitSlop={12}
+          accessibilityLabel={step > 0 ? "Go to previous step" : "Go back"}
+          accessibilityRole="button"
         >
           <Feather name="arrow-left" size={20} color={Colors.gold} />
         </Pressable>
@@ -556,8 +562,28 @@ export default function RitualScreen() {
         showsVerticalScrollIndicator={false}
         key={step}
       >
-        {/* Intro card */}
-        {currentStep.intro ? (
+        {/* Biometric consent */}
+        {showBiometricConsent ? (
+          <Animated.View entering={FadeIn.duration(600)} style={styles.card}>
+            <View style={styles.sectionLabelBadge}>
+              <Text style={styles.sectionLabelText}>Biometric Data Notice</Text>
+            </View>
+            <Text style={styles.cardTitle}>Iris Photo Consent</Text>
+            <Text style={styles.divider}>─── ✦ ───</Text>
+            <Text style={styles.introText}>
+              Iris photos are processed by AI for your Oracle reading and are never stored on our servers. By continuing, you consent to this analysis.
+            </Text>
+            <Pressable
+              style={({ pressed }) => [styles.proceedBtn, pressed && { opacity: 0.85 }]}
+              onPress={() => setBiometricConsentGiven(true)}
+              accessibilityLabel="I consent — continue to iris capture"
+              accessibilityRole="button"
+            >
+              <Text style={styles.proceedBtnText}>I Understand & Consent</Text>
+              <Feather name="arrow-right" size={16} color={Colors.bg} />
+            </Pressable>
+          </Animated.View>
+        ) : currentStep.intro ? (
           <Animated.View entering={FadeIn.duration(600)} style={styles.card}>
             <GoldSigil size={80} style={{ marginBottom: 20, alignSelf: "center" }} />
             <Text style={styles.cardTitle}>{currentStep.title}</Text>
@@ -568,7 +594,8 @@ export default function RitualScreen() {
             <Pressable
               style={({ pressed }) => [styles.proceedBtn, pressed && { opacity: 0.85 }]}
               onPress={handleNext}
-              accessibilityLabel="Begin the sacred imaging ritual"
+              accessibilityLabel="I'm Ready — begin photo capture"
+              accessibilityRole="button"
             >
               <Text style={styles.proceedBtnText}>I'm Ready</Text>
               <Feather name="arrow-right" size={16} color={Colors.bg} />
@@ -660,6 +687,8 @@ export default function RitualScreen() {
             <Pressable
               style={({ pressed }) => [styles.revealBtn, pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }]}
               onPress={saveToVaultAndReveal}
+              accessibilityLabel="Reveal My Reading — generate Oracle reading"
+              accessibilityRole="button"
             >
               <Text style={styles.revealBtnText}>Reveal My Reading</Text>
               <Feather name="eye" size={18} color={Colors.bg} />
@@ -736,6 +765,8 @@ export default function RitualScreen() {
                   <Pressable
                     style={styles.retakeBtn}
                     onPress={openMultishot}
+                    accessibilityLabel="Retake face reading session"
+                    accessibilityRole="button"
                   >
                     <Feather name="refresh-cw" size={14} color={Colors.gold} />
                     <Text style={styles.retakeText}>Retake Session</Text>
@@ -745,6 +776,8 @@ export default function RitualScreen() {
                 <Pressable
                   style={({ pressed }) => [styles.captureBtn, pressed && { opacity: 0.8 }]}
                   onPress={openMultishot}
+                  accessibilityLabel="Begin Face Reading Session — open camera"
+                  accessibilityRole="button"
                 >
                   <Feather name="camera" size={20} color={Colors.bg} />
                   <Text style={styles.captureBtnText}>Begin Face Reading Session</Text>
@@ -762,6 +795,8 @@ export default function RitualScreen() {
                 <Pressable
                   style={styles.retakeBtn}
                   onPress={() => handlePickImage(currentStep.key!)}
+                  accessibilityLabel={`Retake ${currentStep.title}`}
+                  accessibilityRole="button"
                 >
                   <Feather name="refresh-cw" size={14} color={Colors.gold} />
                   <Text style={styles.retakeText}>Retake</Text>
@@ -771,6 +806,8 @@ export default function RitualScreen() {
               <Pressable
                 style={({ pressed }) => [styles.captureBtn, pressed && { opacity: 0.8 }]}
                 onPress={() => handlePickImage(currentStep.key!)}
+                accessibilityLabel={`Capture ${currentStep.title} — open camera`}
+                accessibilityRole="button"
               >
                 <Feather name="camera" size={20} color={Colors.bg} />
                 <Text style={styles.captureBtnText}>
@@ -782,7 +819,12 @@ export default function RitualScreen() {
             {/* Next / Skip */}
             <View style={styles.navRow}>
               {!currentStep.required && (
-                <Pressable style={styles.skipBtn} onPress={handleNext}>
+                <Pressable
+                  style={styles.skipBtn}
+                  onPress={handleNext}
+                  accessibilityLabel={`Skip ${currentStep.title}`}
+                  accessibilityRole="button"
+                >
                   <Text style={styles.skipText}>Skip</Text>
                   <Feather name="skip-forward" size={14} color={Colors.muted} />
                 </Pressable>
@@ -795,6 +837,8 @@ export default function RitualScreen() {
                 ]}
                 onPress={handleNext}
                 disabled={!canProceed()}
+                accessibilityLabel="Next step"
+                accessibilityRole="button"
               >
                 <Text style={[styles.nextBtnText, !canProceed() && { color: Colors.muted }]}>Next</Text>
                 <Feather name="arrow-right" size={16} color={canProceed() ? Colors.gold : Colors.muted} />

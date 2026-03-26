@@ -49,6 +49,8 @@ function ProfileSelector({
       <Pressable
         style={({ pressed }) => [selStyles.selector, pressed && { opacity: 0.85 }]}
         onPress={() => setOpen(!open)}
+        accessibilityLabel={selected ? `${label}: ${selected.name}` : `${label}: Select a profile`}
+        accessibilityRole="button"
       >
         {selected ? (
           <View style={selStyles.selectedRow}>
@@ -83,6 +85,8 @@ function ProfileSelector({
                 key={p.id}
                 style={({ pressed }) => [selStyles.dropdownItem, pressed && { backgroundColor: "rgba(201,168,76,0.1)" }]}
                 onPress={() => { onSelect(p); setOpen(false); }}
+                accessibilityLabel={`Select ${p.name}`}
+                accessibilityRole="menuitem"
               >
                 {fi ? (
                   <Image source={{ uri: fi }} style={selStyles.dropAvatar} />
@@ -333,7 +337,7 @@ export default function SynastryScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
+        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back" accessibilityRole="button">
           <Feather name="arrow-left" size={20} color={Colors.gold} />
         </Pressable>
         <Text style={styles.headerTitle}>Synastry</Text>
@@ -360,6 +364,8 @@ export default function SynastryScreen() {
                 <Pressable
                   style={styles.goToVaultBtn}
                   onPress={() => router.push("/profiles")}
+                  accessibilityLabel="Open The Vault — add profiles"
+                  accessibilityRole="button"
                 >
                   <Text style={styles.goToVaultText}>Open The Vault</Text>
                 </Pressable>
@@ -387,6 +393,8 @@ export default function SynastryScreen() {
                   style={({ pressed }) => [styles.generateBtn, !canGenerate && styles.generateBtnDisabled, pressed && canGenerate && { opacity: 0.85 }]}
                   onPress={handleGenerate}
                   disabled={!canGenerate}
+                  accessibilityLabel="Reveal Synastry — generate compatibility reading"
+                  accessibilityRole="button"
                 >
                   <Text style={[styles.generateBtnText, !canGenerate && { color: Colors.muted }]}>
                     Reveal Synastry
@@ -438,10 +446,10 @@ export default function SynastryScreen() {
 
           {/* Tabs */}
           <View style={styles.tabBar}>
-            <Pressable style={[styles.tab, tab === "reading" && styles.tabActive]} onPress={() => setTab("reading")}>
+            <Pressable style={[styles.tab, tab === "reading" && styles.tabActive]} onPress={() => setTab("reading")} accessibilityLabel="Reading tab" accessibilityRole="tab" accessibilityState={{ selected: tab === "reading" }}>
               <Text style={[styles.tabText, tab === "reading" && styles.tabTextActive]}>Reading</Text>
             </Pressable>
-            <Pressable style={[styles.tab, tab === "chat" && styles.tabActive]} onPress={() => setTab("chat")}>
+            <Pressable style={[styles.tab, tab === "chat" && styles.tabActive]} onPress={() => setTab("chat")} accessibilityLabel="Ask The Oracle tab" accessibilityRole="tab" accessibilityState={{ selected: tab === "chat" }}>
               <Text style={[styles.tabText, tab === "chat" && styles.tabTextActive]}>Ask The Oracle</Text>
             </Pressable>
           </View>
@@ -459,11 +467,11 @@ export default function SynastryScreen() {
               {phase === "complete" && (
                 <Animated.View entering={FadeIn.duration(600)} style={styles.completeActions}>
                   <Text style={styles.completeLabel}>─── ✦ Reading Complete ✦ ───</Text>
-                  <Pressable style={styles.switchToChatBtn} onPress={() => setTab("chat")}>
+                  <Pressable style={styles.switchToChatBtn} onPress={() => setTab("chat")} accessibilityLabel="Ask The Oracle — open chat" accessibilityRole="button">
                     <Feather name="message-circle" size={16} color={Colors.bg} />
                     <Text style={styles.switchToChatText}>Ask The Oracle</Text>
                   </Pressable>
-                  <Pressable style={styles.newSynastryBtn} onPress={() => { setPhase("select"); setReading(""); setMessages([]); }}>
+                  <Pressable style={styles.newSynastryBtn} onPress={() => { setPhase("select"); setReading(""); setMessages([]); }} accessibilityLabel="New Synastry Reading — start over" accessibilityRole="button">
                     <Feather name="refresh-cw" size={14} color={Colors.muted} />
                     <Text style={styles.newSynastryText}>New Synastry Reading</Text>
                   </Pressable>
@@ -493,7 +501,7 @@ export default function SynastryScreen() {
                     <Text style={styles.startersLabel}>Ask about this connection...</Text>
                     <View style={styles.starters}>
                       {STARTERS.map((q, i) => (
-                        <Pressable key={i} style={({ pressed }) => [styles.starter, pressed && { opacity: 0.75 }]} onPress={() => handleSendChat(q)}>
+                        <Pressable key={i} style={({ pressed }) => [styles.starter, pressed && { opacity: 0.75 }]} onPress={() => handleSendChat(q)} accessibilityLabel={q} accessibilityRole="button">
                           <Text style={styles.starterText}>{q}</Text>
                         </Pressable>
                       ))}
@@ -517,6 +525,8 @@ export default function SynastryScreen() {
                   style={[styles.sendBtn, (!input.trim() || isStreaming) && styles.sendBtnDisabled]}
                   onPress={() => { handleSendChat(input); inputRef.current?.focus(); }}
                   disabled={!input.trim() || isStreaming}
+                  accessibilityLabel="Send message"
+                  accessibilityRole="button"
                 >
                   <Feather name="send" size={18} color={input.trim() && !isStreaming ? Colors.bg : Colors.muted} />
                 </Pressable>

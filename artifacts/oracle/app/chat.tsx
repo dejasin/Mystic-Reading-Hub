@@ -88,6 +88,8 @@ function FollowupChips({
           key={i}
           style={({ pressed }) => [styles.followupChip, pressed && { opacity: 0.7 }]}
           onPress={() => onChipPress(chip)}
+          accessibilityLabel={chip}
+          accessibilityRole="button"
         >
           <Text style={styles.followupChipText}>{chip}</Text>
         </Pressable>
@@ -261,7 +263,7 @@ export default function ChatScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
+        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back" accessibilityRole="button">
           <Feather name="arrow-left" size={20} color={Colors.gold} />
         </Pressable>
         <View style={styles.headerCenter}>
@@ -303,6 +305,8 @@ export default function ChatScreen() {
                       key={i}
                       style={({ pressed }) => [styles.chip, pressed && { opacity: 0.75 }]}
                       onPress={() => handleSend(q)}
+                      accessibilityLabel={q}
+                      accessibilityRole="button"
                     >
                       <Text style={styles.chipText}>{q}</Text>
                     </Pressable>
@@ -338,6 +342,8 @@ export default function ChatScreen() {
               inputRef.current?.focus();
             }}
             disabled={!input.trim() || isStreaming}
+            accessibilityLabel="Send message"
+            accessibilityRole="button"
           >
             <Feather
               name="send"
