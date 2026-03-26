@@ -287,7 +287,7 @@ export default function ProfileReadingScreen() {
       }
     } catch {
       setShowTyping(false);
-      setMessages(prev => [...prev, { id: genId(), role: "assistant", content: "The Oracle fell quiet — a disturbance in the ether. Ask again." }]);
+      setMessages(prev => [...prev, { id: genId(), role: "assistant", content: "Something went wrong. Please try again." }]);
     } finally {
       setIsStreaming(false);
       setShowTyping(false);
