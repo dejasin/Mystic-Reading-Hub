@@ -4,7 +4,14 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const router: IRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+const anthropicApiKey = process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY ?? process.env.ANTHROPIC_API_KEY;
+const anthropicBaseUrl = process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL;
+
+const anthropic = new Anthropic({
+  apiKey: anthropicApiKey,
+  ...(anthropicBaseUrl ? { baseURL: anthropicBaseUrl } : {}),
+});
 
 const MODEL = "claude-opus-4-5";
 
@@ -124,7 +131,7 @@ router.post(
     sendEvent({ event: "ping" });
 
     try {
-      if (!process.env.ANTHROPIC_API_KEY) {
+      if (!anthropicApiKey) {
         sendEvent({ event: "error", message: "The Oracle is temporarily unavailable." });
         res.end();
         return;
@@ -333,7 +340,7 @@ router.post(
     sendEvent({ event: "ping" });
 
     try {
-      if (!process.env.ANTHROPIC_API_KEY) {
+      if (!anthropicApiKey) {
         sendEvent({ event: "error", message: "The Oracle is temporarily unavailable." });
         res.end();
         return;
@@ -586,7 +593,7 @@ router.post("/chat", sseHeaders, async (req: Request, res: Response) => {
   sendEvent({ event: "ping" });
 
   try {
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!anthropicApiKey) {
       sendEvent({ content: "The Oracle is temporarily unavailable." });
       sendEvent({ event: "done" });
       res.end();
@@ -652,7 +659,7 @@ Rules:
 // POST /api/chat/followups - Generate 3 follow-up question chips after Oracle response
 router.post("/chat/followups", async (req: Request, res: Response) => {
   try {
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!anthropicApiKey) {
       res.status(200).json({ followups: [] });
       return;
     }
@@ -878,7 +885,7 @@ router.post("/deep-dive", sseHeaders, async (req: Request, res: Response) => {
   sendEvent({ event: "ping" });
 
   try {
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!anthropicApiKey) {
       sendEvent({ event: "error", message: "The Oracle is temporarily unavailable." });
       res.end();
       return;

@@ -43,6 +43,12 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 ### Colors (mystical gold/dark)
 - Background: `#04040f`, Surface: `#0b0b1e`, Gold: `#c9a84c`, Cream: `#f0e6cc`
 
+### AI Integration
+- Uses Replit AI Integrations proxy for Anthropic (no personal API key needed)
+- Env vars: `AI_INTEGRATIONS_ANTHROPIC_BASE_URL`, `AI_INTEGRATIONS_ANTHROPIC_API_KEY`
+- Falls back to `ANTHROPIC_API_KEY` if proxy env vars are absent
+- oracle.ts initializes the Anthropic client with the proxy base URL + key
+
 ### Monetization TODO
 - Stripe ($7.99 one-time) — replace DEV bypass in `reading.tsx` PaywallGate
 - SendGrid PDF email — post-payment reading export

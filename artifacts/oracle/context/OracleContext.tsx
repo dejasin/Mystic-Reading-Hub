@@ -98,7 +98,20 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<OracleState>(defaultState);
 
   const setUserData = (data: UserData) => {
-    setState(prev => ({ ...prev, userData: data }));
+    setState(prev => ({
+      ...prev,
+      userData: data,
+      images: {},
+      freeReading: "",
+      paidReading: "",
+      archetypeReading: "",
+      chineseFaceReading: "",
+      iridologyReading: "",
+      readingComplete: false,
+      isPaid: false,
+      deepDives: {},
+      sessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    }));
   };
 
   const updateUserData = (partial: Partial<UserData>) => {
