@@ -213,31 +213,6 @@ function ChineseFaceProfileDiagram() {
   );
 }
 
-// ── Face diagram ──────────────────────────────────────────────
-function FaceDiagram() {
-  return (
-    <View style={diagStyles.container}>
-      <Svg width={90} height={120} viewBox="0 0 90 120" style={diagStyles.svg}>
-        {/* Face outline */}
-        <Ellipse cx={45} cy={60} rx={38} ry={52} fill="none" stroke={Colors.muted} strokeWidth={1.5} />
-        {/* Zone lines */}
-        <Line x1={7} y1={28} x2={83} y2={28} stroke={Colors.gold} strokeWidth={0.8} strokeDasharray="4,3" opacity={0.6} />
-        <Line x1={7} y1={68} x2={83} y2={68} stroke={Colors.gold} strokeWidth={0.8} strokeDasharray="4,3" opacity={0.6} />
-        {/* Eyes */}
-        <Ellipse cx={30} cy={48} rx={8} ry={4} fill="none" stroke={Colors.muted} strokeWidth={1} />
-        <Ellipse cx={60} cy={48} rx={8} ry={4} fill="none" stroke={Colors.muted} strokeWidth={1} />
-        {/* Nose */}
-        <Path d="M 42 52 Q 45 65 40 68 Q 50 70 50 68 Q 45 65 48 52" fill="none" stroke={Colors.muted} strokeWidth={1} />
-      </Svg>
-      <View style={diagStyles.faceLabels}>
-        <Text style={diagStyles.faceLabelText}>PAST</Text>
-        <Text style={diagStyles.faceLabelText}>PRESENT</Text>
-        <Text style={diagStyles.faceLabelText}>FUTURE</Text>
-      </View>
-    </View>
-  );
-}
-
 const diagStyles = StyleSheet.create({
   container: { flexDirection: "row", alignItems: "center", gap: 16 },
   svg: {},
@@ -245,7 +220,6 @@ const diagStyles = StyleSheet.create({
   labelItem: { flexDirection: "row", alignItems: "center", gap: 6 },
   labelDot: { width: 8, height: 8, borderRadius: 4 },
   labelText: { fontFamily: "EBGaramond_400Regular", fontSize: 13, color: Colors.cream, opacity: 0.7 },
-  faceLabels: { justifyContent: "space-between", height: 120, paddingVertical: 16 },
   faceLabelText: { fontFamily: "EBGaramond_400Regular", fontSize: 11, color: Colors.gold, opacity: 0.7, letterSpacing: 1 },
   faceZoneLabels: { justifyContent: "space-between", height: 120, paddingVertical: 6 },
 });
@@ -260,7 +234,7 @@ interface StepConfig {
   extraNote?: string;
   required?: boolean;
   instructions: string[];
-  diagram?: "palm" | "iris" | "iridology" | "face" | "face_chinese" | "face_profile" | null;
+  diagram?: "palm" | "iris" | "iridology" | "face_chinese" | "face_profile" | null;
   intro?: boolean;
   review?: boolean;
   multishot?: boolean;
@@ -342,18 +316,6 @@ const STEPS: StepConfig[] = [
     diagram: "iridology",
   },
   {
-    key: "face",
-    title: "Your Face",
-    subtitle: "The Map of Fortune",
-    instructions: [
-      "Natural forward-facing light, no harsh shadows",
-      "Neutral expression, mouth closed",
-      "Hair pulled back if possible",
-      "Capture from forehead to chin",
-    ],
-    diagram: "face",
-  },
-  {
     key: "face_front",
     title: "Face Reading Session",
     subtitle: "Front · Left · Right",
@@ -377,7 +339,7 @@ const STEPS: StepConfig[] = [
 ];
 
 const FRONT_CAMERA_KEYS: (keyof OracleImages)[] = [
-  "face", "face_front", "face_left", "face_right",
+  "face_front", "face_left", "face_right",
   "right_iris", "left_iris",
 ];
 
@@ -724,7 +686,6 @@ export default function RitualScreen() {
                 {currentStep.diagram === "palm" && <PalmDiagram />}
                 {currentStep.diagram === "iris" && <IrisDiagram />}
                 {currentStep.diagram === "iridology" && <IridologyDiagram />}
-                {currentStep.diagram === "face" && <FaceDiagram />}
                 {currentStep.diagram === "face_chinese" && <ChineseFaceDiagram />}
                 {currentStep.diagram === "face_profile" && <ChineseFaceProfileDiagram />}
               </View>

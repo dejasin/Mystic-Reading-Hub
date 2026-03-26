@@ -30,7 +30,7 @@ type Phase =
   | "right_reposition"
   | "done";
 
-const REPOSITION_COUNTDOWN = 4;
+const REPOSITION_COUNTDOWN = 3;
 
 const PHASE_LABELS: Record<Phase, string> = {
   front_ready: "Face the camera directly",
