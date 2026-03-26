@@ -125,7 +125,7 @@ export default function LandingScreen() {
           </View>
 
           <Text style={styles.privacyNote}>
-            Your images are never stored or shared.
+            Images are sent securely for analysis and never stored.
           </Text>
         </Animated.View>
 

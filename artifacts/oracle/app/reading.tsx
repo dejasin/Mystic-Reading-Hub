@@ -6,7 +6,7 @@ import {
   Pressable,
   ScrollView,
   Platform,
-  Share,
+  Linking,
   TextInput,
   Modal,
   ActivityIndicator,
@@ -222,20 +222,6 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
       )}
 
       <Pressable
-        style={paywallStyles.shareBtn}
-        onPress={async () => {
-          try {
-            await Share.share({
-              message: "I just discovered The Oracle — it gave me the most accurate life reading I've ever seen. Try it yourself: https://theoracle.app",
-            });
-          } catch {}
-        }}
-      >
-        <Feather name="share-2" size={14} color={Colors.muted} />
-        <Text style={paywallStyles.shareBtnText}>Share The Oracle</Text>
-      </Pressable>
-
-      <Pressable
         style={paywallStyles.restoreBtn}
         onPress={handleRestore}
         disabled={isRestoring || !isConfigured}
@@ -246,6 +232,16 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
           <Text style={paywallStyles.restoreBtnText}>Restore Purchase</Text>
         )}
       </Pressable>
+
+      <View style={paywallStyles.legalRow}>
+        <Pressable onPress={() => Linking.openURL("https://theoracle.app/api/terms")}>
+          <Text style={paywallStyles.legalLink}>Terms of Use</Text>
+        </Pressable>
+        <Text style={paywallStyles.legalSep}> · </Text>
+        <Pressable onPress={() => Linking.openURL("https://theoracle.app/api/privacy")}>
+          <Text style={paywallStyles.legalLink}>Privacy Policy</Text>
+        </Pressable>
+      </View>
     </Animated.View>
   );
 }
@@ -329,18 +325,6 @@ const paywallStyles = StyleSheet.create({
     color: Colors.bg,
     letterSpacing: 0.5,
   },
-  shareBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 10,
-  },
-  shareBtnText: {
-    fontFamily: "EBGaramond_400Regular",
-    fontSize: 14,
-    color: Colors.muted,
-  },
   errorText: {
     fontFamily: "EBGaramond_400Regular",
     fontSize: 13,
@@ -416,6 +400,23 @@ const paywallStyles = StyleSheet.create({
     fontFamily: "CinzelDecorative_400Regular",
     fontSize: 12,
     color: Colors.bg,
+  },
+  legalRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 4,
+  },
+  legalLink: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 12,
+    color: Colors.muted,
+    textDecorationLine: "underline",
+  },
+  legalSep: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 12,
+    color: Colors.muted,
   },
 });
 
