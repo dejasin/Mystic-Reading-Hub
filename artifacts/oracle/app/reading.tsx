@@ -845,7 +845,7 @@ export default function ReadingScreen() {
             }
             if (parsed.chunk) {
               appendFreeReading(parsed.chunk);
-              scrollRef.current?.scrollToEnd({ animated: true });
+
             }
           } catch (e) {
             console.warn("SSE parse error (free reading):", e);
@@ -917,7 +917,7 @@ export default function ReadingScreen() {
               } else {
                 appendPaidReading(parsed.chunk);
               }
-              scrollRef.current?.scrollToEnd({ animated: true });
+
             }
           } catch (e) {
             console.warn("SSE parse error (paid reading):", e);
