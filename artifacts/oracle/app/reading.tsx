@@ -614,7 +614,12 @@ export default function ReadingScreen() {
       // If stream ended without paywall event, still show paywall
       setPhase("paywall");
     } catch (err) {
-      setErrorMsg("The Oracle is temporarily unavailable. Please try again.");
+      const isNetwork = err instanceof TypeError || String(err).includes("fetch");
+      setErrorMsg(
+        isNetwork
+          ? "The connection to the Oracle was severed. Check your network and try again."
+          : "A veil fell between you and the Oracle. The signal was lost."
+      );
       setPhase("error");
     }
   };
@@ -681,7 +686,12 @@ export default function ReadingScreen() {
       setReadingComplete(true);
       setPhase("complete");
     } catch (err) {
-      setErrorMsg("The Oracle must rest. Please return in a few minutes.");
+      const isNetwork = err instanceof TypeError || String(err).includes("fetch");
+      setErrorMsg(
+        isNetwork
+          ? "The thread was cut before the full vision could be delivered. Check your network."
+          : "The Oracle's vision was interrupted. The second sight requires stillness — try again."
+      );
       setPhase("error");
     }
   };
@@ -742,21 +752,27 @@ export default function ReadingScreen() {
       ) : phase === "loading" ? (
         <LoadingView />
       ) : phase === "error" ? (
-        <View style={styles.errorContainer}>
-          <Feather name="moon" size={40} color={Colors.muted} />
-          <Text style={styles.errorTitle}>The Oracle is resting.</Text>
+        <Animated.View entering={FadeIn.duration(600)} style={styles.errorContainer}>
+          <GoldSigil size={80} style={{ opacity: 0.3 }} />
+          <Text style={styles.errorTitle}>The Oracle Fell Silent</Text>
+          <Text style={styles.errorDivider}>─── ✦ ───</Text>
           <Text style={styles.errorMsg}>{errorMsg}</Text>
-          <Pressable
-            style={styles.retryBtn}
-            onPress={() => {
-              hasStarted.current = false;
-              setPhase("loading");
-              streamFreeReading();
-            }}
-          >
-            <Text style={styles.retryText}>Try Again</Text>
-          </Pressable>
-        </View>
+          <View style={styles.errorActions}>
+            <Pressable
+              style={styles.retryBtn}
+              onPress={() => {
+                hasStarted.current = false;
+                setPhase("loading");
+                streamFreeReading();
+              }}
+            >
+              <Text style={styles.retryText}>Try Again</Text>
+            </Pressable>
+            <Pressable style={styles.errorBackBtn} onPress={() => router.back()}>
+              <Text style={styles.errorBackText}>Return</Text>
+            </Pressable>
+          </View>
+        </Animated.View>
       ) : (
         <ScrollView
           ref={scrollRef}
@@ -1127,14 +1143,41 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 32,
-    gap: 16,
+    paddingHorizontal: 36,
+    gap: 14,
   },
   errorTitle: {
     fontFamily: "CinzelDecorative_400Regular",
-    fontSize: 16,
+    fontSize: 17,
     color: Colors.cream,
     textAlign: "center",
+    letterSpacing: 0.5,
+    marginTop: 4,
+  },
+  errorDivider: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 14,
+    color: Colors.muted,
+    textAlign: "center",
+    letterSpacing: 4,
+  },
+  errorActions: {
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 12,
+    marginTop: 8,
+    width: "100%",
+  },
+  errorBackBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+  },
+  errorBackText: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 14,
+    color: Colors.muted,
+    textAlign: "center",
+    letterSpacing: 0.5,
   },
   errorMsg: {
     fontFamily: "EBGaramond_400Regular_Italic",
@@ -1147,14 +1190,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.gold,
     borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 28,
-    marginTop: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    alignItems: "center",
+    width: "100%",
   },
   retryText: {
-    fontFamily: "EBGaramond_500Medium",
-    fontSize: 15,
+    fontFamily: "CinzelDecorative_400Regular",
+    fontSize: 13,
     color: Colors.gold,
+    letterSpacing: 0.5,
   },
   endDivider: {
     flexDirection: "row",

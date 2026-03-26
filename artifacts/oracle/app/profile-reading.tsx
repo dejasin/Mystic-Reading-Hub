@@ -102,6 +102,7 @@ export default function ProfileReadingScreen() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [showTyping, setShowTyping] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [readError, setReadError] = useState<string | null>(null);
 
   const scrollRef = useRef<ScrollView>(null);
   const inputRef = useRef<TextInput>(null);
@@ -140,6 +141,7 @@ export default function ProfileReadingScreen() {
     if (isStreaming) return;
     if (Platform.OS !== "web") Haptics.selectionAsync();
 
+    setReadError(null);
     setSelectedCategory(category);
     const userMsg: Message = { id: genId(), role: "user", content: category };
     const updatedMessages = [...messages, userMsg];
@@ -205,10 +207,17 @@ export default function ProfileReadingScreen() {
       }
 
       setPhase("chat");
-    } catch {
+    } catch (err) {
       setShowTyping(false);
-      setMessages(prev => [...prev, { id: genId(), role: "assistant", content: "The Oracle could not complete this reading. Please try again." }]);
-      setPhase("chat");
+      const isNetwork = err instanceof TypeError || String(err).includes("fetch");
+      setReadError(
+        isNetwork
+          ? "The connection was severed. Check your network and try again."
+          : "The Oracle could not reach this reading. Try selecting a category again."
+      );
+      // Remove the user's category message and go back to category selection
+      setMessages(prev => prev.filter(m => m.content !== category || m.role !== "user"));
+      setPhase("category");
     } finally {
       setIsStreaming(false);
       setShowTyping(false);
@@ -278,7 +287,7 @@ export default function ProfileReadingScreen() {
       }
     } catch {
       setShowTyping(false);
-      setMessages(prev => [...prev, { id: genId(), role: "assistant", content: "The Oracle is resting. Please try again." }]);
+      setMessages(prev => [...prev, { id: genId(), role: "assistant", content: "The Oracle fell quiet — a disturbance in the ether. Ask again." }]);
     } finally {
       setIsStreaming(false);
       setShowTyping(false);
@@ -349,6 +358,15 @@ export default function ProfileReadingScreen() {
           ) : null}
           ListFooterComponent={phase === "category" ? (
             <Animated.View entering={FadeIn.duration(400)} style={styles.categoriesWrap}>
+              {readError && (
+                <Animated.View entering={FadeIn.duration(300)} style={styles.readErrorBox}>
+                  <Feather name="alert-circle" size={14} color={Colors.error} />
+                  <Text style={styles.readErrorText}>{readError}</Text>
+                  <Pressable onPress={() => setReadError(null)} hitSlop={8}>
+                    <Feather name="x" size={13} color={Colors.muted} />
+                  </Pressable>
+                </Animated.View>
+              )}
               <Text style={styles.categoriesLabel}>Choose a life area...</Text>
               <View style={styles.categories}>
                 {LIFE_CATEGORIES.map(cat => (
@@ -415,6 +433,8 @@ const styles = StyleSheet.create({
   headerSign: { fontFamily: "EBGaramond_400Regular_Italic", fontSize: 12, color: Colors.muted },
   chatList: { paddingHorizontal: 16, paddingTop: 12, flexGrow: 1, justifyContent: "flex-end" },
   categoriesWrap: { paddingTop: 12, paddingBottom: 8, gap: 12 },
+  readErrorBox: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(204,68,68,0.1)", borderWidth: 1, borderColor: "rgba(204,68,68,0.25)", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
+  readErrorText: { flex: 1, fontFamily: "EBGaramond_400Regular_Italic", fontSize: 13, color: Colors.error, lineHeight: 18 },
   categoriesLabel: { fontFamily: "EBGaramond_400Regular_Italic", fontSize: 15, color: Colors.muted, textAlign: "center" },
   categories: { flexDirection: "row", flexWrap: "wrap", gap: 10, justifyContent: "center" },
   categoryChip: { flexDirection: "row", alignItems: "center", gap: 7, backgroundColor: "rgba(201,168,76,0.08)", borderWidth: 1, borderColor: "rgba(201,168,76,0.3)", borderRadius: 20, paddingVertical: 9, paddingHorizontal: 14 },

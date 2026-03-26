@@ -32,6 +32,11 @@ const SAMPLE_LEFT_PALM = require("@/assets/images/sample/left_palm.png");
 const SAMPLE_RIGHT_IRIS = require("@/assets/images/sample/right_iris.png");
 const SAMPLE_LEFT_IRIS = require("@/assets/images/sample/left_iris.png");
 
+function resolveAsset(mod: number): string {
+  if (Platform.OS === "web") return "";
+  try { return (Image as any).resolveAssetSource(mod)?.uri ?? ""; } catch { return ""; }
+}
+
 const DEV_TEST_PROFILE: Omit<OracleProfile, "id" | "createdAt"> = {
   name: "Luna Blackwood",
   dob: "1990-06-21",
@@ -43,11 +48,11 @@ const DEV_TEST_PROFILE: Omit<OracleProfile, "id" | "createdAt"> = {
   eyeColor: "Hazel",
   notes: "Test profile — Cancer sun, deeply intuitive, loves tarot and midnight rituals.",
   photos: {
-    face: Image.resolveAssetSource(SAMPLE_FACE).uri,
-    right_palm: Image.resolveAssetSource(SAMPLE_RIGHT_PALM).uri,
-    left_palm: Image.resolveAssetSource(SAMPLE_LEFT_PALM).uri,
-    right_iris: Image.resolveAssetSource(SAMPLE_RIGHT_IRIS).uri,
-    left_iris: Image.resolveAssetSource(SAMPLE_LEFT_IRIS).uri,
+    face: resolveAsset(SAMPLE_FACE),
+    right_palm: resolveAsset(SAMPLE_RIGHT_PALM),
+    left_palm: resolveAsset(SAMPLE_LEFT_PALM),
+    right_iris: resolveAsset(SAMPLE_RIGHT_IRIS),
+    left_iris: resolveAsset(SAMPLE_LEFT_IRIS),
   },
 };
 
