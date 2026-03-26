@@ -313,11 +313,17 @@ router.post(
       res.write(`data: ${JSON.stringify(data)}\n\n`);
     };
 
-    // Acknowledge immediately so client knows we're processing
     sendEvent({ event: "ping" });
+
+    const keepAlive = setInterval(() => {
+      try { res.write(`data: ${JSON.stringify({ event: "ping" })}\n\n`); } catch {}
+    }, 5000);
+    const stopKeepAlive = () => clearInterval(keepAlive);
+    res.on("close", stopKeepAlive);
 
     try {
       if (!anthropicApiKey) {
+        stopKeepAlive();
         sendEvent({ event: "error", message: "The Oracle is temporarily unavailable." });
         res.end();
         return;
@@ -487,9 +493,10 @@ End Section 2 with exactly this sentence: "You are approaching a phase where one
         const resetTimeout = () => {
           clearTimeout(timeoutId);
           timeoutId = setTimeout(() => {
+            stopKeepAlive();
             sendEvent({ event: "error", message: "The Oracle must rest. Please return in a few minutes." });
             res.end();
-          }, 15000);
+          }, 45000);
         };
         resetTimeout();
 
@@ -528,14 +535,12 @@ End Section 2 with exactly this sentence: "You are approaching a phase where one
       session.reading = fullReading;
       session.hadPalmImages = hasPalmImages;
       await saveSession(sessionId, session);
+      stopKeepAlive();
       sendEvent({ event: "paywall" });
-
-      // Wait for unlock signal (poll session.paid)
-      // For now, backend holds the stream open - client will POST /api/unlock to continue
-      // We end the stream here; client reconnects after unlock
       res.end();
 
     } catch (err) {
+      stopKeepAlive();
       req.log.error({ err }, "Generate error");
       res.write(`data: ${JSON.stringify({ event: "error", message: "The Oracle is temporarily unavailable." })}\n\n`);
       res.end();
@@ -553,11 +558,17 @@ router.post(
       res.write(`data: ${JSON.stringify(data)}\n\n`);
     };
 
-    // Acknowledge immediately
     sendEvent({ event: "ping" });
+
+    const keepAlive = setInterval(() => {
+      try { res.write(`data: ${JSON.stringify({ event: "ping" })}\n\n`); } catch {}
+    }, 5000);
+    const stopKeepAlive = () => clearInterval(keepAlive);
+    res.on("close", stopKeepAlive);
 
     try {
       if (!anthropicApiKey) {
+        stopKeepAlive();
         sendEvent({ event: "error", message: "The Oracle is temporarily unavailable." });
         res.end();
         return;
@@ -844,14 +855,17 @@ Follow the IMAGE ANALYSIS RULE: first describe what is visually observable in th
 
         session.readingComplete = true;
         await saveSession(sessionId, session);
+        stopKeepAlive();
         sendEvent({ event: "complete" });
       } catch (err) {
         req.log.error({ err }, "Anthropic call 2/3 failed");
+        stopKeepAlive();
         sendEvent({ event: "error", message: "The Oracle must rest. Please return in a few minutes." });
       }
 
       res.end();
     } catch (err) {
+      stopKeepAlive();
       req.log.error({ err }, "Continue error");
       res.write(`data: ${JSON.stringify({ event: "error", message: "The Oracle is temporarily unavailable." })}\n\n`);
       res.end();
@@ -865,6 +879,12 @@ router.post("/chat", sseHeaders, async (req: Request, res: Response) => {
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   };
   sendEvent({ event: "ping" });
+
+  const keepAlive = setInterval(() => {
+    try { res.write(`data: ${JSON.stringify({ event: "ping" })}\n\n`); } catch {}
+  }, 5000);
+  const stopKeepAlive = () => clearInterval(keepAlive);
+  res.on("close", stopKeepAlive);
 
   try {
     if (!anthropicApiKey) {
@@ -923,9 +943,11 @@ life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, 
       }
     }
 
+    stopKeepAlive();
     sendEvent({ event: "done" });
     res.end();
   } catch (err) {
+    stopKeepAlive();
     req.log.error({ err }, "Chat error");
     res.write(`data: ${JSON.stringify({ content: "The Oracle is temporarily unavailable. Please try again." })}\n\n`);
     res.write(`data: ${JSON.stringify({ event: "done" })}\n\n`);
