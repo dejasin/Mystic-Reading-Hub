@@ -16,9 +16,10 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.theoracle.app",
+      "buildNumber": "1",
       "infoPlist": {
-        "NSCameraUsageDescription": "The Oracle uses your camera to capture your face for a personalized reading session.",
-        "NSPhotoLibraryUsageDescription": "The Oracle accesses your photo library so you can choose a photo for your reading."
+        "NSCameraUsageDescription": "The Oracle uses your camera to capture palm, iris, and face images for your personalized reading.",
+        "NSPhotoLibraryUsageDescription": "The Oracle accesses your photo library so you can choose images for your reading."
       }
     },
     "android": {
@@ -28,12 +29,7 @@
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
-      [
-        "expo-router",
-        {
-          "origin": "https://replit.com/"
-        }
-      ],
+      "expo-router",
       "expo-font",
       "expo-web-browser",
       "expo-image-picker",

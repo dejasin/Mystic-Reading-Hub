@@ -46,11 +46,11 @@ const ENTITLEMENT_DISPLAY_NAME = "Full Reading Access";
 const OFFERING_IDENTIFIER = "default";
 const OFFERING_DISPLAY_NAME = "Default Offering";
 
-const PACKAGE_IDENTIFIER = "$rc_lifetime";
-const PACKAGE_DISPLAY_NAME = "Full Reading (One-Time)";
+const PACKAGE_IDENTIFIER = "$rc_monthly";
+const PACKAGE_DISPLAY_NAME = "Full Reading (Monthly)";
 
 const PRODUCT_PRICES = [
-  { amount_micros: 7990000, currency: "USD" },
+  { amount_micros: 4990000, currency: "USD" },
 ];
 
 type TestStorePricesResponse = {

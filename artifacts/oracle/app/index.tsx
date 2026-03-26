@@ -30,7 +30,7 @@ const { width } = Dimensions.get("window");
 const TRUST_LINES = [
   "Real vision analysis — not just archetypes",
   "15+ ancient systems synthesized into one reading",
-  "Trusted by 10,000+ seekers worldwide",
+  "Deep insights across love, career, health & purpose",
 ];
 
 export default function LandingScreen() {
@@ -98,6 +98,7 @@ export default function LandingScreen() {
                 pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] },
               ]}
               onPress={handleBegin}
+              accessibilityLabel="Begin your Oracle reading"
             >
               <Text style={styles.ctaText}>Begin Your Reading</Text>
               <Feather name="arrow-right" size={20} color={Colors.bg} style={{ marginLeft: 8 }} />
@@ -108,6 +109,7 @@ export default function LandingScreen() {
             <Pressable
               style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.75 }]}
               onPress={() => router.push("/profiles")}
+              accessibilityLabel="Open the profile vault"
             >
               <Feather name="users" size={16} color={Colors.gold} />
               <Text style={styles.secondaryText}>The Vault</Text>
@@ -118,6 +120,7 @@ export default function LandingScreen() {
             <Pressable
               style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.75 }]}
               onPress={() => router.push("/synastry")}
+              accessibilityLabel="Start a synastry reading"
             >
               <Text style={styles.secondaryIcon}>✦ ✦</Text>
               <Text style={styles.secondaryText}>Synastry</Text>

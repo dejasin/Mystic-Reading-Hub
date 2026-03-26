@@ -264,6 +264,7 @@ interface StepConfig {
   intro?: boolean;
   review?: boolean;
   multishot?: boolean;
+  consent?: boolean;
 }
 
 type OracleImages = {
@@ -306,6 +307,13 @@ const STEPS: StepConfig[] = [
       "Take your time — soft natural light",
     ],
     diagram: "palm",
+  },
+  {
+    key: null,
+    title: "Biometric Data Consent",
+    consent: true,
+    instructions: [],
+    diagram: null,
   },
   {
     key: "right_iris",
@@ -467,8 +475,11 @@ export default function RitualScreen() {
     setShowMultishot(true);
   };
 
+  const [bioConsentGiven, setBioConsentGiven] = useState(false);
+
   const canProceed = () => {
     if (!currentStep) return false;
+    if (currentStep.consent) return bioConsentGiven;
     if (currentStep.intro) return true;
     if (currentStep.multishot) {
       return !!(state.images.face_front && state.images.face_left && state.images.face_right);
@@ -493,6 +504,7 @@ export default function RitualScreen() {
   };
 
   const isReview = !!currentStep.review;
+  const isConsent = !!currentStep.consent;
 
   return (
     <View style={[styles.container, { paddingTop: Platform.OS === "web" ? 67 : insets.top }]}>
@@ -556,9 +568,54 @@ export default function RitualScreen() {
             <Pressable
               style={({ pressed }) => [styles.proceedBtn, pressed && { opacity: 0.85 }]}
               onPress={handleNext}
+              accessibilityLabel="Begin the sacred imaging ritual"
             >
               <Text style={styles.proceedBtnText}>I'm Ready</Text>
               <Feather name="arrow-right" size={16} color={Colors.bg} />
+            </Pressable>
+          </Animated.View>
+        ) : isConsent ? (
+          <Animated.View entering={FadeIn.duration(600)} style={styles.card}>
+            <Text style={styles.cardTitle}>Biometric Data Consent</Text>
+            <Text style={styles.divider}>─── ✦ ───</Text>
+            <Text style={styles.introText}>
+              The next steps capture close-up images of your eyes (iris). These images are used solely for your Oracle reading and are never shared with third parties.
+            </Text>
+            <Text style={[styles.introText, { marginTop: 8 }]}>
+              By proceeding, you consent to The Oracle capturing and processing your iris images for the purpose of generating your personalized iridology reading. You can delete your data at any time from the Vault.
+            </Text>
+            <Pressable
+              style={({ pressed }) => [styles.proceedBtn, bioConsentGiven ? { opacity: 0.5 } : {}, pressed && { opacity: 0.85 }]}
+              onPress={() => setBioConsentGiven(true)}
+              disabled={bioConsentGiven}
+              accessibilityLabel="I consent to iris image capture"
+            >
+              <Feather name={bioConsentGiven ? "check-circle" : "shield"} size={16} color={Colors.bg} />
+              <Text style={styles.proceedBtnText}>{bioConsentGiven ? "Consent Given" : "I Consent"}</Text>
+            </Pressable>
+            {bioConsentGiven && (
+              <Pressable
+                style={({ pressed }) => [styles.proceedBtn, { marginTop: 8 }, pressed && { opacity: 0.85 }]}
+                onPress={handleNext}
+                accessibilityLabel="Continue to iris capture"
+              >
+                <Text style={styles.proceedBtnText}>Continue</Text>
+                <Feather name="arrow-right" size={16} color={Colors.bg} />
+              </Pressable>
+            )}
+            <Pressable
+              style={styles.skipBtn}
+              onPress={() => {
+                if (Platform.OS !== "web") {
+                  Haptics.selectionAsync();
+                }
+                const nextNonIris = STEPS.findIndex((s, i) => i > step && s.key !== "right_iris" && s.key !== "left_iris");
+                setStep(nextNonIris >= 0 ? nextNonIris : step + 1);
+              }}
+              accessibilityLabel="Skip iris capture"
+            >
+              <Text style={styles.skipText}>Skip Iris Capture</Text>
+              <Feather name="skip-forward" size={14} color={Colors.muted} />
             </Pressable>
           </Animated.View>
         ) : isReview ? (

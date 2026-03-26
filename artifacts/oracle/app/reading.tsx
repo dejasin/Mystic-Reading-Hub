@@ -113,7 +113,7 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
 
   const currentOffering = offerings?.current;
   const packageToPurchase = currentOffering?.availablePackages[0];
-  const priceString = packageToPurchase?.product.priceString ?? "$7.99";
+  const priceString = packageToPurchase?.product.priceString ?? "$4.99";
   const purchasesAvailable = isConfigured && !!packageToPurchase;
 
   const handlePurchase = async () => {
@@ -153,9 +153,9 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
       >
         <View style={paywallStyles.modalOverlay}>
           <View style={paywallStyles.modalCard}>
-            <Text style={paywallStyles.modalTitle}>Confirm Purchase</Text>
+            <Text style={paywallStyles.modalTitle}>Confirm Subscription</Text>
             <Text style={paywallStyles.modalBody}>
-              Purchase Full Oracle Reading for {priceString}?
+              Subscribe to Full Oracle Reading for {priceString}/month?{"\n\n"}Auto-renews monthly. Cancel anytime in Settings → Apple ID → Subscriptions.
             </Text>
             <View style={paywallStyles.modalBtns}>
               <Pressable
@@ -191,8 +191,11 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
           <ActivityIndicator color={Colors.gold} />
         ) : (
           <>
-            <Text style={paywallStyles.price}>{priceString}</Text>
-            <Text style={paywallStyles.priceDesc}>Full Reading + Lifetime Chat</Text>
+            <Text style={paywallStyles.price}>{priceString}/mo</Text>
+            <Text style={paywallStyles.priceDesc}>Full Reading + Chat Access</Text>
+            <Text style={paywallStyles.subTerms}>
+              Auto-renews monthly. Cancel anytime in{"\n"}Settings → Apple ID → Subscriptions.
+            </Text>
           </>
         )}
       </View>
@@ -206,6 +209,7 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
           style={({ pressed }) => [paywallStyles.unlockBtn, (pressed || isPurchasing) && { opacity: 0.85 }]}
           onPress={() => setShowConfirm(true)}
           disabled={isPurchasing || isLoading || !purchasesAvailable}
+          accessibilityLabel="Unlock full reading with subscription"
         >
           {isPurchasing ? (
             <ActivityIndicator color={Colors.bg} size="small" />
@@ -226,6 +230,7 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
         style={paywallStyles.restoreBtn}
         onPress={handleRestore}
         disabled={isRestoring || !isConfigured}
+        accessibilityLabel="Restore previous purchase"
       >
         {isRestoring ? (
           <ActivityIndicator color={Colors.muted} size="small" />
@@ -301,6 +306,15 @@ const paywallStyles = StyleSheet.create({
     fontFamily: "EBGaramond_400Regular",
     fontSize: 14,
     color: Colors.muted,
+  },
+  subTerms: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 11,
+    color: Colors.muted,
+    textAlign: "center",
+    lineHeight: 16,
+    marginTop: 4,
+    opacity: 0.7,
   },
   unlockWrapper: {
     borderRadius: 12,
@@ -691,6 +705,7 @@ export default function ReadingScreen() {
   const [errorMsg, setErrorMsg] = useState("");
   const [activationDismissed, setActivationDismissed] = useState(false);
   const hasStarted = useRef(false);
+  const lastFailedPhase = useRef<"free" | "paid">("free");
   const scrollRef = useRef<ScrollView>(null);
 
   const initiallyNeedsActivation = useRef(
@@ -808,6 +823,7 @@ export default function ReadingScreen() {
           ? "The connection to the Oracle was severed. Check your network and try again."
           : "A veil fell between you and the Oracle. The signal was lost."
       );
+      lastFailedPhase.current = "free";
       setPhase("error");
     }
   };
@@ -876,6 +892,7 @@ export default function ReadingScreen() {
           ? "The thread was cut before the full vision could be delivered. Check your network."
           : "The Oracle's vision was interrupted. The second sight requires stillness — try again."
       );
+      lastFailedPhase.current = "paid";
       setPhase("error");
     }
   };
@@ -912,7 +929,7 @@ export default function ReadingScreen() {
       {/* Header */}
       {hasContent && (
         <View style={styles.header}>
-          <Pressable onPress={() => router.replace("/intake")} style={styles.backBtn} hitSlop={12}>
+          <Pressable onPress={() => router.replace("/intake")} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back to intake">
             <Feather name="arrow-left" size={20} color={Colors.gold} />
           </Pressable>
           <Text style={styles.headerTitle}>Your Reading</Text>
@@ -945,9 +962,14 @@ export default function ReadingScreen() {
             <Pressable
               style={styles.retryBtn}
               onPress={() => {
-                hasStarted.current = false;
-                setPhase("loading");
-                streamFreeReading();
+                setErrorMsg("");
+                if (lastFailedPhase.current === "paid") {
+                  streamPaidReading();
+                } else {
+                  hasStarted.current = false;
+                  setPhase("loading");
+                  streamFreeReading();
+                }
               }}
             >
               <Text style={styles.retryText}>Try Again</Text>

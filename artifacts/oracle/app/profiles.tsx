@@ -11,6 +11,7 @@ import {
   TextInput,
   ScrollView,
   Modal,
+  Linking,
 } from "react-native";
 import Animated, { FadeIn, FadeOut, Layout } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -21,6 +22,7 @@ import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import { useProfiles, OracleProfile, ProfilePhoto } from "@/context/ProfileContext";
+import { useSubscription } from "@/lib/revenuecat";
 
 const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"];
 const HAND_OPTIONS = ["Right", "Left", "Ambidextrous"];
@@ -333,8 +335,23 @@ const modalStyles = StyleSheet.create({
 export default function ProfilesScreen() {
   const insets = useSafeAreaInsets();
   const { profiles, isPaid, maxProfiles, addProfile, updateProfile, deleteProfile } = useProfiles();
+  const { restore, isRestoring, isConfigured } = useSubscription();
   const [showForm, setShowForm] = useState(false);
   const [editingProfile, setEditingProfile] = useState<OracleProfile | undefined>();
+
+  const handleRestorePurchases = async () => {
+    if (!isConfigured) return;
+    try {
+      const info = await restore();
+      if (info.entitlements.active["full_reading"]) {
+        Alert.alert("Restored", "Your subscription has been restored.");
+      } else {
+        Alert.alert("No Subscription Found", "No active subscription was found for this account.");
+      }
+    } catch {
+      Alert.alert("Error", "Failed to restore purchases. Please try again.");
+    }
+  };
 
   const handleAddNew = () => {
     if (!isPaid && profiles.length >= 15) {
@@ -400,11 +417,11 @@ export default function ProfilesScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
+        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back">
           <Feather name="arrow-left" size={20} color={Colors.gold} />
         </Pressable>
         <Text style={styles.headerTitle}>The Vault</Text>
-        <Pressable onPress={handleAddNew} style={styles.addBtn} hitSlop={12}>
+        <Pressable onPress={handleAddNew} style={styles.addBtn} hitSlop={12} accessibilityLabel="Add new profile">
           <Feather name="plus" size={22} color={Colors.gold} />
         </Pressable>
       </View>
@@ -482,6 +499,27 @@ export default function ProfilesScreen() {
         />
       )}
 
+      <View style={styles.accountSection}>
+        <Pressable
+          style={styles.accountBtn}
+          onPress={() => Linking.openURL("https://apps.apple.com/account/subscriptions")}
+          accessibilityLabel="Manage your subscription"
+        >
+          <Feather name="credit-card" size={14} color={Colors.muted} />
+          <Text style={styles.accountBtnText}>Manage Subscription</Text>
+        </Pressable>
+        <Text style={styles.accountSep}>·</Text>
+        <Pressable
+          style={styles.accountBtn}
+          onPress={handleRestorePurchases}
+          disabled={isRestoring}
+          accessibilityLabel="Restore previous purchases"
+        >
+          <Feather name="refresh-cw" size={14} color={Colors.muted} />
+          <Text style={styles.accountBtnText}>{isRestoring ? "Restoring..." : "Restore Purchases"}</Text>
+        </Pressable>
+      </View>
+
       <ProfileFormModal
         visible={showForm}
         initial={editingProfile}
@@ -526,4 +564,8 @@ const styles = StyleSheet.create({
   emptyAddText: { fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: Colors.bg },
   devSeedBtn: { flexDirection: "row", alignItems: "center", gap: 6, marginHorizontal: 20, marginBottom: 10, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: "#7fdfb0", backgroundColor: "rgba(127,223,176,0.07)", alignSelf: "flex-start" },
   devSeedText: { fontFamily: "EBGaramond_500Medium", fontSize: 13, color: "#7fdfb0", letterSpacing: 0.3 },
+  accountSection: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 16, gap: 8, borderTopWidth: 1, borderTopColor: "rgba(201,168,76,0.1)", marginHorizontal: 20, marginTop: 8 },
+  accountBtn: { flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 6, paddingHorizontal: 8 },
+  accountBtnText: { fontFamily: "EBGaramond_400Regular", fontSize: 12, color: Colors.muted, textDecorationLine: "underline" },
+  accountSep: { fontFamily: "EBGaramond_400Regular", fontSize: 12, color: Colors.muted },
 });

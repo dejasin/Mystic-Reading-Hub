@@ -27,7 +27,7 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 ### Screens
 1. `app/index.tsx` — Landing page with animated hexagram sigil and starfield
 2. `app/intake.tsx` — User data form (name, DOB, birth time, city, gender, dominant hand, eye color, 3 life questions)
-3. `app/ritual.tsx` — 6-step photo ritual wizard (intro → right palm → left palm → right iris → left iris → face → review)
+3. `app/ritual.tsx` — 9-step photo ritual wizard (intro → right palm → left palm → biometric consent → right iris → left iris → face → face reading session → review)
 4. `app/reading.tsx` — SSE streaming reading, paywall gate after Section 2, archetype card, share + chat CTA
 5. `app/chat.tsx` — Oracle chat with streaming responses, inverted FlatList, starter questions
 
@@ -53,11 +53,12 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 
 **RevenueCat** is integrated for payment processing.
 
-- **Product**: `oracle_full_reading` — $7.99 one-time access (billed as subscription with `$rc_lifetime` package)
+- **Product**: `oracle_full_reading` — $4.99/month auto-renewing subscription (`$rc_monthly` package, `P1M` duration)
 - **Entitlement**: `full_reading` — gates the paid sections 3–7, archetype, and Oracle Chat
 - **Client SDK**: `react-native-purchases` initialized in `app/_layout.tsx` via `initializeRevenueCat()`
 - **Subscription context**: `lib/revenuecat.tsx` → `SubscriptionProvider` / `useSubscription` hook
-- **Paywall UI**: `app/reading.tsx` `PaywallGate` component — shows price from RC, custom confirm modal, restore purchase
+- **Paywall UI**: `app/reading.tsx` `PaywallGate` component — shows price from RC, subscription renewal terms, custom confirm modal with terms, restore purchase
+- **Subscription management**: `app/profiles.tsx` — "Manage Subscription" link (opens App Store subscriptions) + "Restore Purchases" at bottom of vault screen
 - **Server verification**: `POST /api/generate/continue` accepts `rcAppUserId`, calls `listCustomerActiveEntitlements` via `@replit/revenuecat-sdk` to verify `full_reading` entitlement before streaming paid sections
 - **Seed script**: `pnpm --filter @workspace/scripts run seed:revenuecat` — idempotent, re-runnable
 
