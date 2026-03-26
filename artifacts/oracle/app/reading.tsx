@@ -542,14 +542,13 @@ export default function ReadingScreen() {
     return "/";
   };
 
+  const buildJsonRequest = (extra: Record<string, string> = {}): { body: string; headers: Record<string, string> } => ({
+    body: JSON.stringify({ userData: JSON.stringify(state.userData), sessionId: state.sessionId, ...extra }),
+    headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+  });
+
   const buildRequest = (extra: Record<string, string> = {}): { body: FormData | string; headers: Record<string, string> } => {
-    if (Platform.OS === "web") {
-      // Web can't send local file URIs via FormData — send JSON without images
-      return {
-        body: JSON.stringify({ userData: JSON.stringify(state.userData), sessionId: state.sessionId, ...extra }),
-        headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
-      };
-    }
+    if (Platform.OS === "web") return buildJsonRequest(extra);
     // Native: send FormData with image files
     const fd = new FormData();
     fd.append("userData", JSON.stringify(state.userData));
@@ -564,17 +563,26 @@ export default function ReadingScreen() {
     return { body: fd, headers: { Accept: "text/event-stream" } };
   };
 
+  // Tries FormData (native) then falls back to JSON if file URIs are stale
+  const doFetch = async (url: string, extra: Record<string, string> = {}): Promise<Response> => {
+    const { body, headers } = buildRequest(extra);
+    try {
+      return await fetch(url, { method: "POST", body, headers });
+    } catch {
+      if (Platform.OS !== "web") {
+        const json = buildJsonRequest(extra);
+        return await fetch(url, { method: "POST", body: json.body, headers: json.headers });
+      }
+      throw;
+    }
+  };
+
   const streamFreeReading = async () => {
     setPhase("streaming_free");
     const baseUrl = getApiUrl();
 
     try {
-      const { body, headers } = buildRequest();
-      const response = await fetch(`${baseUrl}api/generate`, {
-        method: "POST",
-        body,
-        headers,
-      });
+      const response = await doFetch(`${baseUrl}api/generate`);
 
       if (!response.ok) throw new Error("API error");
       const reader = response.body?.getReader();
@@ -629,12 +637,7 @@ export default function ReadingScreen() {
     const baseUrl = getApiUrl();
 
     try {
-      const { body, headers } = buildRequest({ devBypass: "true" });
-      const response = await fetch(`${baseUrl}api/generate/continue`, {
-        method: "POST",
-        body,
-        headers,
-      });
+      const response = await doFetch(`${baseUrl}api/generate/continue`, { devBypass: "true" });
 
       if (!response.ok) throw new Error("API error");
       const reader = response.body?.getReader();
