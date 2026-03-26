@@ -28,6 +28,7 @@ import { fetch } from "expo/fetch";
 import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import GoldSigil from "@/components/GoldSigil";
+import ExpandableParagraph from "@/components/ExpandableParagraph";
 import { useOracle, DeepDiveCategory } from "@/context/OracleContext";
 import { useProfiles } from "@/context/ProfileContext";
 import { useSubscription } from "@/lib/revenuecat";
@@ -420,7 +421,14 @@ const paywallStyles = StyleSheet.create({
   },
 });
 
-function ReadingSection({ text }: { text: string }) {
+interface ReadingSectionProps {
+  text: string;
+  sessionId?: string;
+  userData?: string;
+  isSubscribed?: boolean;
+}
+
+function ReadingSection({ text, sessionId, userData, isSubscribed }: ReadingSectionProps) {
   if (!text) return null;
   // Split into sections by ✦
   const sections = text.split(/(?=✦\s)/);
@@ -431,13 +439,27 @@ function ReadingSection({ text }: { text: string }) {
         const lines = section.trim().split("\n");
         const heading = lines[0].startsWith("✦") ? lines[0] : null;
         const body = heading ? lines.slice(1).join("\n").trim() : section.trim();
+        // Split body into individual paragraphs for per-paragraph long-press
+        const paragraphs = body.split(/\n\n+/).map(p => p.trim()).filter(Boolean);
         return (
           <Animated.View key={i} entering={FadeIn.duration(600).delay(i * 100)} style={sectionStyles.container}>
             {heading && (
               <Text style={sectionStyles.heading}>{heading}</Text>
             )}
             <Text style={sectionStyles.divider}>─── ✦ ───</Text>
-            <Text style={sectionStyles.body}>{body}</Text>
+            {sessionId && userData ? (
+              paragraphs.map((para, j) => (
+                <ExpandableParagraph
+                  key={j}
+                  text={para}
+                  sessionId={sessionId}
+                  userData={userData}
+                  isSubscribed={isSubscribed ?? false}
+                />
+              ))
+            ) : (
+              <Text style={sectionStyles.body}>{body}</Text>
+            )}
           </Animated.View>
         );
       })}
@@ -969,7 +991,12 @@ export default function ReadingScreen() {
           {(phase === "streaming_paid" || phase === "complete") && state.paidReading.length > 0 && (
             <>
               <Text style={sectionStyles.divider}>─── ✦ ───</Text>
-              <ReadingSection text={state.paidReading} />
+              <ReadingSection
+                text={state.paidReading}
+                sessionId={state.sessionId}
+                userData={JSON.stringify(state.userData)}
+                isSubscribed={!!(customerInfo?.entitlements.active["full_reading"])}
+              />
             </>
           )}
 
@@ -985,7 +1012,12 @@ export default function ReadingScreen() {
             <>
               <Text style={sectionStyles.divider}>─── ✦ ───</Text>
               <View style={styles.archetypeCard}>
-                <ReadingSection text={state.archetypeReading} />
+                <ReadingSection
+                  text={state.archetypeReading}
+                  sessionId={state.sessionId}
+                  userData={JSON.stringify(state.userData)}
+                  isSubscribed={!!(customerInfo?.entitlements.active["full_reading"])}
+                />
               </View>
             </>
           )}
@@ -998,7 +1030,12 @@ export default function ReadingScreen() {
                 <View style={styles.specialReadingHeader}>
                   <Text style={styles.specialReadingBadge}>Chinese Face Reading · 面相</Text>
                 </View>
-                <ReadingSection text={state.chineseFaceReading} />
+                <ReadingSection
+                  text={state.chineseFaceReading}
+                  sessionId={state.sessionId}
+                  userData={JSON.stringify(state.userData)}
+                  isSubscribed={!!(customerInfo?.entitlements.active["full_reading"])}
+                />
               </View>
             </>
           )}
@@ -1018,7 +1055,12 @@ export default function ReadingScreen() {
                 <View style={styles.specialReadingHeader}>
                   <Text style={styles.specialReadingBadge}>Iridology Health Reading</Text>
                 </View>
-                <ReadingSection text={state.iridologyReading} />
+                <ReadingSection
+                  text={state.iridologyReading}
+                  sessionId={state.sessionId}
+                  userData={JSON.stringify(state.userData)}
+                  isSubscribed={!!(customerInfo?.entitlements.active["full_reading"])}
+                />
               </View>
             </>
           )}

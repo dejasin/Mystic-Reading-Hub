@@ -16,8 +16,10 @@ import { Feather } from "@expo/vector-icons";
 import { fetch } from "expo/fetch";
 import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
+import ExpandableParagraph from "@/components/ExpandableParagraph";
 import { useOracle, DeepDiveCategory } from "@/context/OracleContext";
 import { useProfiles } from "@/context/ProfileContext";
+import { useSubscription } from "@/lib/revenuecat";
 
 type CategoryKey = DeepDiveCategory;
 type FeatherIconName = React.ComponentProps<typeof Feather>["name"];
@@ -207,7 +209,14 @@ const inputStyles = StyleSheet.create({
   },
 });
 
-function ReadingSection({ text }: { text: string }) {
+interface ReadingSectionProps {
+  text: string;
+  sessionId?: string;
+  userData?: string;
+  isSubscribed?: boolean;
+}
+
+function ReadingSection({ text, sessionId, userData, isSubscribed }: ReadingSectionProps) {
   if (!text) return null;
   const sections = text.split(/(?=✦\s)/);
   return (
@@ -217,11 +226,25 @@ function ReadingSection({ text }: { text: string }) {
         const lines = section.trim().split("\n");
         const heading = lines[0].startsWith("✦") ? lines[0] : null;
         const body = heading ? lines.slice(1).join("\n").trim() : section.trim();
+        // Split body into individual paragraphs for per-paragraph long-press
+        const paragraphs = body.split(/\n\n+/).map(p => p.trim()).filter(Boolean);
         return (
           <Animated.View key={i} entering={FadeIn.duration(600).delay(i * 100)} style={sectionStyles.container}>
             {heading && <Text style={sectionStyles.heading}>{heading}</Text>}
             <Text style={sectionStyles.divider}>─── ✦ ───</Text>
-            <Text style={sectionStyles.body}>{body}</Text>
+            {sessionId && userData ? (
+              paragraphs.map((para, j) => (
+                <ExpandableParagraph
+                  key={j}
+                  text={para}
+                  sessionId={sessionId}
+                  userData={userData}
+                  isSubscribed={isSubscribed ?? false}
+                />
+              ))
+            ) : (
+              <Text style={sectionStyles.body}>{body}</Text>
+            )}
           </Animated.View>
         );
       })}
@@ -263,6 +286,7 @@ export default function DeepDiveScreen() {
   const params = useLocalSearchParams<{ category?: string }>();
   const { state, appendDeepDive, clearDeepDive } = useOracle();
   const { profiles, updateProfile } = useProfiles();
+  const { customerInfo } = useSubscription();
 
   const VALID_CATEGORIES: CategoryKey[] = ["career", "relationship", "finances", "fitness", "family"];
   const rawCat = params.category as string | undefined;
@@ -539,7 +563,12 @@ export default function DeepDiveScreen() {
             <Text style={styles.divider}>─── ✦ ───</Text>
 
             {streamedText.length > 0 && (
-              <ReadingSection text={streamedText} />
+              <ReadingSection
+                text={streamedText}
+                sessionId={state.sessionId}
+                userData={JSON.stringify(state.userData)}
+                isSubscribed={!!(customerInfo?.entitlements.active["full_reading"])}
+              />
             )}
 
             {isStreaming && (

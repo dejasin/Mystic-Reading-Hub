@@ -1310,4 +1310,101 @@ life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, 
   }
 });
 
+// POST /api/expand - Stream an expanded Oracle response for a selected paragraph
+router.post("/expand", sseHeaders, async (req: Request, res: Response) => {
+  const sendEvent = (data: object) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+  sendEvent({ event: "ping" });
+
+  try {
+    if (!anthropicApiKey) {
+      sendEvent({ event: "error", message: "The Oracle is temporarily unavailable." });
+      res.end();
+      return;
+    }
+
+    const { sessionId, userData: userDataRaw, selectedText, mode } = req.body as {
+      sessionId?: string;
+      userData?: string;
+      selectedText?: string;
+      mode?: "go_deeper" | "expand";
+    };
+
+    if (!selectedText || typeof selectedText !== "string" || selectedText.trim().length < 10) {
+      sendEvent({ event: "error", message: "No passage selected." });
+      res.end();
+      return;
+    }
+
+    let userData: Record<string, string> = {};
+    try { if (userDataRaw) userData = JSON.parse(userDataRaw); } catch {}
+
+    const session = sessionId ? getOrCreateSession(sessionId) : null;
+
+    if (!session?.paid) {
+      sendEvent({ event: "error", message: "This feature requires the full reading." });
+      res.end();
+      return;
+    }
+
+    const dob = userData.dob ?? "";
+    const name = userData.name ?? "Seeker";
+    const sunSign = dob ? computeSunSign(dob) : "Unknown";
+    const numerology = computeFullNumerology(dob, name);
+    const personalYear = dob ? computePersonalYear(dob) : 0;
+    const chineseZodiac = dob ? computeChineseZodiac(dob) : "Unknown";
+    const tarotCard = computeTarotCard(numerology.lifePath);
+    const age = dob ? new Date().getUTCFullYear() - new Date(dob).getUTCFullYear() : 0;
+    const numerologyBlock = buildNumerologyBlock(numerology);
+
+    const modeInstruction = mode === "go_deeper"
+      ? `Go significantly deeper into the layers beneath this passage. Excavate the hidden psychological roots, the archetypal forces at work, the symbolic resonance of what was said. Do not repeat what was already written. Go further inward — more specific, more confronting, more precise. Reveal what the original passage only hinted at.`
+      : `Expand upon this passage with additional breadth and context. Explore adjacent dimensions — how this pattern manifests in relationships, career, body, and time. Trace its origins and its future trajectory. Connect it to the broader tapestry of this person's life. Do not repeat what was already written. Build outward from this insight with new territory.`;
+
+    const systemPrompt = `You are The Oracle — the same timeless intelligence that delivered the original reading. You are now responding to a seeker who has asked you to illuminate a specific passage of their reading further.
+
+${modeInstruction}
+
+RULES:
+- Speak directly to the seeker in second person ("you")
+- Do NOT repeat or paraphrase the selected passage itself
+- Do NOT use bullet points or markdown headers
+- Write in the Oracle's signature literary, immersive prose
+- 200–350 words, with rhythm and weight
+- End with a single, direct confrontational sentence that lands like a truth they have been avoiding
+
+FORBIDDEN TERMINOLOGY — never use these words or phrases:
+life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces, Chinese zodiac, Tarot, tarot, soul urge, expression number, personal year, numerology, astrology, zodiac
+
+SEEKER CONTEXT — integrate naturally, never state mechanically:
+Name: ${name}, Age: ${age}, Elemental/Seasonal Signature: ${sunSign}
+${numerologyBlock}
+Current Cycle: ${personalYear}, Ancestral Animal: ${chineseZodiac}, Archetypal Card: ${tarotCard}`;
+
+    const stream = anthropic.messages.stream({
+      model: MODEL,
+      max_tokens: 800,
+      system: systemPrompt,
+      messages: [{
+        role: "user",
+        content: `The seeker has highlighted this passage from their reading:\n\n"${selectedText.trim()}"\n\nExpand on this now.`
+      }]
+    });
+
+    for await (const chunk of stream) {
+      if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
+        sendEvent({ chunk: chunk.delta.text });
+      }
+    }
+
+    sendEvent({ event: "done" });
+    res.end();
+  } catch (err) {
+    req.log.error({ err }, "Expand error");
+    sendEvent({ event: "error", message: "The Oracle must rest. Please try again." });
+    res.end();
+  }
+});
+
 export default router;
