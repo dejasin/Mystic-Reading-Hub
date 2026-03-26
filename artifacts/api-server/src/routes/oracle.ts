@@ -394,7 +394,7 @@ End Section 2 with exactly this sentence: "You are approaching a phase where one
       try {
         const stream1 = anthropic.messages.stream({
           model: MODEL,
-          max_tokens: 1200,
+          max_tokens: 2000,
           system: systemPrompt,
           messages: [{ role: "user", content: call1Content }]
         });
@@ -424,7 +424,7 @@ End Section 2 with exactly this sentence: "You are approaching a phase where one
         try {
           const fallback = await anthropic.messages.create({
             model: MODEL,
-            max_tokens: 800,
+            max_tokens: 1500,
             system: systemPrompt,
             messages: [{
               role: "user",
@@ -601,7 +601,7 @@ End the ENTIRE reading with ONE short, direct, unforgettable destiny sentence on
         let sectionReading = "";
         const stream2 = anthropic.messages.stream({
           model: MODEL,
-          max_tokens: 1800,
+          max_tokens: 2500,
           system: systemPrompt,
           messages: [{ role: "user", content: call2Content }]
         });
@@ -617,7 +617,7 @@ End the ENTIRE reading with ONE short, direct, unforgettable destiny sentence on
         // CALL 3 — Section 6 + Archetype block (pure synthesis)
         const call3 = await anthropic.messages.create({
           model: MODEL,
-          max_tokens: 1200,
+          max_tokens: 2500,
           system: systemPrompt,
           messages: [{
             role: "user",
@@ -668,7 +668,7 @@ Follow the IMAGE ANALYSIS RULE: first OBSERVATION of what is visually present, t
 
           const stream4 = anthropic.messages.stream({
             model: MODEL,
-            max_tokens: 800,
+            max_tokens: 1500,
             system: systemPrompt,
             messages: [{ role: "user", content: call4Content }]
           });
@@ -709,7 +709,7 @@ Follow the IMAGE ANALYSIS RULE: first describe what is visually observable in th
 
           const stream5 = anthropic.messages.stream({
             model: MODEL,
-            max_tokens: 800,
+            max_tokens: 1500,
             system: systemPrompt,
             messages: [{ role: "user", content: call5Content }]
           });
