@@ -1076,6 +1076,12 @@ router.post("/synastry", sseHeaders, async (req: Request, res: Response) => {
   };
   sendEvent({ event: "ping" });
 
+  const keepAlive = setInterval(() => {
+    try { res.write(`data: ${JSON.stringify({ event: "ping" })}\n\n`); } catch {}
+  }, 5000);
+  const stopKeepAlive = () => clearInterval(keepAlive);
+  res.on("close", stopKeepAlive);
+
   try {
     const { profile1, profile2 } = req.body as {
       profile1: { name: string; dob: string; birthTime?: string; birthCity?: string; birthCountry?: string; gender?: string; dominantHand?: string; eyeColor?: string; photos: string[] };
@@ -1083,6 +1089,7 @@ router.post("/synastry", sseHeaders, async (req: Request, res: Response) => {
     };
 
     if (!profile1?.name || !profile1?.dob || !profile2?.name || !profile2?.dob) {
+      stopKeepAlive();
       sendEvent({ event: "error", message: "Two complete profiles are required for synastry." });
       res.end();
       return;
@@ -1168,9 +1175,11 @@ Generate the full synastry reading now.`;
       }
     }
 
+    stopKeepAlive();
     sendEvent({ event: "complete" });
     res.end();
   } catch (err) {
+    stopKeepAlive();
     req.log.error({ err }, "Synastry error");
     sendEvent({ event: "error", message: "The Oracle could not complete this synastry reading." });
     res.end();
@@ -1183,6 +1192,12 @@ router.post("/synastry/chat", sseHeaders, async (req: Request, res: Response) =>
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   };
   sendEvent({ event: "ping" });
+
+  const keepAlive = setInterval(() => {
+    try { res.write(`data: ${JSON.stringify({ event: "ping" })}\n\n`); } catch {}
+  }, 5000);
+  const stopKeepAlive = () => clearInterval(keepAlive);
+  res.on("close", stopKeepAlive);
 
   try {
     const { messages, readingSummary, profile1, profile2 } = req.body;
@@ -1233,9 +1248,11 @@ life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, 
       }
     }
 
+    stopKeepAlive();
     sendEvent({ event: "done" });
     res.end();
   } catch (err) {
+    stopKeepAlive();
     req.log.error({ err }, "Synastry chat error");
     sendEvent({ content: "The Oracle is temporarily unavailable. Please try again." });
     sendEvent({ event: "done" });
@@ -1250,8 +1267,15 @@ router.post("/deep-dive", sseHeaders, async (req: Request, res: Response) => {
   };
   sendEvent({ event: "ping" });
 
+  const keepAlive = setInterval(() => {
+    try { res.write(`data: ${JSON.stringify({ event: "ping" })}\n\n`); } catch {}
+  }, 5000);
+  const stopKeepAlive = () => clearInterval(keepAlive);
+  res.on("close", stopKeepAlive);
+
   try {
     if (!anthropicApiKey) {
+      stopKeepAlive();
       sendEvent({ event: "error", message: "The Oracle is temporarily unavailable." });
       res.end();
       return;
@@ -1265,6 +1289,7 @@ router.post("/deep-dive", sseHeaders, async (req: Request, res: Response) => {
     };
 
     if (!category || !userData) {
+      stopKeepAlive();
       sendEvent({ event: "error", message: "Missing required fields." });
       res.end();
       return;
@@ -1272,6 +1297,7 @@ router.post("/deep-dive", sseHeaders, async (req: Request, res: Response) => {
 
     const session = sessionId ? await getOrCreateSession(sessionId) : null;
     if (!session || !session.readingComplete) {
+      stopKeepAlive();
       sendEvent({ event: "error", message: "Complete your full Oracle reading before accessing Deep Dives." });
       res.end();
       return;
@@ -1304,6 +1330,7 @@ router.post("/deep-dive", sseHeaders, async (req: Request, res: Response) => {
 
     const categoryPrompt = categoryPrompts[category];
     if (!categoryPrompt) {
+      stopKeepAlive();
       sendEvent({ event: "error", message: "Unknown category." });
       res.end();
       return;
@@ -1345,9 +1372,11 @@ ${readingContext}`;
       }
     }
 
+    stopKeepAlive();
     sendEvent({ event: "complete" });
     res.end();
   } catch (err) {
+    stopKeepAlive();
     req.log.error({ err }, "Deep dive error");
     sendEvent({ event: "error", message: "The Oracle could not complete this reading. Please try again." });
     res.end();
@@ -1361,6 +1390,12 @@ router.post("/profile-reading", sseHeaders, async (req: Request, res: Response) 
   };
   sendEvent({ event: "ping" });
 
+  const keepAlive = setInterval(() => {
+    try { res.write(`data: ${JSON.stringify({ event: "ping" })}\n\n`); } catch {}
+  }, 5000);
+  const stopKeepAlive = () => clearInterval(keepAlive);
+  res.on("close", stopKeepAlive);
+
   try {
     const { profile, category } = req.body as {
       profile: { name: string; dob: string; birthTime?: string; birthCity?: string; birthCountry?: string; gender?: string; dominantHand?: string; eyeColor?: string; notes?: string; photos: string[] };
@@ -1368,6 +1403,7 @@ router.post("/profile-reading", sseHeaders, async (req: Request, res: Response) 
     };
 
     if (!profile?.name || !profile?.dob || !category) {
+      stopKeepAlive();
       sendEvent({ event: "error", message: "Profile and category are required." });
       res.end();
       return;
@@ -1428,9 +1464,11 @@ Generate the reading now.`;
       }
     }
 
+    stopKeepAlive();
     sendEvent({ event: "complete" });
     res.end();
   } catch (err) {
+    stopKeepAlive();
     req.log.error({ err }, "Profile reading error");
     sendEvent({ event: "error", message: "The Oracle could not complete this reading." });
     res.end();
@@ -1443,6 +1481,12 @@ router.post("/profile-reading/chat", sseHeaders, async (req: Request, res: Respo
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   };
   sendEvent({ event: "ping" });
+
+  const keepAlive = setInterval(() => {
+    try { res.write(`data: ${JSON.stringify({ event: "ping" })}\n\n`); } catch {}
+  }, 5000);
+  const stopKeepAlive = () => clearInterval(keepAlive);
+  res.on("close", stopKeepAlive);
 
   try {
     const { profile, category, messages } = req.body as {
@@ -1486,9 +1530,11 @@ life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, 
       }
     }
 
+    stopKeepAlive();
     sendEvent({ event: "done" });
     res.end();
   } catch (err) {
+    stopKeepAlive();
     req.log.error({ err }, "Profile reading chat error");
     sendEvent({ content: "The Oracle is temporarily unavailable. Please try again." });
     sendEvent({ event: "done" });
@@ -1503,8 +1549,15 @@ router.post("/expand", sseHeaders, async (req: Request, res: Response) => {
   };
   sendEvent({ event: "ping" });
 
+  const keepAlive = setInterval(() => {
+    try { res.write(`data: ${JSON.stringify({ event: "ping" })}\n\n`); } catch {}
+  }, 5000);
+  const stopKeepAlive = () => clearInterval(keepAlive);
+  res.on("close", stopKeepAlive);
+
   try {
     if (!anthropicApiKey) {
+      stopKeepAlive();
       sendEvent({ event: "error", message: "The Oracle is temporarily unavailable." });
       res.end();
       return;
@@ -1518,6 +1571,7 @@ router.post("/expand", sseHeaders, async (req: Request, res: Response) => {
     };
 
     if (!selectedText || typeof selectedText !== "string" || selectedText.trim().length < 10) {
+      stopKeepAlive();
       sendEvent({ event: "error", message: "No passage selected." });
       res.end();
       return;
@@ -1529,6 +1583,7 @@ router.post("/expand", sseHeaders, async (req: Request, res: Response) => {
     const session = sessionId ? await getOrCreateSession(sessionId) : null;
 
     if (!session?.paid) {
+      stopKeepAlive();
       sendEvent({ event: "error", message: "This feature requires the full reading." });
       res.end();
       return;
@@ -1584,9 +1639,11 @@ Current Cycle: ${personalYear}, Ancestral Animal: ${chineseZodiac}, Archetypal C
       }
     }
 
+    stopKeepAlive();
     sendEvent({ event: "done" });
     res.end();
   } catch (err) {
+    stopKeepAlive();
     req.log.error({ err }, "Expand error");
     sendEvent({ event: "error", message: "The Oracle must rest. Please try again." });
     res.end();

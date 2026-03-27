@@ -91,6 +91,9 @@ export default function ExpandableParagraph({
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
+    let timedOut = false;
+    const timeoutId = setTimeout(() => { timedOut = true; controller.abort(); }, 120000);
+
     try {
       const baseUrl = getApiUrl();
       const response = await fetch(`${baseUrl}api/expand`, {
@@ -106,6 +109,7 @@ export default function ExpandableParagraph({
       });
 
       if (!response.ok) {
+        clearTimeout(timeoutId);
         setErrorMsg("The Oracle is unavailable. Please try again.");
         setIsStreaming(false);
         return;
@@ -113,6 +117,7 @@ export default function ExpandableParagraph({
 
       const reader = response.body?.getReader();
       if (!reader) {
+        clearTimeout(timeoutId);
         setErrorMsg("Stream unavailable.");
         setIsStreaming(false);
         return;
@@ -146,9 +151,14 @@ export default function ExpandableParagraph({
         }
       }
       setIsStreaming(false);
+      clearTimeout(timeoutId);
     } catch (err: any) {
+      clearTimeout(timeoutId);
       if (err?.name === "AbortError") {
         setIsStreaming(false);
+        if (timedOut) {
+          setErrorMsg("The Oracle took too long. Please try again.");
+        }
         return;
       }
       setErrorMsg("The Oracle must rest. Please try again.");
