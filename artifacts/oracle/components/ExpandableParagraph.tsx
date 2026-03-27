@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -55,6 +55,13 @@ export default function ExpandableParagraph({
   const slideAnim = useRef(new RNAnimated.Value(400)).current;
   const wrapperRef = useRef<View>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const sheetScrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    if (isStreaming && streamedText.length > 0) {
+      sheetScrollRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [isStreaming, streamedText]);
 
   const handleLongPress = useCallback(() => {
     if (!isSubscribed) return;
@@ -252,57 +259,61 @@ export default function ExpandableParagraph({
         statusBarTranslucent
         onRequestClose={closeSheet}
       >
-        <TouchableWithoutFeedback onPress={closeSheet}>
-          <View style={styles.sheetOverlay} />
-        </TouchableWithoutFeedback>
+        <View style={styles.sheetModalContainer}>
+          <TouchableWithoutFeedback onPress={closeSheet}>
+            <View style={styles.sheetOverlay} />
+          </TouchableWithoutFeedback>
 
-        <RNAnimated.View style={[styles.sheet, { transform: [{ translateY: slideAnim }] }]}>
-          <View style={styles.sheetInner}>
-            <StarField />
+          <RNAnimated.View style={[styles.sheet, { transform: [{ translateY: slideAnim }] }]}>
+            <View style={styles.sheetInner}>
+              <StarField />
 
-            <View style={styles.sheetHandle} />
+              <View style={styles.sheetHandle} />
 
-            <View style={styles.sheetHeader}>
-              <View style={styles.sheetTitleRow}>
-                <Feather
-                  name={mode === "go_deeper" ? "layers" : "maximize-2"}
-                  size={14}
-                  color={Colors.gold}
-                  style={{ marginRight: 8 }}
-                />
-                <Text style={styles.sheetTitle}>
-                  {mode === "go_deeper" ? "Go Deeper" : "Expand on This"}
-                </Text>
-              </View>
-              <Pressable onPress={closeSheet} hitSlop={12}>
-                <Feather name="x" size={20} color={Colors.muted} />
-              </Pressable>
-            </View>
-
-            <Text style={styles.divider}>─── ✦ ───</Text>
-
-            <ScrollView
-              style={styles.sheetScroll}
-              contentContainerStyle={styles.sheetScrollContent}
-              showsVerticalScrollIndicator={false}
-            >
-              {isStreaming && streamedText.length === 0 && (
-                <View style={styles.loadingRow}>
-                  <ActivityIndicator size="small" color={Colors.gold} />
-                  <Text style={styles.loadingText}>The Oracle is reaching deeper...</Text>
+              <View style={styles.sheetHeader}>
+                <View style={styles.sheetTitleRow}>
+                  <Feather
+                    name={mode === "go_deeper" ? "layers" : "maximize-2"}
+                    size={14}
+                    color={Colors.gold}
+                    style={{ marginRight: 8 }}
+                  />
+                  <Text style={styles.sheetTitle}>
+                    {mode === "go_deeper" ? "Go Deeper" : "Expand on This"}
+                  </Text>
                 </View>
-              )}
-              {errorMsg ? (
-                <Text style={styles.errorText}>{errorMsg}</Text>
-              ) : (
-                <Text style={styles.expansionText}>{streamedText}</Text>
-              )}
-              {isStreaming && streamedText.length > 0 && (
-                <ActivityIndicator size="small" color={Colors.gold} style={{ marginTop: 12 }} />
-              )}
-            </ScrollView>
-          </View>
-        </RNAnimated.View>
+                <Pressable onPress={closeSheet} hitSlop={12}>
+                  <Feather name="x" size={20} color={Colors.muted} />
+                </Pressable>
+              </View>
+
+              <Text style={styles.divider}>─── ✦ ───</Text>
+
+              <ScrollView
+                ref={sheetScrollRef}
+                style={styles.sheetScroll}
+                contentContainerStyle={styles.sheetScrollContent}
+                showsVerticalScrollIndicator={false}
+                nestedScrollEnabled
+              >
+                {isStreaming && streamedText.length === 0 && (
+                  <View style={styles.loadingRow}>
+                    <ActivityIndicator size="small" color={Colors.gold} />
+                    <Text style={styles.loadingText}>The Oracle is reaching deeper...</Text>
+                  </View>
+                )}
+                {errorMsg ? (
+                  <Text style={styles.errorText}>{errorMsg}</Text>
+                ) : (
+                  <Text style={styles.expansionText}>{streamedText}</Text>
+                )}
+                {isStreaming && streamedText.length > 0 && (
+                  <ActivityIndicator size="small" color={Colors.gold} style={{ marginTop: 12 }} />
+                )}
+              </ScrollView>
+            </View>
+          </RNAnimated.View>
+        </View>
       </Modal>
     </>
   );
@@ -372,15 +383,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 11,
   },
+  sheetModalContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
   sheetOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(4,4,15,0.6)",
   },
   sheet: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
     maxHeight: "75%",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
