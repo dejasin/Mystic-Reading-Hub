@@ -471,11 +471,12 @@ interface ReadingSectionProps {
   sessionId?: string;
   userData?: string;
   isSubscribed?: boolean;
+  parentScrollRef?: React.RefObject<ScrollView | null>;
+  parentScrollOffset?: React.MutableRefObject<number>;
 }
 
-function ReadingSection({ text, sessionId, userData, isSubscribed }: ReadingSectionProps) {
+function ReadingSection({ text, sessionId, userData, isSubscribed, parentScrollRef, parentScrollOffset }: ReadingSectionProps) {
   if (!text) return null;
-  // Split into sections by ✦
   const sections = text.split(/(?=✦\s)/);
   return (
     <>
@@ -484,7 +485,6 @@ function ReadingSection({ text, sessionId, userData, isSubscribed }: ReadingSect
         const lines = section.trim().split("\n");
         const heading = lines[0].startsWith("✦") ? lines[0] : null;
         const body = heading ? lines.slice(1).join("\n").trim() : section.trim();
-        // Split body into individual paragraphs for per-paragraph long-press
         const paragraphs = body.split(/\n\n+/).map(p => p.trim()).filter(Boolean);
         return (
           <Animated.View key={i} entering={FadeIn.duration(600).delay(i * 100)} style={sectionStyles.container}>
@@ -500,6 +500,8 @@ function ReadingSection({ text, sessionId, userData, isSubscribed }: ReadingSect
                   sessionId={sessionId}
                   userData={userData}
                   isSubscribed={isSubscribed ?? false}
+                  parentScrollRef={parentScrollRef}
+                  parentScrollOffset={parentScrollOffset}
                 />
               ))
             ) : (
@@ -733,7 +735,7 @@ type Phase = "loading" | "streaming_free" | "paywall" | "streaming_paid" | "comp
 
 export default function ReadingScreen() {
   const insets = useSafeAreaInsets();
-  const { state, updateUserData, appendFreeReading, appendPaidReading, appendArchetype, appendChineseFaceReading, appendIridologyReading, setReadingComplete, resetAll } = useOracle();
+  const { state, updateUserData, appendFreeReading, appendPaidReading, appendArchetype, appendChineseFaceReading, appendIridologyReading, resetFreeReading, resetPaidReading, setReadingComplete, resetAll } = useOracle();
   const { profiles, updateProfile } = useProfiles();
   const { customerInfo } = useSubscription();
   const [phase, setPhase] = useState<Phase>("loading");
@@ -742,6 +744,7 @@ export default function ReadingScreen() {
   const [activationDismissed, setActivationDismissed] = useState(false);
   const hasStarted = useRef(false);
   const scrollRef = useRef<ScrollView>(null);
+  const scrollOffsetRef = useRef<number>(0);
 
   const initiallyNeedsActivation = useRef(
     !(state.userData.q1 ?? "").trim() || !(state.userData.q2 ?? "").trim() || !(state.userData.q3 ?? "").trim()
@@ -807,6 +810,7 @@ export default function ReadingScreen() {
   };
 
   const streamFreeReading = async () => {
+    resetFreeReading();
     setPhase("streaming_free");
     const baseUrl = getApiUrl();
 
@@ -844,14 +848,26 @@ export default function ReadingScreen() {
             }
             if (parsed.chunk) {
               appendFreeReading(parsed.chunk);
-
             }
           } catch (e) {
             console.warn("SSE parse error (free reading):", e);
           }
         }
       }
-      // If stream ended without paywall event, still show paywall
+
+      if (buffer.trim()) {
+        const remainingLines = buffer.split("\n");
+        for (const rl of remainingLines) {
+          const trimmed = rl.trim();
+          if (!trimmed.startsWith("data: ")) continue;
+          try {
+            const parsed = JSON.parse(trimmed.slice(6));
+            if (parsed.chunk) appendFreeReading(parsed.chunk);
+            if (parsed.event === "paywall") { setPhase("paywall"); return; }
+          } catch (e) { console.warn("SSE flush parse error (free):", e); }
+        }
+      }
+
       setPhase("paywall");
     } catch (err) {
       const isNetwork = err instanceof TypeError || String(err).includes("fetch");
@@ -866,6 +882,7 @@ export default function ReadingScreen() {
   };
 
   const streamPaidReading = async () => {
+    resetPaidReading();
     setPhase("streaming_paid");
     const baseUrl = getApiUrl();
 
@@ -921,13 +938,35 @@ export default function ReadingScreen() {
               } else {
                 appendPaidReading(parsed.chunk);
               }
-
             }
           } catch (e) {
             console.warn("SSE parse error (paid reading):", e);
           }
         }
       }
+
+      if (buffer.trim()) {
+        const remainingLines = buffer.split("\n");
+        for (const rl of remainingLines) {
+          const trimmed = rl.trim();
+          if (!trimmed.startsWith("data: ")) continue;
+          try {
+            const parsed = JSON.parse(trimmed.slice(6));
+            if (parsed.chunk) {
+              if (parsed.section === "archetype") {
+                appendArchetype(parsed.chunk);
+              } else if (parsed.section === "chinese_face") {
+                appendChineseFaceReading(parsed.chunk);
+              } else if (parsed.section === "iridology") {
+                appendIridologyReading(parsed.chunk);
+              } else {
+                appendPaidReading(parsed.chunk);
+              }
+            }
+          } catch (e) { console.warn("SSE flush parse error (paid):", e); }
+        }
+      }
+
       setReadingComplete(true);
       setPhase("complete");
     } catch (err) {
@@ -1042,6 +1081,8 @@ export default function ReadingScreen() {
           ref={scrollRef}
           contentContainerStyle={[styles.scroll, { paddingBottom: Platform.OS === "web" ? 34 : insets.bottom + 32 }]}
           showsVerticalScrollIndicator={false}
+          onScroll={(e) => { scrollOffsetRef.current = e.nativeEvent.contentOffset.y; }}
+          scrollEventThrottle={16}
         >
           {/* Reading title */}
           <Animated.View entering={FadeIn.duration(800)} style={styles.titleBlock}>
@@ -1052,7 +1093,14 @@ export default function ReadingScreen() {
 
           {/* Free sections */}
           {state.freeReading.length > 0 && (
-            <ReadingSection text={state.freeReading} />
+            <ReadingSection
+              text={state.freeReading}
+              sessionId={state.sessionId}
+              userData={JSON.stringify(state.userData)}
+              isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
+              parentScrollRef={scrollRef}
+              parentScrollOffset={scrollOffsetRef}
+            />
           )}
 
           {/* Streaming indicator */}
@@ -1076,6 +1124,8 @@ export default function ReadingScreen() {
                 sessionId={state.sessionId}
                 userData={JSON.stringify(state.userData)}
                 isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
+                parentScrollRef={scrollRef}
+                parentScrollOffset={scrollOffsetRef}
               />
             </>
           )}
@@ -1097,6 +1147,8 @@ export default function ReadingScreen() {
                   sessionId={state.sessionId}
                   userData={JSON.stringify(state.userData)}
                   isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
+                  parentScrollRef={scrollRef}
+                  parentScrollOffset={scrollOffsetRef}
                 />
               </View>
             </>
@@ -1115,6 +1167,8 @@ export default function ReadingScreen() {
                   sessionId={state.sessionId}
                   userData={JSON.stringify(state.userData)}
                   isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
+                  parentScrollRef={scrollRef}
+                  parentScrollOffset={scrollOffsetRef}
                 />
               </View>
             </>
@@ -1140,6 +1194,8 @@ export default function ReadingScreen() {
                   sessionId={state.sessionId}
                   userData={JSON.stringify(state.userData)}
                   isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
+                  parentScrollRef={scrollRef}
+                  parentScrollOffset={scrollOffsetRef}
                 />
               </View>
             </>

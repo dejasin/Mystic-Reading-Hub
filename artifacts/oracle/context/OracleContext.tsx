@@ -56,6 +56,8 @@ interface OracleContextValue {
   appendArchetype: (text: string) => void;
   appendChineseFaceReading: (text: string) => void;
   appendIridologyReading: (text: string) => void;
+  resetFreeReading: () => void;
+  resetPaidReading: () => void;
   setReadingComplete: (v: boolean) => void;
   setPaid: (v: boolean) => void;
   appendDeepDive: (category: DeepDiveCategory, text: string) => void;
@@ -151,6 +153,20 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
     setState(prev => ({ ...prev, iridologyReading: prev.iridologyReading + text }));
   };
 
+  const resetFreeReading = () => {
+    setState(prev => ({ ...prev, freeReading: "" }));
+  };
+
+  const resetPaidReading = () => {
+    setState(prev => ({
+      ...prev,
+      paidReading: "",
+      archetypeReading: "",
+      chineseFaceReading: "",
+      iridologyReading: "",
+    }));
+  };
+
   const setReadingComplete = (v: boolean) => {
     setState(prev => ({ ...prev, readingComplete: v }));
   };
@@ -188,6 +204,7 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
       state, setUserData, updateUserData, setImage,
       appendFreeReading, appendPaidReading, appendArchetype,
       appendChineseFaceReading, appendIridologyReading,
+      resetFreeReading, resetPaidReading,
       setReadingComplete, setPaid,
       appendDeepDive, clearDeepDive,
       resetAll,

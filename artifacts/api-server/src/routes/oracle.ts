@@ -620,6 +620,72 @@ router.post(
         }
       }
 
+      const paidSectionHeaders = ["✦ EXTERNAL EXPRESSION", "✦ TIMING & CYCLES", "✦ HIDDEN PATTERNS"];
+      const existingReading = session.reading ?? "";
+      const hasPaidSections = paidSectionHeaders.some(header => existingReading.includes(header));
+
+      if (hasPaidSections && session.readingComplete) {
+        const indices = paidSectionHeaders
+          .map(h => existingReading.indexOf(h))
+          .filter(i => i >= 0);
+        const startIdx = indices.length > 0 ? Math.min(...indices) : 0;
+        const paidContent = existingReading.substring(startIdx);
+
+        const futureTimelineMarker = "✦ FUTURE TIMELINE";
+        const archetypeMarkers = ["✦ YOUR ARCHETYPE", "✦ CORE PATTERN LOOP", "✦ PRIMARY BLOCK", "✦ ACTIVATION KEY"];
+        const chineseFaceMarker = "✦ CHINESE FACE READING";
+        const iridologyMarker = "✦ IRIDOLOGY HEALTH READING";
+
+        const replaySections: { section: string; text: string }[] = [];
+
+        const futureIdx = paidContent.indexOf(futureTimelineMarker);
+        const archetypeIdx = archetypeMarkers.reduce((min, m) => {
+          const idx = paidContent.indexOf(m);
+          return idx >= 0 && (min < 0 || idx < min) ? idx : min;
+        }, -1);
+        const chineseFaceIdx = paidContent.indexOf(chineseFaceMarker);
+        const iridologyIdx = paidContent.indexOf(iridologyMarker);
+
+        let paidEnd = paidContent.length;
+        if (futureIdx >= 0) paidEnd = Math.min(paidEnd, futureIdx);
+        if (archetypeIdx >= 0) paidEnd = Math.min(paidEnd, archetypeIdx);
+        if (chineseFaceIdx >= 0) paidEnd = Math.min(paidEnd, chineseFaceIdx);
+        if (iridologyIdx >= 0) paidEnd = Math.min(paidEnd, iridologyIdx);
+
+        const mainPaid = paidContent.substring(0, paidEnd);
+        if (mainPaid.trim()) replaySections.push({ section: "paid", text: mainPaid });
+
+        if (futureIdx >= 0 || archetypeIdx >= 0) {
+          const archStart = futureIdx >= 0 ? futureIdx : archetypeIdx;
+          let arcEnd = paidContent.length;
+          if (chineseFaceIdx > archStart) arcEnd = Math.min(arcEnd, chineseFaceIdx);
+          if (iridologyIdx > archStart) arcEnd = Math.min(arcEnd, iridologyIdx);
+          replaySections.push({ section: "archetype", text: paidContent.substring(archStart, arcEnd) });
+        }
+
+        if (chineseFaceIdx >= 0) {
+          let cfEnd = paidContent.length;
+          if (iridologyIdx > chineseFaceIdx) cfEnd = Math.min(cfEnd, iridologyIdx);
+          replaySections.push({ section: "chinese_face", text: paidContent.substring(chineseFaceIdx, cfEnd) });
+        }
+
+        if (iridologyIdx >= 0) {
+          replaySections.push({ section: "iridology", text: paidContent.substring(iridologyIdx) });
+        }
+
+        for (const { section, text } of replaySections) {
+          const chunks = text.match(/.{1,80}/gs) ?? [text];
+          for (const chunk of chunks) {
+            sendEvent({ section, chunk });
+          }
+        }
+
+        stopKeepAlive();
+        sendEvent({ event: "complete" });
+        if (!res.writableEnded) res.end();
+        return;
+      }
+
       const dob = userData.dob ?? "";
       const name = userData.name ?? "Seeker";
       const sunSign = dob ? computeSunSign(dob) : "Unknown";

@@ -23,6 +23,8 @@ interface ExpandableParagraphProps {
   userData: string;
   isSubscribed: boolean;
   style?: object;
+  parentScrollRef?: React.RefObject<ScrollView | null>;
+  parentScrollOffset?: React.MutableRefObject<number>;
 }
 
 interface Layout {
@@ -44,6 +46,8 @@ export default function ExpandableParagraph({
   userData,
   isSubscribed,
   style,
+  parentScrollRef,
+  parentScrollOffset,
 }: ExpandableParagraphProps) {
   const [selected, setSelected] = useState(false);
   const [paragraphLayout, setParagraphLayout] = useState<Layout | null>(null);
@@ -56,6 +60,7 @@ export default function ExpandableParagraph({
   const wrapperRef = useRef<View>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const sheetScrollRef = useRef<ScrollView>(null);
+  const savedScrollOffset = useRef<number>(0);
 
   useEffect(() => {
     if (isStreaming && streamedText.length > 0) {
@@ -63,20 +68,37 @@ export default function ExpandableParagraph({
     }
   }, [isStreaming, streamedText]);
 
+  const saveScrollPosition = useCallback(() => {
+    if (parentScrollOffset?.current !== undefined) {
+      savedScrollOffset.current = parentScrollOffset.current;
+    }
+  }, [parentScrollOffset]);
+
+  const restoreScrollPosition = useCallback(() => {
+    if (parentScrollRef?.current && Number.isFinite(savedScrollOffset.current)) {
+      requestAnimationFrame(() => {
+        parentScrollRef.current?.scrollTo({ y: savedScrollOffset.current, animated: false });
+      });
+    }
+  }, [parentScrollRef]);
+
   const handleLongPress = useCallback(() => {
     if (!isSubscribed) return;
+    saveScrollPosition();
     wrapperRef.current?.measureInWindow((x, y, width, height) => {
       setParagraphLayout({ x, y, width, height });
       setSelected(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     });
-  }, [isSubscribed]);
+  }, [isSubscribed, saveScrollPosition]);
 
   const dismissSelected = useCallback(() => {
     setSelected(false);
-  }, []);
+    restoreScrollPosition();
+  }, [restoreScrollPosition]);
 
   const openSheet = useCallback(async (chosenMode: "go_deeper" | "expand") => {
+    saveScrollPosition();
     setMode(chosenMode);
     setStreamedText("");
     setErrorMsg("");
@@ -157,6 +179,19 @@ export default function ExpandableParagraph({
           }
         }
       }
+
+      if (buffer.trim()) {
+        const remainingLines = buffer.split("\n");
+        for (const rl of remainingLines) {
+          const trimmed = rl.trim();
+          if (!trimmed.startsWith("data: ")) continue;
+          try {
+            const parsed = JSON.parse(trimmed.slice(6));
+            if (parsed.chunk) setStreamedText(prev => prev + parsed.chunk);
+          } catch (e) { console.warn("SSE flush parse error:", e); }
+        }
+      }
+
       setIsStreaming(false);
       clearTimeout(timeoutId);
     } catch (err: any) {
@@ -186,8 +221,9 @@ export default function ExpandableParagraph({
       setStreamedText("");
       setErrorMsg("");
       setIsStreaming(false);
+      restoreScrollPosition();
     });
-  }, [slideAnim]);
+  }, [slideAnim, restoreScrollPosition]);
 
   // Calculate action bar position: just below the paragraph
   const getActionBarTop = () => {
@@ -323,19 +359,19 @@ const styles = StyleSheet.create({
   paragraphWrapper: {
     borderRadius: 8,
     marginBottom: 10,
-    paddingHorizontal: 2,
+    paddingHorizontal: 10,
+    paddingTop: 8,
+    paddingBottom: 8,
+    borderWidth: 1,
+    borderColor: "transparent",
   },
   paragraphSelected: {
     backgroundColor: "rgba(201,168,76,0.08)",
-    borderWidth: 1,
     borderColor: "rgba(201,168,76,0.4)",
     shadowColor: Colors.gold,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
-    paddingHorizontal: 10,
-    paddingTop: 8,
-    paddingBottom: 8,
   },
   body: {
     fontFamily: "EBGaramond_400Regular",
