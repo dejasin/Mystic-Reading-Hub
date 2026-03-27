@@ -793,15 +793,14 @@ export default function ReadingScreen() {
     return { body: fd, headers: { Accept: "text/event-stream" } };
   };
 
-  // Tries FormData (native) then falls back to JSON if file URIs are stale
-  const doFetch = async (url: string, extra: Record<string, string> = {}): Promise<Response> => {
+  const doFetch = async (url: string, extra: Record<string, string> = {}, signal?: AbortSignal): Promise<Response> => {
     const { body, headers } = buildRequest(extra);
     try {
-      return await fetch(url, { method: "POST", body, headers });
+      return await fetch(url, { method: "POST", body, headers, signal });
     } catch (fetchErr) {
-      if (Platform.OS !== "web") {
+      if (Platform.OS !== "web" && !(signal?.aborted)) {
         const json = buildJsonRequest(extra);
-        return await fetch(url, { method: "POST", body: json.body, headers: json.headers });
+        return await fetch(url, { method: "POST", body: json.body, headers: json.headers, signal });
       }
       throw fetchErr;
     }
@@ -870,9 +869,14 @@ export default function ReadingScreen() {
     setPhase("streaming_paid");
     const baseUrl = getApiUrl();
 
+    const abortController = new AbortController();
+    const abortTimeout = setTimeout(() => abortController.abort(), 180000);
+
     try {
       const rcAppUserId = customerInfo?.originalAppUserId ?? "";
-      const response = await doFetch(`${baseUrl}api/generate/continue`, { rcAppUserId });
+      const extra: Record<string, string> = { rcAppUserId };
+      if (__DEV__) extra.devSkip = "true";
+      const response = await doFetch(`${baseUrl}api/generate/continue`, extra, abortController.signal);
 
       if (!response.ok) throw new Error("API error");
       const reader = response.body?.getReader();
@@ -927,14 +931,20 @@ export default function ReadingScreen() {
       setReadingComplete(true);
       setPhase("complete");
     } catch (err) {
-      const isNetwork = err instanceof TypeError || String(err).includes("fetch");
-      setErrorMsg(
-        isNetwork
-          ? "The thread was cut before the full vision could be delivered. Check your network."
-          : "The Oracle's vision was interrupted. The second sight requires stillness — try again."
-      );
+      if (abortController.signal.aborted) {
+        setErrorMsg("The reading took too long. Please try again.");
+      } else {
+        const isNetwork = err instanceof TypeError || String(err).includes("fetch");
+        setErrorMsg(
+          isNetwork
+            ? "The thread was cut before the full vision could be delivered. Check your network."
+            : "The Oracle's vision was interrupted. The second sight requires stillness — try again."
+        );
+      }
       setErrorSource("paid");
       setPhase("error");
+    } finally {
+      clearTimeout(abortTimeout);
     }
   };
 

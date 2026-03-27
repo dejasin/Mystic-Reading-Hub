@@ -554,17 +554,22 @@ router.post(
   imageFields,
   sseHeaders,
   async (req: Request, res: Response) => {
+    const abortController = new AbortController();
     const sendEvent = (data: object) => {
-      res.write(`data: ${JSON.stringify(data)}\n\n`);
+      if (res.writableEnded) return;
+      try { res.write(`data: ${JSON.stringify(data)}\n\n`); } catch {}
     };
 
     sendEvent({ event: "ping" });
 
     const keepAlive = setInterval(() => {
-      try { res.write(`data: ${JSON.stringify({ event: "ping" })}\n\n`); } catch {}
+      sendEvent({ event: "ping" });
     }, 5000);
     const stopKeepAlive = () => clearInterval(keepAlive);
-    res.on("close", stopKeepAlive);
+    res.on("close", () => {
+      stopKeepAlive();
+      abortController.abort();
+    });
 
     try {
       if (!anthropicApiKey) {
@@ -582,9 +587,13 @@ router.post(
       const session = await getOrCreateSession(sessionId);
 
       const rcAppUserId = req.body.rcAppUserId as string | undefined;
+      const devSkip = req.body.devSkip === "true" || req.body.devSkip === true;
 
       if (!session.paid) {
-        if (rcAppUserId) {
+        if (devSkip && process.env.NODE_ENV !== "production") {
+          session.paid = true;
+          await saveSession(sessionId, session);
+        } else if (rcAppUserId) {
           try {
             const rcClient = await getUncachableRevenueCatClient();
             const projectId = process.env.REVENUECAT_PROJECT_ID ?? "";
@@ -723,27 +732,47 @@ End the ENTIRE reading with ONE short, direct, unforgettable destiny sentence on
         }
       ];
 
+      const INACTIVITY_TIMEOUT_MS = 60000;
+      let inactivityTimer: NodeJS.Timeout | undefined;
+      let inactivityTimedOut = false;
+      const resetInactivityTimeout = () => {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = setTimeout(() => {
+          inactivityTimedOut = true;
+          abortController.abort();
+          stopKeepAlive();
+          sendEvent({ event: "error", message: "The Oracle's vision faded — the reading took too long. Please try again." });
+          if (!res.writableEnded) res.end();
+        }, INACTIVITY_TIMEOUT_MS);
+      };
+
       try {
         let sectionReading = "";
+        resetInactivityTimeout();
         const stream2 = anthropic.messages.stream({
           model: MODEL,
-          max_tokens: 2500,
+          max_tokens: 4000,
           system: systemPrompt,
           messages: [{ role: "user", content: call2Content }]
         });
 
         for await (const chunk of stream2) {
+          if (inactivityTimedOut) return;
+          resetInactivityTimeout();
           if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
             const text = chunk.delta.text;
             sectionReading += text;
             sendEvent({ section: "paid", chunk: text });
           }
         }
+        if (inactivityTimedOut) return;
 
-        // CALL 3 — Section 6 + Archetype block (pure synthesis)
-        const call3 = await anthropic.messages.create({
+        // CALL 3 — Section 6 + Archetype block (streaming)
+        let call3Text = "";
+        resetInactivityTimeout();
+        const stream3 = anthropic.messages.stream({
           model: MODEL,
-          max_tokens: 2500,
+          max_tokens: 4000,
           system: systemPrompt,
           messages: [{
             role: "user",
@@ -761,11 +790,19 @@ ${sectionReading ? `\nPrevious sections: ${sectionReading.substring(0, 400)}` : 
           }]
         });
 
-        const call3Text = call3.content[0].type === "text" ? call3.content[0].text : "";
+        for await (const chunk of stream3) {
+          if (inactivityTimedOut) return;
+          resetInactivityTimeout();
+          if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
+            const text = chunk.delta.text;
+            call3Text += text;
+            sendEvent({ section: "archetype", chunk: text });
+          }
+        }
+        if (inactivityTimedOut) return;
+
         session.reading = session.reading + "\n" + sectionReading + "\n" + call3Text;
         await saveSession(sessionId, session);
-
-        sendEvent({ section: "archetype", chunk: call3Text });
 
         // CALL 4 — Chinese Face Reading (Mianxiang)
         const faceImages: Anthropic.ImageBlockParam[] = [];
@@ -793,6 +830,7 @@ Follow the IMAGE ANALYSIS RULE: first OBSERVATION of what is visually present, t
             }
           ];
 
+          resetInactivityTimeout();
           const stream4 = anthropic.messages.stream({
             model: MODEL,
             max_tokens: 1500,
@@ -801,12 +839,15 @@ Follow the IMAGE ANALYSIS RULE: first OBSERVATION of what is visually present, t
           });
 
           for await (const chunk of stream4) {
+            if (inactivityTimedOut) return;
+            resetInactivityTimeout();
             if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
               chineseFaceText += chunk.delta.text;
               sendEvent({ section: "chinese_face", chunk: chunk.delta.text });
             }
           }
         }
+        if (inactivityTimedOut) return;
 
         let iridologyText = "";
         // CALL 5 — Iridology Health Reading
@@ -834,6 +875,7 @@ Follow the IMAGE ANALYSIS RULE: first describe what is visually observable in th
             }
           ];
 
+          resetInactivityTimeout();
           const stream5 = anthropic.messages.stream({
             model: MODEL,
             max_tokens: 1500,
@@ -842,14 +884,17 @@ Follow the IMAGE ANALYSIS RULE: first describe what is visually observable in th
           });
 
           for await (const chunk of stream5) {
+            if (inactivityTimedOut) return;
+            resetInactivityTimeout();
             if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
               iridologyText += chunk.delta.text;
               sendEvent({ section: "iridology", chunk: chunk.delta.text });
             }
           }
         }
+        if (inactivityTimedOut) return;
 
-        // Append new section outputs to session reading for chat context
+        clearTimeout(inactivityTimer);
         if (chineseFaceText) session.reading += "\n" + chineseFaceText;
         if (iridologyText) session.reading += "\n" + iridologyText;
 
@@ -858,17 +903,19 @@ Follow the IMAGE ANALYSIS RULE: first describe what is visually observable in th
         stopKeepAlive();
         sendEvent({ event: "complete" });
       } catch (err) {
+        clearTimeout(inactivityTimer);
+        if (inactivityTimedOut) return;
         req.log.error({ err }, "Anthropic call 2/3 failed");
         stopKeepAlive();
         sendEvent({ event: "error", message: "The Oracle must rest. Please return in a few minutes." });
       }
 
-      res.end();
+      if (!res.writableEnded) res.end();
     } catch (err) {
       stopKeepAlive();
       req.log.error({ err }, "Continue error");
-      res.write(`data: ${JSON.stringify({ event: "error", message: "The Oracle is temporarily unavailable." })}\n\n`);
-      res.end();
+      sendEvent({ event: "error", message: "The Oracle is temporarily unavailable." });
+      if (!res.writableEnded) res.end();
     }
   }
 );
