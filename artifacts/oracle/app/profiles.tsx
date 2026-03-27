@@ -320,7 +320,7 @@ export default function ProfilesScreen() {
     if (!isConfigured) return;
     try {
       const info = await restore();
-      if (info.entitlements.active["full_reading"]) {
+      if (info?.entitlements?.active?.["full_reading"]) {
         Alert.alert("Restored", "Your subscription has been restored.");
       } else {
         Alert.alert("No Subscription Found", "No active subscription was found for this account.");

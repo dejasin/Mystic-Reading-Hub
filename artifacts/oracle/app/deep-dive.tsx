@@ -569,7 +569,7 @@ export default function DeepDiveScreen() {
                 text={streamedText}
                 sessionId={state.sessionId}
                 userData={JSON.stringify(state.userData)}
-                isSubscribed={!!(customerInfo?.entitlements.active["full_reading"])}
+                isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
               />
             )}
 

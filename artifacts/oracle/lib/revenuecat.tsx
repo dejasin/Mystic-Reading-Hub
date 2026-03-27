@@ -97,7 +97,7 @@ function useSubscriptionContext() {
     onSuccess: () => customerInfoQuery.refetch(),
   });
 
-  const isSubscribed = customerInfoQuery.data?.entitlements.active?.[REVENUECAT_ENTITLEMENT_IDENTIFIER] !== undefined;
+  const isSubscribed = customerInfoQuery.data?.entitlements?.active?.[REVENUECAT_ENTITLEMENT_IDENTIFIER] !== undefined;
 
   return {
     customerInfo: customerInfoQuery.data ?? null,

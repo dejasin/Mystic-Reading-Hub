@@ -133,7 +133,7 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
     setErrorMsg(null);
     try {
       const info = await restore();
-      if (info.entitlements.active["full_reading"]) {
+      if (info?.entitlements?.active?.["full_reading"]) {
         onUnlock();
       } else {
         setErrorMsg("No previous purchase found for this account.");
@@ -744,7 +744,7 @@ export default function ReadingScreen() {
   const scrollRef = useRef<ScrollView>(null);
 
   const initiallyNeedsActivation = useRef(
-    !state.userData.q1.trim() || !state.userData.q2.trim() || !state.userData.q3.trim()
+    !(state.userData.q1 ?? "").trim() || !(state.userData.q2 ?? "").trim() || !(state.userData.q3 ?? "").trim()
   );
 
   const needsActivation =
@@ -1065,7 +1065,7 @@ export default function ReadingScreen() {
                 text={state.paidReading}
                 sessionId={state.sessionId}
                 userData={JSON.stringify(state.userData)}
-                isSubscribed={!!(customerInfo?.entitlements.active["full_reading"])}
+                isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
               />
             </>
           )}
@@ -1086,7 +1086,7 @@ export default function ReadingScreen() {
                   text={state.archetypeReading}
                   sessionId={state.sessionId}
                   userData={JSON.stringify(state.userData)}
-                  isSubscribed={!!(customerInfo?.entitlements.active["full_reading"])}
+                  isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
                 />
               </View>
             </>
@@ -1104,7 +1104,7 @@ export default function ReadingScreen() {
                   text={state.chineseFaceReading}
                   sessionId={state.sessionId}
                   userData={JSON.stringify(state.userData)}
-                  isSubscribed={!!(customerInfo?.entitlements.active["full_reading"])}
+                  isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
                 />
               </View>
             </>
@@ -1129,7 +1129,7 @@ export default function ReadingScreen() {
                   text={state.iridologyReading}
                   sessionId={state.sessionId}
                   userData={JSON.stringify(state.userData)}
-                  isSubscribed={!!(customerInfo?.entitlements.active["full_reading"])}
+                  isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
                 />
               </View>
             </>

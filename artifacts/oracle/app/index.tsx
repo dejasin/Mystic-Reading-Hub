@@ -69,7 +69,7 @@ export default function LandingScreen() {
     if (!isConfigured) return;
     try {
       const info = await restore();
-      if (info.entitlements.active["full_reading"]) {
+      if (info?.entitlements?.active?.["full_reading"]) {
         Alert.alert("Purchase Restored", "Your full reading has been restored.");
       } else {
         Alert.alert("No Purchase Found", "No previous purchase was found for this account.");

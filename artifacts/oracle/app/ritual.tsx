@@ -357,35 +357,38 @@ export default function RitualScreen() {
   const showBiometricConsent = isIrisStep && !biometricConsentGiven;
 
   const saveToVaultAndReveal = async () => {
-    const { userData, images } = state;
-    if (userData.name && userData.dob) {
-      const alreadySaved = profiles.some(
-        p => p.name.trim().toLowerCase() === userData.name.trim().toLowerCase() && p.dob === userData.dob
-      );
-      if (!alreadySaved) {
-        await addProfile({
-          name: userData.name,
-          dob: userData.dob,
-          birthTime: userData.birthTime ?? "",
-          birthTimeUnknown: userData.birthTimeUnknown ?? false,
-          birthCity: userData.birthCity ?? "",
-          birthCountry: userData.birthCountry ?? "",
-          gender: userData.gender ?? "",
-          dominantHand: userData.dominantHand ?? "",
-          eyeColor: userData.eyeColor ?? "",
-          notes: "",
-          photos: {
-            right_palm: images.right_palm?.uri,
-            left_palm: images.left_palm?.uri,
-            right_iris: images.right_iris?.uri,
-            left_iris: images.left_iris?.uri,
-            face: images.face?.uri,
-            face_front: images.face_front?.uri,
-            face_left: images.face_left?.uri,
-            face_right: images.face_right?.uri,
-          },
-        });
+    try {
+      const { userData, images } = state;
+      if (userData.name && userData.dob) {
+        const alreadySaved = profiles.some(
+          p => p.name.trim().toLowerCase() === userData.name.trim().toLowerCase() && p.dob === userData.dob
+        );
+        if (!alreadySaved) {
+          await addProfile({
+            name: userData.name,
+            dob: userData.dob,
+            birthTime: userData.birthTime ?? "",
+            birthTimeUnknown: userData.birthTimeUnknown ?? false,
+            birthCity: userData.birthCity ?? "",
+            birthCountry: userData.birthCountry ?? "",
+            gender: userData.gender ?? "",
+            dominantHand: userData.dominantHand ?? "",
+            eyeColor: userData.eyeColor ?? "",
+            notes: "",
+            photos: {
+              right_palm: images.right_palm?.uri,
+              left_palm: images.left_palm?.uri,
+              right_iris: images.right_iris?.uri,
+              left_iris: images.left_iris?.uri,
+              face: images.face?.uri,
+              face_front: images.face_front?.uri,
+              face_left: images.face_left?.uri,
+              face_right: images.face_right?.uri,
+            },
+          });
+        }
       }
+    } catch (_e) {
     }
     router.push("/reading");
   };
