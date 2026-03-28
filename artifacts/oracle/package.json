@@ -57,6 +57,7 @@
   "dependencies": {
     "@expo-google-fonts/cinzel-decorative": "^0.4.1",
     "@expo-google-fonts/eb-garamond": "^0.4.2",
-    "expo-camera": "~17.0.10"
+    "expo-camera": "~17.0.10",
+    "expo-store-review": "6.8.3"
   }
 }

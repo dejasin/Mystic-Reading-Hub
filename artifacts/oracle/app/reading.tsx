@@ -32,6 +32,7 @@ import ExpandableParagraph from "@/components/ExpandableParagraph";
 import { useOracle, DeepDiveCategory } from "@/context/OracleContext";
 import { useProfiles } from "@/context/ProfileContext";
 import { useSubscription } from "@/lib/revenuecat";
+import { maybeRequestReview } from "@/lib/storeReview";
 
 const LOADING_MESSAGES = [
   "Mapping your palm lines...",
@@ -1007,6 +1008,7 @@ export default function ReadingScreen() {
         state.iridologyReading,
       ].filter(Boolean).join("\n\n");
       saveReadingToVault(fullReading);
+      maybeRequestReview();
     }
   }, [phase]);
 
