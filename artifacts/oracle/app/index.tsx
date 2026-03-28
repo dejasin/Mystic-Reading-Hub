@@ -260,21 +260,16 @@ export default function LandingScreen() {
     <View style={[styles.container, { paddingTop: Platform.OS === "web" ? 67 : insets.top }]}>
       <StarField />
 
-      <View style={styles.accountBar}>
+      <View style={styles.topBar}>
+        <View style={{ width: 44 }} />
+        <View style={{ flex: 1 }} />
         <Pressable
-          style={({ pressed }) => [styles.accountBtn, pressed && { opacity: 0.7 }]}
-          onPress={handleAccountPress}
-          accessibilityLabel={isLoggedIn ? `Account: ${user?.email}` : "Sign in"}
+          style={({ pressed }) => [styles.topBarBtn, pressed && { opacity: 0.6 }]}
+          onPress={() => router.push("/settings")}
+          accessibilityLabel="Open settings"
           accessibilityRole="button"
         >
-          <Feather
-            name={isLoggedIn ? "user-check" : "user"}
-            size={16}
-            color={isLoggedIn ? Colors.gold : Colors.muted}
-          />
-          <Text style={[styles.accountText, isLoggedIn && styles.accountTextActive]}>
-            {isLoggedIn ? user?.email : "Sign In"}
-          </Text>
+          <Feather name="settings" size={20} color={Colors.gold} />
         </Pressable>
       </View>
 
@@ -397,27 +392,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.bg,
   },
-  accountBar: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 0,
-  },
-  accountBtn: {
+  topBar: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    justifyContent: "flex-end",
+    paddingHorizontal: 12,
+    paddingTop: 4,
+    paddingBottom: 0,
   },
-  accountText: {
-    fontFamily: "EBGaramond_400Regular",
-    fontSize: 13,
-    color: Colors.muted,
-  },
-  accountTextActive: {
-    color: Colors.gold,
+  topBarBtn: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
   },
   content: {
     alignItems: "center",

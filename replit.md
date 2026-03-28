@@ -25,7 +25,7 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Backend**: Express API (`artifacts/api-server`) — SSE streaming, Claude `claude-opus-4-5`, sharp image processing
 
 ### Screens
-1. `app/index.tsx` — Landing page with animated hexagram sigil and starfield
+1. `app/index.tsx` — Landing page with animated hexagram sigil and starfield, settings gear icon top-right
 2. `app/intake.tsx` — User data form (name, DOB, birth time, city, gender, dominant hand, eye color, 3 life questions)
 3. `app/ritual.tsx` — 9-step photo ritual wizard (intro → right palm → left palm → biometric consent → right iris → left iris → face → face reading session → review)
 4. `app/reading.tsx` — SSE streaming reading, paywall gate after Section 2, archetype card, image share card + chat CTA
@@ -33,6 +33,7 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 6. `app/journal.tsx` — Reading history / journal screen: chronological list of all past readings with type badges, previews, and favorite filter
 7. `app/journal-detail.tsx` — Full reading detail view with section-aware rendering and favorite toggle
 8. `app/daily-history.tsx` — Scrollable history of past Daily Oracle messages
+9. `app/settings.tsx` — Settings screen with Account (sign out, delete account), Subscription (plan status, manage, restore purchases), Notifications (toggles), Legal (privacy/terms links), Support (contact email), app version
 
 ### Journal / Reading History
 - **Context**: `context/JournalContext.tsx` — manages journal entries in AsyncStorage (`oracle_journal_v1`)
@@ -54,6 +55,7 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - `POST /api/daily-oracle` — Personalized daily message (cached per profile per day)
 - `POST /api/weekly-forecast` — Weekly outlook (cached per profile per week)
 - `GET /api/daily-history/:profileId` — Past daily oracle messages
+- `POST /api/account/delete` — Account deletion endpoint (App Store compliance); clears server-side references
 
 ### Authentication
 - Email magic code login (no passwords). JWT-based sessions (30-day expiry).

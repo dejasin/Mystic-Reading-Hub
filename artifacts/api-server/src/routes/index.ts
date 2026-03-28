@@ -5,6 +5,7 @@ import legalRouter from "./legal";
 import authRouter from "./auth";
 import profilesRouter from "./profiles";
 import dailyRouter from "./daily";
+import accountRouter from "./account";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(profilesRouter);
 router.use(oracleRouter);
 router.use(legalRouter);
 router.use(dailyRouter);
+router.use(accountRouter);
 
 export default router;
