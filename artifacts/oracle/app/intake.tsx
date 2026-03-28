@@ -17,6 +17,7 @@ import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import { useOracle, UserData } from "@/context/OracleContext";
+import { trackEvent, AnalyticsEvent } from "@/lib/analytics";
 
 const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"];
 const HAND_OPTIONS = ["Right", "Left", "Ambidextrous"];
@@ -221,6 +222,11 @@ export default function IntakeScreen() {
       q3,
     };
     setUserData(userData);
+    trackEvent(AnalyticsEvent.INTAKE_COMPLETED, {
+      has_birth_time: !birthTimeUnknown && !!birthTime,
+      has_birth_location: !!birthCity || !!birthCountry,
+      questions_answered: [q1, q2, q3].filter(q => q.trim()).length,
+    });
     router.push("/ritual");
   };
 

@@ -23,6 +23,7 @@ import { safeOpenURL } from "@/lib/safeOpenURL";
 import StarField from "@/components/StarField";
 import { useProfiles, OracleProfile, ProfilePhoto } from "@/context/ProfileContext";
 import { useSubscription } from "@/lib/revenuecat";
+import { trackEvent, AnalyticsEvent } from "@/lib/analytics";
 
 const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"];
 const HAND_OPTIONS = ["Right", "Left", "Ambidextrous"];
@@ -316,6 +317,10 @@ export default function ProfilesScreen() {
   const [showForm, setShowForm] = useState(false);
   const [editingProfile, setEditingProfile] = useState<OracleProfile | undefined>();
 
+  useEffect(() => {
+    trackEvent(AnalyticsEvent.VAULT_OPENED, { profile_count: profiles.length });
+  }, []);
+
   const handleRestorePurchases = async () => {
     if (!isConfigured) return;
     try {
@@ -346,8 +351,10 @@ export default function ProfilesScreen() {
   const handleSave = async (data: Omit<OracleProfile, "id" | "createdAt">) => {
     if (editingProfile) {
       await updateProfile(editingProfile.id, data);
+      trackEvent(AnalyticsEvent.VAULT_PROFILE_EDITED);
     } else {
       await addProfile(data);
+      trackEvent(AnalyticsEvent.VAULT_PROFILE_CREATED, { profile_count: profiles.length + 1 });
     }
     setShowForm(false);
     setEditingProfile(undefined);
@@ -363,7 +370,7 @@ export default function ProfilesScreen() {
         text: "Delete", style: "destructive",
         onPress: () => Alert.alert("Delete Profile?", `Remove ${profile.name} from your vault?`, [
           { text: "Cancel", style: "cancel" },
-          { text: "Delete", style: "destructive", onPress: () => deleteProfile(profile.id) },
+          { text: "Delete", style: "destructive", onPress: () => { deleteProfile(profile.id); trackEvent(AnalyticsEvent.VAULT_PROFILE_DELETED); } },
         ]),
       },
       { text: "Cancel", style: "cancel" },

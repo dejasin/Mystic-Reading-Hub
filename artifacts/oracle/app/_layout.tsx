@@ -25,9 +25,11 @@ import { AuthProvider } from "@/context/AuthContext";
 import { JournalProvider } from "@/context/JournalContext";
 import Colors from "@/constants/colors";
 import { initializeRevenueCat, SubscriptionProvider } from "@/lib/revenuecat";
+import { initAnalytics, trackFunnelStep } from "@/lib/analytics";
 
 setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
 initializeRevenueCat();
+initAnalytics();
 
 SplashScreen.preventAutoHideAsync();
 
@@ -51,6 +53,7 @@ export default function RootLayout() {
   useEffect(() => {
     if (fontsLoaded || fontError) {
       SplashScreen.hideAsync();
+      trackFunnelStep("app_open");
     }
   }, [fontsLoaded, fontError]);
 

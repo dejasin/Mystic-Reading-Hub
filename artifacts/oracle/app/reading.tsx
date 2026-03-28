@@ -35,6 +35,7 @@ import { useProfiles } from "@/context/ProfileContext";
 import { useJournal } from "@/context/JournalContext";
 import { useSubscription } from "@/lib/revenuecat";
 import { maybeRequestReview } from "@/lib/storeReview";
+import { trackEvent, trackFunnelStep, AnalyticsEvent } from "@/lib/analytics";
 
 const LOADING_MESSAGES = [
   "Mapping your palm lines...",
@@ -122,11 +123,17 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
   const handlePurchase = async () => {
     if (!packageToPurchase) return;
     setErrorMsg(null);
+    trackEvent(AnalyticsEvent.PAYWALL_PURCHASE_TAPPED, { price: priceString });
     try {
       await purchase(packageToPurchase);
+      trackFunnelStep("purchase", { price: priceString });
       onUnlock();
     } catch (e: any) {
-      if (e?.userCancelled) return;
+      if (e?.userCancelled) {
+        trackEvent(AnalyticsEvent.PAYWALL_DISMISSED);
+        return;
+      }
+      trackEvent(AnalyticsEvent.PAYWALL_PURCHASE_FAILED);
       setErrorMsg("Purchase failed. Please try again.");
     }
   };
@@ -134,11 +141,14 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
   const handleRestore = async () => {
     if (!isConfigured) return;
     setErrorMsg(null);
+    trackEvent(AnalyticsEvent.PAYWALL_RESTORE_TAPPED);
     try {
       const info = await restore();
       if (info?.entitlements?.active?.["full_reading"]) {
+        trackEvent(AnalyticsEvent.PAYWALL_RESTORE_COMPLETED, { success: true });
         onUnlock();
       } else {
+        trackEvent(AnalyticsEvent.PAYWALL_RESTORE_COMPLETED, { success: false });
         setErrorMsg("No previous purchase found for this account.");
       }
     } catch {
@@ -818,6 +828,7 @@ export default function ReadingScreen() {
   const streamFreeReading = async () => {
     resetFreeReading();
     setPhase("streaming_free");
+    trackFunnelStep("reading");
     const baseUrl = getApiUrl();
 
     try {
@@ -849,6 +860,8 @@ export default function ReadingScreen() {
               return;
             }
             if (parsed.event === "paywall") {
+              trackEvent(AnalyticsEvent.READING_FREE_COMPLETED);
+              trackFunnelStep("paywall");
               setPhase("paywall");
               return;
             }
@@ -927,6 +940,8 @@ export default function ReadingScreen() {
               return;
             }
             if (parsed.event === "complete") {
+              trackEvent(AnalyticsEvent.READING_PAID_COMPLETED);
+              trackEvent(AnalyticsEvent.READING_COMPLETED);
               setReadingComplete(true);
               setPhase("complete");
               if (Platform.OS !== "web") {
@@ -1036,7 +1051,7 @@ export default function ReadingScreen() {
       {/* Header */}
       {hasContent && (
         <View style={styles.header}>
-          <Pressable onPress={() => router.replace("/intake")} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back to intake" accessibilityRole="button">
+          <Pressable onPress={() => { if (phase === "paywall") trackEvent(AnalyticsEvent.PAYWALL_DISMISSED); router.replace("/intake"); }} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back to intake" accessibilityRole="button">
             <Feather name="arrow-left" size={20} color={Colors.gold} />
           </Pressable>
           <Text style={styles.headerTitle}>Your Reading</Text>
@@ -1324,7 +1339,7 @@ export default function ReadingScreen() {
               {/* Share */}
               <Pressable
                 style={styles.shareBtn}
-                onPress={() => setShowShareCard(true)}
+                onPress={() => { trackEvent(AnalyticsEvent.SHARE_TAPPED, { content: "archetype" }); setShowShareCard(true); }}
                 accessibilityLabel="Share your archetype"
                 accessibilityRole="button"
               >

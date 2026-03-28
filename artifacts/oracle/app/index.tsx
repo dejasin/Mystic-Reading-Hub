@@ -28,6 +28,7 @@ import StarField from "@/components/StarField";
 import GoldSigil from "@/components/GoldSigil";
 import { useSubscription } from "@/lib/revenuecat";
 import { useAuth } from "@/context/AuthContext";
+import { trackEvent, trackFunnelStep, AnalyticsEvent } from "@/lib/analytics";
 
 const { width } = Dimensions.get("window");
 
@@ -64,6 +65,7 @@ export default function LandingScreen() {
     if (Platform.OS !== "web") {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
+    trackFunnelStep("intake");
     router.push("/intake");
   };
 

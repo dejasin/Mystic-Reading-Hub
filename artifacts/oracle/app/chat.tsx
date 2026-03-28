@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import { fetch } from "expo/fetch";
 import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import { useOracle } from "@/context/OracleContext";
+import { trackEvent, AnalyticsEvent } from "@/lib/analytics";
 
 let messageCounter = 0;
 function generateId(): string {
@@ -102,6 +103,14 @@ export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const { state } = useOracle();
   const [messages, setMessages] = useState<Message[]>([]);
+  const chatTracked = useRef(false);
+
+  useEffect(() => {
+    if (!chatTracked.current) {
+      chatTracked.current = true;
+      trackEvent(AnalyticsEvent.CHAT_OPENED);
+    }
+  }, []);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [showTyping, setShowTyping] = useState(false);
@@ -145,6 +154,7 @@ export default function ChatScreen() {
   const handleSend = async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || isStreaming) return;
+    trackEvent(AnalyticsEvent.CHAT_MESSAGE_SENT, { message_count: messages.length + 1 });
     if (Platform.OS !== "web") {
       await Haptics.selectionAsync();
     }

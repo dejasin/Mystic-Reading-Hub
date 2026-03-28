@@ -23,6 +23,7 @@ import GoldSigil from "@/components/GoldSigil";
 import ShareCardModal, { extractSynastryData } from "@/components/ShareCardModal";
 import { useProfiles, OracleProfile } from "@/context/ProfileContext";
 import { useJournal } from "@/context/JournalContext";
+import { trackEvent, AnalyticsEvent } from "@/lib/analytics";
 
 let msgCount = 0;
 function genId() { return `sm-${Date.now()}-${++msgCount}`; }
@@ -217,6 +218,7 @@ export default function SynastryScreen() {
 
   const handleGenerate = async () => {
     if (!profile1 || !profile2) return;
+    trackEvent(AnalyticsEvent.SYNASTRY_STARTED);
     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setPhase("loading");
     setReading("");
@@ -262,6 +264,7 @@ export default function SynastryScreen() {
           }
         }
       }
+      trackEvent(AnalyticsEvent.SYNASTRY_READING_GENERATED);
       setPhase("complete");
     } catch {
       setErrorMsg("The Oracle could not complete this synastry reading. Please try again.");
@@ -471,7 +474,7 @@ export default function SynastryScreen() {
             <Pressable style={[styles.tab, tab === "reading" && styles.tabActive]} onPress={() => setTab("reading")} accessibilityLabel="Reading tab" accessibilityRole="tab" accessibilityState={{ selected: tab === "reading" }}>
               <Text style={[styles.tabText, tab === "reading" && styles.tabTextActive]}>Reading</Text>
             </Pressable>
-            <Pressable style={[styles.tab, tab === "chat" && styles.tabActive]} onPress={() => setTab("chat")} accessibilityLabel="Ask The Oracle tab" accessibilityRole="tab" accessibilityState={{ selected: tab === "chat" }}>
+            <Pressable style={[styles.tab, tab === "chat" && styles.tabActive]} onPress={() => { setTab("chat"); trackEvent(AnalyticsEvent.SYNASTRY_CHAT_OPENED); }} accessibilityLabel="Ask The Oracle tab" accessibilityRole="tab" accessibilityState={{ selected: tab === "chat" }}>
               <Text style={[styles.tabText, tab === "chat" && styles.tabTextActive]}>Ask The Oracle</Text>
             </Pressable>
           </View>

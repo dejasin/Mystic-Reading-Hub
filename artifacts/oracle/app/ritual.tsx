@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -27,6 +27,7 @@ import GoldSigil from "@/components/GoldSigil";
 import MultishotFaceCamera, { MultishotResult } from "@/components/MultishotFaceCamera";
 import { useOracle, CapturedImage } from "@/context/OracleContext";
 import { useProfiles } from "@/context/ProfileContext";
+import { trackEvent, trackFunnelStep, AnalyticsEvent } from "@/lib/analytics";
 import Svg, { Path, Circle, Line, Ellipse } from "react-native-svg";
 
 // ── Palm diagram ──────────────────────────────────────────────
@@ -356,6 +357,10 @@ export default function RitualScreen() {
   const isIrisStep = currentStep?.key === "right_iris" || currentStep?.key === "left_iris";
   const showBiometricConsent = isIrisStep && !biometricConsentGiven;
 
+  useEffect(() => {
+    trackFunnelStep("ritual");
+  }, []);
+
   const saveToVaultAndReveal = async () => {
     try {
       const { userData, images } = state;
@@ -390,6 +395,9 @@ export default function RitualScreen() {
       }
     } catch (_e) {
     }
+    trackEvent(AnalyticsEvent.RITUAL_COMPLETED, {
+      images_captured: Object.values(state.images).filter(Boolean).length,
+    });
     router.push("/reading");
   };
 
@@ -421,6 +429,7 @@ export default function RitualScreen() {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       setImage(key, { uri: result.assets[0].uri });
+      trackEvent(AnalyticsEvent.RITUAL_IMAGE_CAPTURED, { image_type: key });
     }
   };
 
@@ -464,6 +473,13 @@ export default function RitualScreen() {
     }
     if (Platform.OS !== "web") {
       await Haptics.selectionAsync();
+    }
+    trackEvent(AnalyticsEvent.RITUAL_STEP_COMPLETED, {
+      step_index: step,
+      step_title: currentStep.title,
+    });
+    if (currentStep.consent) {
+      trackEvent(AnalyticsEvent.RITUAL_BIOMETRIC_CONSENT_GIVEN);
     }
     if (step < STEPS.length - 1) {
       setStep(step + 1);

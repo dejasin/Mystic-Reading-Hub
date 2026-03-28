@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import { useOracle, DeepDiveCategory } from "@/context/OracleContext";
 import { useProfiles } from "@/context/ProfileContext";
 import { useJournal } from "@/context/JournalContext";
 import { useSubscription } from "@/lib/revenuecat";
+import { trackEvent, AnalyticsEvent } from "@/lib/analytics";
 
 type CategoryKey = DeepDiveCategory;
 type FeatherIconName = React.ComponentProps<typeof Feather>["name"];
@@ -326,7 +327,12 @@ export default function DeepDiveScreen() {
     }
   };
 
+  useEffect(() => {
+    trackEvent(AnalyticsEvent.DEEP_DIVE_OPENED);
+  }, []);
+
   const handleCategorySelect = (cat: CategoryKey) => {
+    trackEvent(AnalyticsEvent.DEEP_DIVE_CATEGORY_SELECTED, { category: cat });
     if (Platform.OS !== "web") {
       Haptics.selectionAsync();
     }
@@ -416,6 +422,7 @@ export default function DeepDiveScreen() {
             if (parsed.event === "complete") {
               setIsStreaming(false);
               setIsDone(true);
+              trackEvent(AnalyticsEvent.DEEP_DIVE_COMPLETED, { category: selectedCategory });
               await saveDeepDiveToVault(selectedCategory, accumulatedText);
               const catLabel = CATEGORIES[selectedCategory]?.label ?? selectedCategory;
               addJournalEntry({

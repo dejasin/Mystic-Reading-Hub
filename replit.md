@@ -103,6 +103,16 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 
 **RevenueCat initialization is graceful**: missing keys log a warning listing the missing variable names instead of crashing. The paywall disables purchase/restore buttons when RevenueCat is unconfigured.
 
+### Analytics
+
+- **Module**: `artifacts/oracle/lib/analytics.ts` — lightweight, privacy-respecting event tracking
+- **Initialization**: `initAnalytics()` called in `app/_layout.tsx` at app startup
+- **Event schema**: `AnalyticsEvent` enum with ~30 named events covering the full funnel
+- **Funnel tracking**: `trackFunnelStep()` for `app_open → intake → ritual → reading → paywall → purchase`
+- **No PII**: Only anonymous device IDs and action metadata are tracked — no names, DOB, photos, or personal data
+- **Backend support**: Ready for PostHog via `EXPO_PUBLIC_POSTHOG_KEY` and `EXPO_PUBLIC_POSTHOG_HOST` env vars; falls back to console logging in dev when no keys are configured
+- **Privacy Policy**: Updated in `artifacts/api-server/src/routes/legal.ts` to disclose anonymous analytics collection
+
 **Backend client** (`artifacts/api-server/src/lib/revenueCatClient.ts`): uses Replit integration credentials (via `REPL_IDENTITY` + connectors API) with `REVENUECAT_SECRET_KEY` env var as fallback. API server starts without errors even if credentials are unavailable — entitlement errors surface per-request.
 
 ## Structure
