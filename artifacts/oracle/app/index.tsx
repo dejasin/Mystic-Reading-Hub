@@ -24,6 +24,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import GoldSigil from "@/components/GoldSigil";
@@ -32,6 +33,8 @@ import { useAuth } from "@/context/AuthContext";
 import { trackEvent, trackFunnelStep, AnalyticsEvent } from "@/lib/analytics";
 import { useProfiles } from "@/context/ProfileContext";
 import { useReferral } from "@/context/ReferralContext";
+
+const ONBOARDING_COMPLETE_KEY = "@oracle/onboarding_complete";
 
 const { width } = Dimensions.get("window");
 
@@ -194,12 +197,29 @@ export default function LandingScreen() {
   const { user, isLoggedIn, logout } = useAuth();
   const { profiles, isLoaded } = useProfiles();
   const { referralCount, freeDeepDives } = useReferral();
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
 
   const mostRecentProfile = profiles.length > 0
     ? profiles.reduce((a, b) => (a.createdAt > b.createdAt ? a : b))
     : null;
 
   const hasProfile = mostRecentProfile && mostRecentProfile.dob;
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const completed = await AsyncStorage.getItem(ONBOARDING_COMPLETE_KEY);
+        if (!completed) {
+          router.replace("/onboarding");
+          return;
+        }
+      } catch {
+        router.replace("/onboarding");
+        return;
+      }
+      setOnboardingChecked(true);
+    })();
+  }, []);
 
   useEffect(() => {
     glowOpacity.value = withRepeat(
@@ -257,6 +277,10 @@ export default function LandingScreen() {
       router.push("/login");
     }
   };
+
+  if (!onboardingChecked) {
+    return <View style={styles.container}><StarField /></View>;
+  }
 
   return (
     <View style={[styles.container, { paddingTop: Platform.OS === "web" ? 67 : insets.top }]}>
