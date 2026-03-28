@@ -17,6 +17,7 @@ import { fetch } from "expo/fetch";
 import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import ExpandableParagraph from "@/components/ExpandableParagraph";
+import ShareCardModal, { extractDeepDiveData } from "@/components/ShareCardModal";
 import { useOracle, DeepDiveCategory } from "@/context/OracleContext";
 import { useProfiles } from "@/context/ProfileContext";
 import { useSubscription } from "@/lib/revenuecat";
@@ -301,6 +302,7 @@ export default function DeepDiveScreen() {
   const [streamedText, setStreamedText] = useState(existingContent);
   const [isDone, setIsDone] = useState(existingContent.length > 0);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showShareCard, setShowShareCard] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
   const getApiUrl = () => {
@@ -583,6 +585,15 @@ export default function DeepDiveScreen() {
               <Animated.View entering={FadeIn.duration(600)} style={styles.doneActions}>
                 <Text style={styles.divider}>─── ✦ ───</Text>
                 <Pressable
+                  style={({ pressed }) => [styles.shareBtn, pressed && { opacity: 0.8 }]}
+                  onPress={() => setShowShareCard(true)}
+                  accessibilityLabel="Share deep dive reading"
+                  accessibilityRole="button"
+                >
+                  <Feather name="share-2" size={16} color={Colors.gold} />
+                  <Text style={styles.shareBtnText}>Share this reading</Text>
+                </Pressable>
+                <Pressable
                   style={({ pressed }) => [styles.anotherBtn, pressed && { opacity: 0.8 }]}
                   onPress={() => setSelectedCategory(null)}
                 >
@@ -605,6 +616,18 @@ export default function DeepDiveScreen() {
           </Animated.View>
         )}
       </ScrollView>
+
+      {showShareCard && selectedCategory && (
+        <ShareCardModal
+          visible={showShareCard}
+          onClose={() => setShowShareCard(false)}
+          data={extractDeepDiveData(
+            streamedText,
+            state.userData.name || "Seeker",
+            selectedCategory,
+          )}
+        />
+      )}
     </View>
   );
 }
@@ -815,6 +838,22 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingTop: 8,
     paddingBottom: 16,
+  },
+  shareBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: Colors.gold,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    minHeight: 48,
+  },
+  shareBtnText: {
+    fontFamily: "EBGaramond_500Medium",
+    fontSize: 15,
+    color: Colors.gold,
   },
   anotherBtn: {
     backgroundColor: Colors.gold,

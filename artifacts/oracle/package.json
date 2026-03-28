@@ -58,6 +58,8 @@
     "@expo-google-fonts/cinzel-decorative": "^0.4.1",
     "@expo-google-fonts/eb-garamond": "^0.4.2",
     "expo-camera": "~17.0.10",
-    "expo-store-review": "6.8.3"
+    "expo-sharing": "~14.0.8",
+    "expo-store-review": "6.8.3",
+    "react-native-view-shot": "^4.0.3"
   }
 }

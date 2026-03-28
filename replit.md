@@ -28,7 +28,7 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 1. `app/index.tsx` — Landing page with animated hexagram sigil and starfield
 2. `app/intake.tsx` — User data form (name, DOB, birth time, city, gender, dominant hand, eye color, 3 life questions)
 3. `app/ritual.tsx` — 9-step photo ritual wizard (intro → right palm → left palm → biometric consent → right iris → left iris → face → face reading session → review)
-4. `app/reading.tsx` — SSE streaming reading, paywall gate after Section 2, archetype card, share + chat CTA
+4. `app/reading.tsx` — SSE streaming reading, paywall gate after Section 2, archetype card, image share card + chat CTA
 5. `app/chat.tsx` — Oracle chat with streaming responses, inverted FlatList, starter questions
 
 ### API Routes (`/api`)
@@ -53,6 +53,14 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - On add/edit/delete, changes are pushed to server in background.
 - On logout, local profile data is cleared; server data preserved for next login.
 - Photos remain local-only (only metadata syncs).
+
+### Shareable Image Cards
+- `components/ShareCardModal.tsx` — Modal with ViewShot-captured branded cards for social sharing
+- Three card types: Archetype (post-reading), Synastry (compatibility), Deep Dive (category summary)
+- Story (1080x1920) and Feed (1080x1080) aspect ratio toggle
+- Uses `react-native-view-shot` for capture, `expo-sharing` for native share sheet, web download fallback
+- Share triggers on reading completion, synastry completion, and deep-dive completion screens
+- Dark + gold mystical aesthetic with sigil, traits/highlights, and "Discover yours at theoracle.app" CTA
 
 ### Fonts
 - `@expo-google-fonts/cinzel-decorative` — CinzelDecorative_400Regular, CinzelDecorative_700Bold (headings)

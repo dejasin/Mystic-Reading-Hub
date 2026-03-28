@@ -20,6 +20,7 @@ import { fetch } from "expo/fetch";
 import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import GoldSigil from "@/components/GoldSigil";
+import ShareCardModal, { extractSynastryData } from "@/components/ShareCardModal";
 import { useProfiles, OracleProfile } from "@/context/ProfileContext";
 
 let msgCount = 0;
@@ -190,6 +191,7 @@ export default function SynastryScreen() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [showTyping, setShowTyping] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showShareCard, setShowShareCard] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const inputRef = useRef<TextInput>(null);
 
@@ -471,6 +473,15 @@ export default function SynastryScreen() {
               {phase === "complete" && (
                 <Animated.View entering={FadeIn.duration(600)} style={styles.completeActions}>
                   <Text style={styles.completeLabel}>─── ✦ Reading Complete ✦ ───</Text>
+                  <Pressable
+                    style={styles.shareBtn}
+                    onPress={() => setShowShareCard(true)}
+                    accessibilityLabel="Share synastry reading"
+                    accessibilityRole="button"
+                  >
+                    <Feather name="share-2" size={16} color={Colors.gold} />
+                    <Text style={styles.shareText}>Share this reading</Text>
+                  </Pressable>
                   <Pressable style={styles.switchToChatBtn} onPress={() => setTab("chat")} accessibilityLabel="Ask The Oracle — open chat" accessibilityRole="button">
                     <Feather name="message-circle" size={16} color={Colors.bg} />
                     <Text style={styles.switchToChatText}>Ask The Oracle</Text>
@@ -539,6 +550,15 @@ export default function SynastryScreen() {
           )}
         </>
       )}
+      <ShareCardModal
+        visible={showShareCard}
+        onClose={() => setShowShareCard(false)}
+        data={extractSynastryData(
+          reading,
+          profile1?.name ?? "Soul 1",
+          profile2?.name ?? "Soul 2",
+        )}
+      />
     </View>
   );
 }
@@ -579,6 +599,8 @@ const styles = StyleSheet.create({
   streamingIndicator: { fontFamily: "EBGaramond_400Regular_Italic", fontSize: 14, color: Colors.gold, opacity: 0.7, textAlign: "center", marginTop: 8 },
   completeActions: { alignItems: "center", gap: 14, marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: "rgba(201,168,76,0.1)" },
   completeLabel: { fontFamily: "EBGaramond_400Regular", fontSize: 13, color: Colors.gold, letterSpacing: 2, opacity: 0.7 },
+  shareBtn: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, borderColor: Colors.gold, borderRadius: 10, paddingVertical: 12, paddingHorizontal: 20, minHeight: 48, width: "100%", justifyContent: "center" },
+  shareText: { fontFamily: "EBGaramond_500Medium", fontSize: 15, color: Colors.gold },
   switchToChatBtn: { backgroundColor: Colors.gold, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 28, flexDirection: "row", alignItems: "center", gap: 8, width: "100%", justifyContent: "center" },
   switchToChatText: { fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: Colors.bg, letterSpacing: 0.5 },
   newSynastryBtn: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 10 },

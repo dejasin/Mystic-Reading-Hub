@@ -29,6 +29,7 @@ import { safeOpenURL } from "@/lib/safeOpenURL";
 import StarField from "@/components/StarField";
 import GoldSigil from "@/components/GoldSigil";
 import ExpandableParagraph from "@/components/ExpandableParagraph";
+import ShareCardModal, { extractArchetypeData } from "@/components/ShareCardModal";
 import { useOracle, DeepDiveCategory } from "@/context/OracleContext";
 import { useProfiles } from "@/context/ProfileContext";
 import { useSubscription } from "@/lib/revenuecat";
@@ -743,6 +744,7 @@ export default function ReadingScreen() {
   const [errorMsg, setErrorMsg] = useState("");
   const [errorSource, setErrorSource] = useState<"free" | "paid">("free");
   const [activationDismissed, setActivationDismissed] = useState(false);
+  const [showShareCard, setShowShareCard] = useState(false);
   const hasStarted = useRef(false);
   const scrollRef = useRef<ScrollView>(null);
   const scrollOffsetRef = useRef<number>(0);
@@ -1309,16 +1311,7 @@ export default function ReadingScreen() {
               {/* Share */}
               <Pressable
                 style={styles.shareBtn}
-                onPress={async () => {
-                  const archetype = state.archetypeReading.match(/✦ YOUR ARCHETYPE\s*—\s*([^\n]+)/)?.[1] ?? "your archetype";
-                  try {
-                    await Share.share({
-                      message: `My Oracle archetype: ${archetype.trim()}. Discover yours at theoracle.app`,
-                    });
-                  } catch (e) {
-                    console.warn("Share failed:", e);
-                  }
-                }}
+                onPress={() => setShowShareCard(true)}
                 accessibilityLabel="Share your archetype"
                 accessibilityRole="button"
               >
@@ -1358,6 +1351,15 @@ export default function ReadingScreen() {
           )}
         </ScrollView>
       )}
+
+      <ShareCardModal
+        visible={showShareCard}
+        onClose={() => setShowShareCard(false)}
+        data={extractArchetypeData(
+          state.archetypeReading || state.freeReading,
+          state.userData.name || "Seeker",
+        )}
+      />
     </View>
   );
 }
