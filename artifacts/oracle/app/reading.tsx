@@ -32,6 +32,7 @@ import ExpandableParagraph from "@/components/ExpandableParagraph";
 import ShareCardModal, { extractArchetypeData } from "@/components/ShareCardModal";
 import { useOracle, DeepDiveCategory } from "@/context/OracleContext";
 import { useProfiles } from "@/context/ProfileContext";
+import { useJournal } from "@/context/JournalContext";
 import { useSubscription } from "@/lib/revenuecat";
 import { maybeRequestReview } from "@/lib/storeReview";
 
@@ -739,7 +740,9 @@ export default function ReadingScreen() {
   const insets = useSafeAreaInsets();
   const { state, updateUserData, appendFreeReading, appendPaidReading, appendArchetype, appendChineseFaceReading, appendIridologyReading, resetFreeReading, resetPaidReading, setReadingComplete, resetAll } = useOracle();
   const { profiles, updateProfile } = useProfiles();
+  const { addEntry: addJournalEntry } = useJournal();
   const { customerInfo } = useSubscription();
+  const journalSaved = useRef(false);
   const [phase, setPhase] = useState<Phase>("loading");
   const [errorMsg, setErrorMsg] = useState("");
   const [errorSource, setErrorSource] = useState<"free" | "paid">("free");
@@ -1011,6 +1014,16 @@ export default function ReadingScreen() {
       ].filter(Boolean).join("\n\n");
       saveReadingToVault(fullReading);
       maybeRequestReview();
+      if (!journalSaved.current && fullReading.length > 0) {
+        journalSaved.current = true;
+        addJournalEntry({
+          readingType: "Full Reading",
+          title: state.userData.name || "Full Reading",
+          preview: "",
+          fullText: fullReading,
+          metadata: { profileNames: [state.userData.name].filter(Boolean) },
+        });
+      }
     }
   }, [phase]);
 

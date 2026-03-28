@@ -22,6 +22,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OracleProvider } from "@/context/OracleContext";
 import { ProfileProvider } from "@/context/ProfileContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { JournalProvider } from "@/context/JournalContext";
 import Colors from "@/constants/colors";
 import { initializeRevenueCat, SubscriptionProvider } from "@/lib/revenuecat";
 
@@ -62,6 +63,7 @@ export default function RootLayout() {
           <SubscriptionProvider>
           <AuthProvider>
           <ProfileProvider>
+            <JournalProvider>
             <OracleProvider>
               <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bg }}>
                 <KeyboardProvider>
@@ -83,11 +85,14 @@ export default function RootLayout() {
                       <Stack.Screen name="profile-action" />
                       <Stack.Screen name="profile-reading" />
                       <Stack.Screen name="login" />
+                      <Stack.Screen name="journal" />
+                      <Stack.Screen name="journal-detail" />
                     </Stack>
                   </ErrorBoundary>
                 </KeyboardProvider>
               </GestureHandlerRootView>
             </OracleProvider>
+            </JournalProvider>
           </ProfileProvider>
           </AuthProvider>
           </SubscriptionProvider>

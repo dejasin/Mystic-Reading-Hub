@@ -20,6 +20,7 @@ import ExpandableParagraph from "@/components/ExpandableParagraph";
 import ShareCardModal, { extractDeepDiveData } from "@/components/ShareCardModal";
 import { useOracle, DeepDiveCategory } from "@/context/OracleContext";
 import { useProfiles } from "@/context/ProfileContext";
+import { useJournal } from "@/context/JournalContext";
 import { useSubscription } from "@/lib/revenuecat";
 
 type CategoryKey = DeepDiveCategory;
@@ -287,6 +288,7 @@ export default function DeepDiveScreen() {
   const params = useLocalSearchParams<{ category?: string }>();
   const { state, appendDeepDive, clearDeepDive } = useOracle();
   const { profiles, updateProfile } = useProfiles();
+  const { addEntry: addJournalEntry } = useJournal();
   const { customerInfo } = useSubscription();
 
   const VALID_CATEGORIES: CategoryKey[] = ["career", "relationship", "finances", "fitness", "family"];
@@ -415,6 +417,17 @@ export default function DeepDiveScreen() {
               setIsStreaming(false);
               setIsDone(true);
               await saveDeepDiveToVault(selectedCategory, accumulatedText);
+              const catLabel = CATEGORIES[selectedCategory]?.label ?? selectedCategory;
+              addJournalEntry({
+                readingType: "Deep Dive",
+                title: `${catLabel} — ${state.userData.name || "Deep Dive"}`,
+                preview: "",
+                fullText: accumulatedText,
+                metadata: {
+                  category: catLabel,
+                  profileNames: [state.userData.name].filter(Boolean),
+                },
+              });
               if (Platform.OS !== "web") {
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
               }

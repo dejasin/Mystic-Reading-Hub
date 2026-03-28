@@ -30,6 +30,15 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 3. `app/ritual.tsx` — 9-step photo ritual wizard (intro → right palm → left palm → biometric consent → right iris → left iris → face → face reading session → review)
 4. `app/reading.tsx` — SSE streaming reading, paywall gate after Section 2, archetype card, image share card + chat CTA
 5. `app/chat.tsx` — Oracle chat with streaming responses, inverted FlatList, starter questions
+6. `app/journal.tsx` — Reading history / journal screen: chronological list of all past readings with type badges, previews, and favorite filter
+7. `app/journal-detail.tsx` — Full reading detail view with section-aware rendering and favorite toggle
+
+### Journal / Reading History
+- **Context**: `context/JournalContext.tsx` — manages journal entries in AsyncStorage (`oracle_journal_v1`)
+- **Entry types**: Full Reading, Deep Dive, Synastry, Profile Reading
+- **Auto-save**: readings are automatically saved to journal on completion from `reading.tsx`, `deep-dive.tsx`, `synastry.tsx`, and `profile-reading.tsx`
+- **Features**: reverse chronological list, favorite/bookmark toggle, favorites-only filter, synastry entries show both profile names
+- **Navigation**: accessible from home screen "Journal" button
 
 ### API Routes (`/api`)
 - `POST /api/generate` — SSE stream, free sections 1–2 then paywall event

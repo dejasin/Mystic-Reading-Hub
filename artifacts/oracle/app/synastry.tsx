@@ -22,6 +22,7 @@ import StarField from "@/components/StarField";
 import GoldSigil from "@/components/GoldSigil";
 import ShareCardModal, { extractSynastryData } from "@/components/ShareCardModal";
 import { useProfiles, OracleProfile } from "@/context/ProfileContext";
+import { useJournal } from "@/context/JournalContext";
 
 let msgCount = 0;
 function genId() { return `sm-${Date.now()}-${++msgCount}`; }
@@ -177,7 +178,9 @@ const STARTERS = [
 export default function SynastryScreen() {
   const insets = useSafeAreaInsets();
   const { profiles } = useProfiles();
+  const { addEntry: addJournalEntry } = useJournal();
   const params = useLocalSearchParams<{ profileId?: string }>();
+  const journalSaved = useRef(false);
 
   const [profile1, setProfile1] = useState<OracleProfile | null>(
     params.profileId ? (profiles.find(p => p.id === params.profileId) ?? null) : null
@@ -265,6 +268,19 @@ export default function SynastryScreen() {
       setPhase("error");
     }
   };
+
+  useEffect(() => {
+    if (phase === "complete" && !journalSaved.current && reading.length > 0 && profile1 && profile2) {
+      journalSaved.current = true;
+      addJournalEntry({
+        readingType: "Synastry",
+        title: `${profile1.name} & ${profile2.name}`,
+        preview: "",
+        fullText: reading,
+        metadata: { profileNames: [profile1.name, profile2.name] },
+      });
+    }
+  }, [phase, reading]);
 
   const handleSendChat = async (text: string) => {
     const trimmed = text.trim();

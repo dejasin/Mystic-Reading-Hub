@@ -21,6 +21,7 @@ import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import GoldSigil from "@/components/GoldSigil";
 import { useProfiles, OracleProfile } from "@/context/ProfileContext";
+import { useJournal } from "@/context/JournalContext";
 
 let msgCount = 0;
 function genId() { return `pm-${Date.now()}-${++msgCount}`; }
@@ -92,6 +93,7 @@ export default function ProfileReadingScreen() {
   const insets = useSafeAreaInsets();
   const { profileId } = useLocalSearchParams<{ profileId: string }>();
   const { profiles } = useProfiles();
+  const { addEntry: addJournalEntry } = useJournal();
 
   const profile = profiles.find(p => p.id === profileId) ?? null;
   const sunSign = profile ? computeSunSign(profile.dob) : "";
@@ -209,6 +211,19 @@ export default function ProfileReadingScreen() {
       }
 
       setPhase("chat");
+      if (full.length > 0 && profile) {
+        addJournalEntry({
+          readingType: "Profile Reading",
+          title: `${category} — ${profile.name}`,
+          preview: "",
+          fullText: full,
+          metadata: {
+            category,
+            profileNames: [profile.name],
+            profileId: profile.id,
+          },
+        });
+      }
     } catch (err) {
       setShowTyping(false);
       const isNetwork = err instanceof TypeError || String(err).includes("fetch");

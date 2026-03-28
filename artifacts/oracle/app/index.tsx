@@ -178,6 +178,18 @@ export default function LandingScreen() {
 
             <Pressable
               style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.75 }]}
+              onPress={() => router.push("/journal")}
+              accessibilityLabel="Open your reading journal"
+              accessibilityRole="button"
+            >
+              <Feather name="book-open" size={16} color={Colors.gold} />
+              <Text style={styles.secondaryText}>Journal</Text>
+            </Pressable>
+
+            <View style={styles.secondarySep} />
+
+            <Pressable
+              style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.75 }]}
               onPress={() => router.push("/synastry")}
               accessibilityLabel="Start a synastry reading"
               accessibilityRole="button"
@@ -185,9 +197,9 @@ export default function LandingScreen() {
               <Text style={styles.secondaryIcon}>✦ ✦</Text>
               <Text style={styles.secondaryText}>Synastry</Text>
             </Pressable>
+          </View>
 
-            <View style={styles.secondarySep} />
-
+          <View style={styles.secondaryRow}>
             <Pressable
               style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.75 }]}
               onPress={handleRestore}
@@ -196,7 +208,7 @@ export default function LandingScreen() {
               {isRestoring ? (
                 <ActivityIndicator size="small" color={Colors.gold} />
               ) : (
-                <Text style={styles.secondaryText}>Restore</Text>
+                <Text style={styles.secondaryText}>Restore Purchase</Text>
               )}
             </Pressable>
           </View>
