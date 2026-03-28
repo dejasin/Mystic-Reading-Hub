@@ -396,6 +396,16 @@ export default function LandingScreen() {
             </Pressable>
           </View>
 
+          <Pressable
+            style={({ pressed }) => [styles.notifBtn, pressed && { opacity: 0.7 }]}
+            onPress={() => router.push("/notification-settings")}
+            accessibilityLabel="Notification settings"
+            accessibilityRole="button"
+          >
+            <Feather name="bell" size={15} color={Colors.gold} />
+            <Text style={styles.secondaryText}>Notifications</Text>
+          </Pressable>
+
           <Text style={styles.privacyNote}>
             Images are sent securely for analysis and never stored.
           </Text>
@@ -697,5 +707,12 @@ const styles = StyleSheet.create({
     fontFamily: "EBGaramond_400Regular",
     fontSize: 13,
     color: Colors.muted,
+  },
+  notifBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 8,
   },
 });

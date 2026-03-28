@@ -34,6 +34,7 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 7. `app/journal-detail.tsx` — Full reading detail view with section-aware rendering and favorite toggle
 8. `app/daily-history.tsx` — Scrollable history of past Daily Oracle messages
 9. `app/settings.tsx` — Settings screen with Account (sign out, delete account), Subscription (plan status, manage, restore purchases), Notifications (toggles), Legal (privacy/terms links), Support (contact email), app version
+10. `app/notification-settings.tsx` — Toggle push notification categories (daily prompts, weekly forecasts, re-engagement)
 
 ### Journal / Reading History
 - **Context**: `context/JournalContext.tsx` — manages journal entries in AsyncStorage (`oracle_journal_v1`)
@@ -56,6 +57,11 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - `POST /api/weekly-forecast` — Weekly outlook (cached per profile per week)
 - `GET /api/daily-history/:profileId` — Past daily oracle messages
 - `POST /api/account/delete` — Account deletion endpoint (App Store compliance); clears server-side references
+- `POST /api/notifications/register` — Register device push token
+- `POST /api/notifications/unregister` — Remove device push token
+- `GET /api/notifications/preferences/:deviceId` — Get notification preferences
+- `PUT /api/notifications/preferences/:deviceId` — Update notification preferences
+- `POST /api/notifications/activity/:deviceId` — Record device activity for re-engagement tracking
 
 ### Authentication
 - Email magic code login (no passwords). JWT-based sessions (30-day expiry).
@@ -195,6 +201,7 @@ Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client insta
 - `src/schema/index.ts` — barrel re-export of all models
 - `src/schema/sessions.ts` — `sessions` table for persisting Oracle session state (paid status, reading text, message count, etc.)
 - `src/schema/users.ts` — `users` table (id, email, email_verified), `user_profiles` table (profile data synced from mobile), `verification_codes` table (magic code auth)
+- `src/schema/pushTokens.ts` — `push_tokens` and `notification_preferences` tables for push notification management
 - `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas
 - `drizzle.config.ts` — Drizzle Kit config (requires `DATABASE_URL`, automatically provided by Replit)
 - Exports: `.` (pool, db, schema), `./schema` (schema only)

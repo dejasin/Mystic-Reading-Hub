@@ -10,9 +10,11 @@ import {
   useFonts as useGaramondFonts,
 } from "@expo-google-fonts/eb-garamond";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect } from "react";
+import * as Notifications from "expo-notifications";
+import React, { useEffect, useRef } from "react";
+import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -28,6 +30,7 @@ import { ReferralProvider } from "@/context/ReferralContext";
 import Colors from "@/constants/colors";
 import { initializeRevenueCat, SubscriptionProvider } from "@/lib/revenuecat";
 import { initAnalytics, trackFunnelStep } from "@/lib/analytics";
+import { recordActivity, parseNotificationRoute } from "@/lib/notifications";
 
 setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
 initializeRevenueCat();
@@ -52,12 +55,49 @@ export default function RootLayout() {
   const fontsLoaded = cinzelLoaded && garamondLoaded;
   const fontError = cinzelError || garamondError;
 
+  const notificationListener = useRef<Notifications.EventSubscription>();
+  const responseListener = useRef<Notifications.EventSubscription>();
+
   useEffect(() => {
     if (fontsLoaded || fontError) {
       SplashScreen.hideAsync();
       trackFunnelStep("app_open");
     }
   }, [fontsLoaded, fontError]);
+
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+
+    recordActivity();
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
+      const route = parseNotificationRoute(response.notification);
+      if (route) {
+        const screenMap: Record<string, string> = {
+          index: "/",
+          intake: "/intake",
+          reading: "/reading",
+          chat: "/chat",
+          profiles: "/profiles",
+        };
+        const path = screenMap[route.screen] ?? "/";
+        try {
+          router.push(path as any);
+        } catch {
+          router.push("/");
+        }
+      }
+    });
+
+    return () => {
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
+      if (notificationListener.current) {
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      }
+    };
+  }, []);
 
   if (!fontsLoaded && !fontError) return null;
 
@@ -97,6 +137,7 @@ export default function RootLayout() {
                       <Stack.Screen name="daily-history" />
                       <Stack.Screen name="settings" />
                       <Stack.Screen name="referral" />
+                      <Stack.Screen name="notification-settings" />
                     </Stack>
                   </ErrorBoundary>
                 </KeyboardProvider>

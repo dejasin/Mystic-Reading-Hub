@@ -7,6 +7,7 @@ import profilesRouter from "./profiles";
 import dailyRouter from "./daily";
 import accountRouter from "./account";
 import referralRouter from "./referral";
+import notificationsRouter from "./notifications";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(legalRouter);
 router.use(dailyRouter);
 router.use(accountRouter);
 router.use(referralRouter);
+router.use(notificationsRouter);
 
 export default router;

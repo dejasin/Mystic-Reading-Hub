@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: notifications
+    description: Push notification operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,101 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /notifications/register:
+    post:
+      operationId: registerPushToken
+      tags: [notifications]
+      summary: Register a push notification token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterPushTokenRequest"
+      responses:
+        "200":
+          description: Token registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterPushTokenResponse"
+  /notifications/unregister:
+    post:
+      operationId: unregisterPushToken
+      tags: [notifications]
+      summary: Unregister a push notification token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnregisterPushTokenRequest"
+      responses:
+        "200":
+          description: Token unregistered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /notifications/preferences/{deviceId}:
+    get:
+      operationId: getNotificationPreferences
+      tags: [notifications]
+      summary: Get notification preferences for a device
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Notification preferences
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationPreferences"
+    put:
+      operationId: updateNotificationPreferences
+      tags: [notifications]
+      summary: Update notification preferences
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateNotificationPreferencesRequest"
+      responses:
+        "200":
+          description: Preferences updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationPreferences"
+  /notifications/activity/{deviceId}:
+    post:
+      operationId: recordActivity
+      tags: [notifications]
+      summary: Record device activity for re-engagement tracking
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Activity recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +130,66 @@ components:
           type: string
       required:
         - status
-
+    RegisterPushTokenRequest:
+      type: object
+      properties:
+        deviceId:
+          type: string
+        token:
+          type: string
+        platform:
+          type: string
+          enum: [ios, android, web]
+      required:
+        - deviceId
+        - token
+        - platform
+    RegisterPushTokenResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        deviceId:
+          type: string
+      required:
+        - success
+        - deviceId
+    UnregisterPushTokenRequest:
+      type: object
+      properties:
+        deviceId:
+          type: string
+      required:
+        - deviceId
+    NotificationPreferences:
+      type: object
+      properties:
+        deviceId:
+          type: string
+        dailyPrompts:
+          type: boolean
+        weeklyForecasts:
+          type: boolean
+        reEngagement:
+          type: boolean
+      required:
+        - deviceId
+        - dailyPrompts
+        - weeklyForecasts
+        - reEngagement
+    UpdateNotificationPreferencesRequest:
+      type: object
+      properties:
+        dailyPrompts:
+          type: boolean
+        weeklyForecasts:
+          type: boolean
+        reEngagement:
+          type: boolean
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success

@@ -8,3 +8,44 @@
 export interface HealthStatus {
   status: string;
 }
+
+export type RegisterPushTokenRequestPlatform =
+  (typeof RegisterPushTokenRequestPlatform)[keyof typeof RegisterPushTokenRequestPlatform];
+
+export const RegisterPushTokenRequestPlatform = {
+  ios: "ios",
+  android: "android",
+  web: "web",
+} as const;
+
+export interface RegisterPushTokenRequest {
+  deviceId: string;
+  token: string;
+  platform: RegisterPushTokenRequestPlatform;
+}
+
+export interface RegisterPushTokenResponse {
+  success: boolean;
+  deviceId: string;
+}
+
+export interface UnregisterPushTokenRequest {
+  deviceId: string;
+}
+
+export interface NotificationPreferences {
+  deviceId: string;
+  dailyPrompts: boolean;
+  weeklyForecasts: boolean;
+  reEngagement: boolean;
+}
+
+export interface UpdateNotificationPreferencesRequest {
+  dailyPrompts?: boolean;
+  weeklyForecasts?: boolean;
+  reEngagement?: boolean;
+}
+
+export interface SuccessResponse {
+  success: boolean;
+}

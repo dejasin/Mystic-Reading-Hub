@@ -36,6 +36,7 @@ import { useJournal } from "@/context/JournalContext";
 import { useSubscription } from "@/lib/revenuecat";
 import { maybeRequestReview } from "@/lib/storeReview";
 import { trackEvent, trackFunnelStep, AnalyticsEvent } from "@/lib/analytics";
+import { hasBeenPromptedForNotifications, requestAndRegisterNotifications } from "@/lib/notifications";
 
 const LOADING_MESSAGES = [
   "Mapping your palm lines...",
@@ -1038,6 +1039,17 @@ export default function ReadingScreen() {
           fullText: fullReading,
           metadata: { profileNames: [state.userData.name].filter(Boolean) },
         });
+      }
+
+      if (Platform.OS !== "web") {
+        (async () => {
+          const alreadyPrompted = await hasBeenPromptedForNotifications();
+          if (!alreadyPrompted) {
+            setTimeout(() => {
+              requestAndRegisterNotifications();
+            }, 3000);
+          }
+        })();
       }
     }
   }, [phase]);

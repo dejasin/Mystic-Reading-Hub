@@ -7,3 +7,10 @@
  */
 
 export * from "./healthStatus";
+export * from "./notificationPreferences";
+export * from "./registerPushTokenRequest";
+export * from "./registerPushTokenRequestPlatform";
+export * from "./registerPushTokenResponse";
+export * from "./successResponse";
+export * from "./unregisterPushTokenRequest";
+export * from "./updateNotificationPreferencesRequest";

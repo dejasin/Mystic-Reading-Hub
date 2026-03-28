@@ -14,3 +14,73 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary Register a push notification token
+ */
+export const RegisterPushTokenBody = zod.object({
+  deviceId: zod.string(),
+  token: zod.string(),
+  platform: zod.enum(["ios", "android", "web"]),
+});
+
+export const RegisterPushTokenResponse = zod.object({
+  success: zod.boolean(),
+  deviceId: zod.string(),
+});
+
+/**
+ * @summary Unregister a push notification token
+ */
+export const UnregisterPushTokenBody = zod.object({
+  deviceId: zod.string(),
+});
+
+export const UnregisterPushTokenResponse = zod.object({
+  success: zod.boolean(),
+});
+
+/**
+ * @summary Get notification preferences for a device
+ */
+export const GetNotificationPreferencesParams = zod.object({
+  deviceId: zod.coerce.string(),
+});
+
+export const GetNotificationPreferencesResponse = zod.object({
+  deviceId: zod.string(),
+  dailyPrompts: zod.boolean(),
+  weeklyForecasts: zod.boolean(),
+  reEngagement: zod.boolean(),
+});
+
+/**
+ * @summary Update notification preferences
+ */
+export const UpdateNotificationPreferencesParams = zod.object({
+  deviceId: zod.coerce.string(),
+});
+
+export const UpdateNotificationPreferencesBody = zod.object({
+  dailyPrompts: zod.boolean().optional(),
+  weeklyForecasts: zod.boolean().optional(),
+  reEngagement: zod.boolean().optional(),
+});
+
+export const UpdateNotificationPreferencesResponse = zod.object({
+  deviceId: zod.string(),
+  dailyPrompts: zod.boolean(),
+  weeklyForecasts: zod.boolean(),
+  reEngagement: zod.boolean(),
+});
+
+/**
+ * @summary Record device activity for re-engagement tracking
+ */
+export const RecordActivityParams = zod.object({
+  deviceId: zod.coerce.string(),
+});
+
+export const RecordActivityResponse = zod.object({
+  success: zod.boolean(),
+});
