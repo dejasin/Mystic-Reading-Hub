@@ -1,0 +1,23 @@
+kind = "mobile"
+previewPath = "/"
+title = "The Oracle"
+version = "1.0.0"
+id = "artifacts/oracle"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/" ]
+localPort = 19943
+
+[services.development]
+run = "pnpm --filter @workspace/oracle run dev"
+
+[services.env]
+PORT = "19943"
+BASE_PATH = "/"
