@@ -31,6 +31,7 @@ import { useSubscription } from "@/lib/revenuecat";
 import { useAuth } from "@/context/AuthContext";
 import { trackEvent, trackFunnelStep, AnalyticsEvent } from "@/lib/analytics";
 import { useProfiles } from "@/context/ProfileContext";
+import { useReferral } from "@/context/ReferralContext";
 
 const { width } = Dimensions.get("window");
 
@@ -192,6 +193,7 @@ export default function LandingScreen() {
   const { restore, isRestoring, isConfigured } = useSubscription();
   const { user, isLoggedIn, logout } = useAuth();
   const { profiles, isLoaded } = useProfiles();
+  const { referralCount, freeDeepDives } = useReferral();
 
   const mostRecentProfile = profiles.length > 0
     ? profiles.reduce((a, b) => (a.createdAt > b.createdAt ? a : b))
@@ -325,6 +327,24 @@ export default function LandingScreen() {
               <Feather name="arrow-right" size={20} color={Colors.bg} style={{ marginLeft: 8 }} />
             </Pressable>
           </Animated.View>
+
+          <Pressable
+            style={({ pressed }) => [styles.referralBanner, pressed && { opacity: 0.85 }]}
+            onPress={() => router.push("/referral")}
+            accessibilityLabel="Refer a friend"
+            accessibilityRole="button"
+          >
+            <Feather name="gift" size={18} color={Colors.gold} />
+            <View style={styles.referralBannerText}>
+              <Text style={styles.referralTitle}>Refer a Friend</Text>
+              <Text style={styles.referralSub}>
+                {referralCount > 0
+                  ? `${referralCount} referred · ${freeDeepDives} free readings`
+                  : "Both of you get a free deep-dive reading"}
+              </Text>
+            </View>
+            <Feather name="chevron-right" size={18} color={Colors.gold} />
+          </Pressable>
 
           <View style={styles.secondaryRow}>
             <Pressable
@@ -651,5 +671,31 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "rgba(201,168,76,0.12)",
     marginVertical: 12,
+  },
+  referralBanner: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(201,168,76,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(201,168,76,0.2)",
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  referralBannerText: {
+    flex: 1,
+    gap: 2,
+  },
+  referralTitle: {
+    fontFamily: "EBGaramond_500Medium",
+    fontSize: 15,
+    color: Colors.gold,
+  },
+  referralSub: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 13,
+    color: Colors.muted,
   },
 });

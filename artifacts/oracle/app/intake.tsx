@@ -18,6 +18,7 @@ import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import { useOracle, UserData } from "@/context/OracleContext";
 import { trackEvent, AnalyticsEvent } from "@/lib/analytics";
+import { useReferral } from "@/context/ReferralContext";
 
 const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"];
 const HAND_OPTIONS = ["Right", "Left", "Ambidextrous"];
@@ -179,8 +180,10 @@ const inputStyles = StyleSheet.create({
 export default function IntakeScreen() {
   const insets = useSafeAreaInsets();
   const { setUserData } = useOracle();
+  const { pendingReferralCode, redeemReferralCode, clearPendingReferralCode } = useReferral();
 
   const [name, setName] = useState("");
+  const [referralCode, setReferralCode] = useState(pendingReferralCode ?? "");
   const [dob, setDob] = useState("");
   const [birthTime, setBirthTime] = useState("");
   const [birthTimeUnknown, setBirthTimeUnknown] = useState(false);
@@ -205,6 +208,15 @@ export default function IntakeScreen() {
 
     if (Platform.OS !== "web") {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+
+    if (referralCode.trim()) {
+      const result = await redeemReferralCode(referralCode.trim());
+      if (result.success) {
+        Alert.alert("Referral Applied", result.message);
+      } else {
+        Alert.alert("Referral Code", result.message);
+      }
     }
 
     const userData: UserData = {
@@ -247,6 +259,30 @@ export default function IntakeScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
+        <Field label="Referral Code" optional>
+          <View style={styles.referralRow}>
+            <View style={{ flex: 1 }}>
+              <StyledInput
+                value={referralCode}
+                onChangeText={(v) => setReferralCode(v.toUpperCase())}
+                placeholder="Enter a friend's code"
+              />
+            </View>
+            {referralCode.trim() !== "" && (
+              <Pressable
+                onPress={() => {
+                  setReferralCode("");
+                  clearPendingReferralCode();
+                }}
+                style={styles.referralClearBtn}
+                hitSlop={8}
+              >
+                <Feather name="x" size={16} color={Colors.muted} />
+              </Pressable>
+            )}
+          </View>
+        </Field>
+
         <Text style={styles.divider}>─── ✦ ───</Text>
 
         <Field label="Full Name">
@@ -444,5 +480,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.bg,
     letterSpacing: 0.5,
+  },
+  referralRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  referralClearBtn: {
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

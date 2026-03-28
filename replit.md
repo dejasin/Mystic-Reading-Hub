@@ -125,6 +125,21 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 
 **Backend client** (`artifacts/api-server/src/lib/revenueCatClient.ts`): uses Replit integration credentials (via `REPL_IDENTITY` + connectors API) with `REVENUECAT_SECRET_KEY` env var as fallback. API server starts without errors even if credentials are unavailable — entitlement errors surface per-request.
 
+### Referral Program
+- **Database tables**: `referrals` (unique codes per device), `referral_redemptions` (tracks who redeemed what), `referral_rewards` (free deep-dive credits)
+- **Schema**: `lib/db/src/schema/referrals.ts`
+- **API Routes** (`artifacts/api-server/src/routes/referral.ts`):
+  - `POST /api/referral/code` — generate/get referral code for a device ID
+  - `POST /api/referral/redeem` — redeem a referral code (grants both parties a free deep-dive)
+  - `GET /api/referral/stats/:deviceId` — get referral count and available rewards
+  - `POST /api/referral/use-reward` — consume a free deep-dive reward
+- **Client context**: `artifacts/oracle/context/ReferralContext.tsx` — manages device ID (persisted in AsyncStorage), referral code, stats, and reward state
+- **UI**: `app/referral.tsx` — full referral screen with code display, share/copy, stats, and how-it-works
+- **Home screen**: "Refer a Friend" banner on `app/index.tsx` showing referral count and free readings
+- **Intake**: Optional referral code input field at top of `app/intake.tsx`, auto-redeemed on form submit
+- **Deep linking**: `components/DeepLinkHandler.tsx` handles `oracle://invite/<code>` and `https://theoracle.app/invite/<code>` URLs, pre-fills referral code on intake
+- **Reward**: Each successful referral grants 1 free deep-dive reading to both referrer and referee
+
 ## Structure
 
 ```text

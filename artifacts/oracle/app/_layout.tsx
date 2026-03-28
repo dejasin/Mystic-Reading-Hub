@@ -19,10 +19,12 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { setBaseUrl } from "@workspace/api-client-react";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { DeepLinkHandler } from "@/components/DeepLinkHandler";
 import { OracleProvider } from "@/context/OracleContext";
 import { ProfileProvider } from "@/context/ProfileContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { JournalProvider } from "@/context/JournalContext";
+import { ReferralProvider } from "@/context/ReferralContext";
 import Colors from "@/constants/colors";
 import { initializeRevenueCat, SubscriptionProvider } from "@/lib/revenuecat";
 import { initAnalytics, trackFunnelStep } from "@/lib/analytics";
@@ -67,6 +69,8 @@ export default function RootLayout() {
           <AuthProvider>
           <ProfileProvider>
             <JournalProvider>
+            <ReferralProvider>
+            <DeepLinkHandler />
             <OracleProvider>
               <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bg }}>
                 <KeyboardProvider>
@@ -92,11 +96,13 @@ export default function RootLayout() {
                       <Stack.Screen name="journal-detail" />
                       <Stack.Screen name="daily-history" />
                       <Stack.Screen name="settings" />
+                      <Stack.Screen name="referral" />
                     </Stack>
                   </ErrorBoundary>
                 </KeyboardProvider>
               </GestureHandlerRootView>
             </OracleProvider>
+            </ReferralProvider>
             </JournalProvider>
           </ProfileProvider>
           </AuthProvider>
