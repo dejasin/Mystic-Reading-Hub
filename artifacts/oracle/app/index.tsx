@@ -27,6 +27,7 @@ import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import GoldSigil from "@/components/GoldSigil";
 import { useSubscription } from "@/lib/revenuecat";
+import { useAuth } from "@/context/AuthContext";
 
 const { width } = Dimensions.get("window");
 
@@ -41,6 +42,7 @@ export default function LandingScreen() {
   const glowOpacity = useSharedValue(0.5);
   const buttonScale = useSharedValue(1);
   const { restore, isRestoring, isConfigured } = useSubscription();
+  const { user, isLoggedIn, logout } = useAuth();
 
   useEffect(() => {
     glowOpacity.value = withRepeat(
@@ -79,9 +81,46 @@ export default function LandingScreen() {
     }
   };
 
+  const handleAccountPress = () => {
+    if (isLoggedIn) {
+      Alert.alert(
+        "Account",
+        `Signed in as ${user?.email}`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Sign Out",
+            style: "destructive",
+            onPress: () => logout(),
+          },
+        ],
+      );
+    } else {
+      router.push("/login");
+    }
+  };
+
   return (
     <View style={[styles.container, { paddingTop: Platform.OS === "web" ? 67 : insets.top }]}>
       <StarField />
+
+      <View style={styles.accountBar}>
+        <Pressable
+          style={({ pressed }) => [styles.accountBtn, pressed && { opacity: 0.7 }]}
+          onPress={handleAccountPress}
+          accessibilityLabel={isLoggedIn ? `Account: ${user?.email}` : "Sign in"}
+          accessibilityRole="button"
+        >
+          <Feather
+            name={isLoggedIn ? "user-check" : "user"}
+            size={16}
+            color={isLoggedIn ? Colors.gold : Colors.muted}
+          />
+          <Text style={[styles.accountText, isLoggedIn && styles.accountTextActive]}>
+            {isLoggedIn ? user?.email : "Sign In"}
+          </Text>
+        </Pressable>
+      </View>
 
       <ScrollView
         contentContainerStyle={[styles.content]}
@@ -177,6 +216,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.bg,
+  },
+  accountBar: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 0,
+  },
+  accountBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  accountText: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 13,
+    color: Colors.muted,
+  },
+  accountTextActive: {
+    color: Colors.gold,
   },
   content: {
     alignItems: "center",

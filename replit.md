@@ -35,6 +35,24 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - `POST /api/generate` — SSE stream, free sections 1–2 then paywall event
 - `POST /api/generate/continue` — SSE stream, paid sections 3–7 + archetype
 - `POST /api/chat` — Oracle persona chat, rate-limited 10 msg/session
+- `POST /api/auth/send-code` — sends 6-digit magic code (logged to console, no email service)
+- `POST /api/auth/verify-code` — validates code, creates/retrieves user, returns JWT
+- `GET /api/auth/me` — returns current user from JWT
+- `GET /api/profiles` — returns all profiles for authenticated user
+- `POST /api/profiles` — upsert a profile (matched by localId)
+- `DELETE /api/profiles/:id` — delete a server-side profile
+
+### Authentication
+- Email magic code login (no passwords). JWT-based sessions (30-day expiry).
+- JWT secret via `JWT_SECRET` env var (falls back to default in development).
+- Auth context (`AuthContext.tsx`) stores JWT in AsyncStorage, wires `setAuthTokenGetter` for automatic bearer tokens.
+- Login is optional — unauthenticated users can use the app normally.
+
+### Profile Sync
+- On login, local profiles merge with server profiles (deduplicated by name+dob).
+- On add/edit/delete, changes are pushed to server in background.
+- On logout, local profile data is cleared; server data preserved for next login.
+- Photos remain local-only (only metadata syncs).
 
 ### Fonts
 - `@expo-google-fonts/cinzel-decorative` — CinzelDecorative_400Regular, CinzelDecorative_700Bold (headings)
@@ -124,6 +142,7 @@ Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client insta
 - `src/index.ts` — creates a `Pool` + Drizzle instance, exports schema
 - `src/schema/index.ts` — barrel re-export of all models
 - `src/schema/sessions.ts` — `sessions` table for persisting Oracle session state (paid status, reading text, message count, etc.)
+- `src/schema/users.ts` — `users` table (id, email, email_verified), `user_profiles` table (profile data synced from mobile), `verification_codes` table (magic code auth)
 - `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas
 - `drizzle.config.ts` — Drizzle Kit config (requires `DATABASE_URL`, automatically provided by Replit)
 - Exports: `.` (pool, db, schema), `./schema` (schema only)

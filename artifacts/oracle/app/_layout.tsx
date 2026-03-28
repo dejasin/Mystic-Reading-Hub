@@ -21,6 +21,7 @@ import { setBaseUrl } from "@workspace/api-client-react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OracleProvider } from "@/context/OracleContext";
 import { ProfileProvider } from "@/context/ProfileContext";
+import { AuthProvider } from "@/context/AuthContext";
 import Colors from "@/constants/colors";
 import { initializeRevenueCat, SubscriptionProvider } from "@/lib/revenuecat";
 
@@ -59,6 +60,7 @@ export default function RootLayout() {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <SubscriptionProvider>
+          <AuthProvider>
           <ProfileProvider>
             <OracleProvider>
               <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bg }}>
@@ -80,12 +82,14 @@ export default function RootLayout() {
                       <Stack.Screen name="synastry" />
                       <Stack.Screen name="profile-action" />
                       <Stack.Screen name="profile-reading" />
+                      <Stack.Screen name="login" />
                     </Stack>
                   </ErrorBoundary>
                 </KeyboardProvider>
               </GestureHandlerRootView>
             </OracleProvider>
           </ProfileProvider>
+          </AuthProvider>
           </SubscriptionProvider>
         </QueryClientProvider>
       </ErrorBoundary>

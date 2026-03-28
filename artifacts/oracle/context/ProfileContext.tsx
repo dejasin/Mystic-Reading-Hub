@@ -1,7 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
 import { DeepDiveCategory } from "./OracleContext";
+import { useAuth } from "./AuthContext";
+import { customFetch } from "@workspace/api-client-react";
 
 export interface ProfilePhoto {
   right_palm?: string;
@@ -16,6 +18,7 @@ export interface ProfilePhoto {
 
 export interface OracleProfile {
   id: string;
+  serverId?: string;
   name: string;
   dob: string;
   birthTime?: string;
@@ -49,10 +52,138 @@ const FREE_MAX = 15;
 
 const ProfileContext = createContext<ProfileContextValue | null>(null);
 
+interface ServerProfile {
+  id: string;
+  localId: string | null;
+  name: string;
+  dob: string;
+  birthTime?: string | null;
+  birthTimeUnknown?: boolean | null;
+  birthCity?: string | null;
+  birthCountry?: string | null;
+  gender?: string | null;
+  dominantHand?: string | null;
+  eyeColor?: string | null;
+  notes?: string | null;
+  mainReading?: string | null;
+  deepDives?: Partial<Record<DeepDiveCategory, string>>;
+  createdAt: number;
+  updatedAt: number;
+}
+
+function profileToServerPayload(p: OracleProfile) {
+  return {
+    serverId: p.serverId || undefined,
+    localId: p.id,
+    name: p.name,
+    dob: p.dob,
+    birthTime: p.birthTime || undefined,
+    birthTimeUnknown: p.birthTimeUnknown || false,
+    birthCity: p.birthCity || undefined,
+    birthCountry: p.birthCountry || undefined,
+    gender: p.gender || undefined,
+    dominantHand: p.dominantHand || undefined,
+    eyeColor: p.eyeColor || undefined,
+    notes: p.notes || undefined,
+    mainReading: p.mainReading || undefined,
+    deepDives: p.deepDives || undefined,
+  };
+}
+
+function serverProfileToLocal(sp: ServerProfile): OracleProfile {
+  return {
+    id: sp.localId || sp.id,
+    serverId: sp.id,
+    name: sp.name,
+    dob: sp.dob,
+    birthTime: sp.birthTime || undefined,
+    birthTimeUnknown: sp.birthTimeUnknown || undefined,
+    birthCity: sp.birthCity || undefined,
+    birthCountry: sp.birthCountry || undefined,
+    gender: sp.gender || undefined,
+    dominantHand: sp.dominantHand || undefined,
+    eyeColor: sp.eyeColor || undefined,
+    notes: sp.notes || undefined,
+    mainReading: sp.mainReading || undefined,
+    deepDives: sp.deepDives || undefined,
+    photos: {},
+    createdAt: sp.createdAt,
+  };
+}
+
+function deduplicateProfiles(local: OracleProfile[], server: OracleProfile[]): OracleProfile[] {
+  const merged = local.map((lp) => {
+    const matchingServer = server.find(
+      (sp) =>
+        sp.id === lp.id ||
+        (`${sp.name.toLowerCase().trim()}|${sp.dob}` === `${lp.name.toLowerCase().trim()}|${lp.dob}`),
+    );
+    if (matchingServer && !lp.serverId) {
+      return { ...lp, serverId: matchingServer.serverId };
+    }
+    return lp;
+  });
+
+  const seenKeys = new Set(merged.map((p) => `${p.name.toLowerCase().trim()}|${p.dob}`));
+  const seenIds = new Set(merged.map((p) => p.id));
+  const seenServerIds = new Set(merged.filter((p) => p.serverId).map((p) => p.serverId));
+
+  for (const sp of server) {
+    const key = `${sp.name.toLowerCase().trim()}|${sp.dob}`;
+    if (!seenKeys.has(key) && !seenIds.has(sp.id) && !seenServerIds.has(sp.serverId)) {
+      merged.push(sp);
+      seenKeys.add(key);
+      seenIds.add(sp.id);
+      if (sp.serverId) seenServerIds.add(sp.serverId);
+    }
+  }
+  return merged;
+}
+
+async function syncProfileToServer(
+  profile: OracleProfile,
+  onServerIdReceived?: (localId: string, serverId: string) => void,
+) {
+  try {
+    const result = await customFetch<{ profile: { id: string } }>("/api/profiles", {
+      method: "POST",
+      body: JSON.stringify(profileToServerPayload(profile)),
+      headers: { "Content-Type": "application/json" },
+    });
+    if (result.profile?.id && onServerIdReceived) {
+      onServerIdReceived(profile.id, result.profile.id);
+    }
+  } catch (e) {
+    console.error("Failed to sync profile to server:", e);
+  }
+}
+
+async function deleteProfileFromServer(profile: OracleProfile) {
+  try {
+    if (profile.serverId) {
+      await customFetch(`/api/profiles/${profile.serverId}`, { method: "DELETE" });
+      return;
+    }
+    const result = await customFetch<{ profiles: ServerProfile[] }>("/api/profiles", {
+      method: "GET",
+    });
+    const serverProfile = result.profiles.find(
+      (sp) => sp.localId === profile.id || sp.id === profile.id,
+    );
+    if (serverProfile) {
+      await customFetch(`/api/profiles/${serverProfile.id}`, { method: "DELETE" });
+    }
+  } catch (e) {
+    console.error("Failed to delete profile from server:", e);
+  }
+}
+
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profiles, setProfiles] = useState<OracleProfile[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
+  const { isLoggedIn, isLoading: authLoading } = useAuth();
+  const hasSynced = useRef(false);
 
   const maxProfiles = isPaid ? Infinity : FREE_MAX;
 
@@ -85,6 +216,57 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const handleServerIdReceived = useCallback((localId: string, serverId: string) => {
+    setProfiles((prev) => {
+      const updated = prev.map((p) =>
+        p.id === localId && !p.serverId ? { ...p, serverId } : p,
+      );
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated)).catch(console.error);
+      return updated;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isLoaded || authLoading) return;
+
+    if (isLoggedIn && !hasSynced.current) {
+      hasSynced.current = true;
+      (async () => {
+        try {
+          const result = await customFetch<{ profiles: ServerProfile[] }>("/api/profiles", {
+            method: "GET",
+          });
+          const serverProfiles = result.profiles.map(serverProfileToLocal);
+
+          setProfiles((current) => {
+            const merged = deduplicateProfiles(current, serverProfiles);
+
+            AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(merged)).catch(console.error);
+
+            for (const local of current) {
+              const existsOnServer = result.profiles.some(
+                (sp) => sp.localId === local.id || (`${sp.name.toLowerCase().trim()}|${sp.dob}` === `${local.name.toLowerCase().trim()}|${local.dob}`)
+              );
+              if (!existsOnServer) {
+                syncProfileToServer(local, handleServerIdReceived);
+              }
+            }
+
+            return merged;
+          });
+        } catch (e) {
+          console.error("Failed to sync profiles on login:", e);
+        }
+      })();
+    }
+
+    if (!isLoggedIn && hasSynced.current) {
+      hasSynced.current = false;
+      setProfiles([]);
+      AsyncStorage.removeItem(STORAGE_KEY).catch(console.error);
+    }
+  }, [isLoggedIn, isLoaded, authLoading, handleServerIdReceived]);
+
   const addProfile = useCallback(async (p: Omit<OracleProfile, "id" | "createdAt">) => {
     if (!isPaid && profiles.length >= FREE_MAX) return null;
     const newProfile: OracleProfile = {
@@ -93,16 +275,28 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       createdAt: Date.now(),
     };
     await persist([...profiles, newProfile]);
+    if (isLoggedIn) {
+      syncProfileToServer(newProfile, handleServerIdReceived);
+    }
     return newProfile;
-  }, [profiles, isPaid, persist]);
+  }, [profiles, isPaid, persist, isLoggedIn, handleServerIdReceived]);
 
   const updateProfile = useCallback(async (id: string, updates: Partial<OracleProfile>) => {
-    await persist(profiles.map(p => p.id === id ? { ...p, ...updates } : p));
-  }, [profiles, persist]);
+    const updated = profiles.map(p => p.id === id ? { ...p, ...updates } : p);
+    await persist(updated);
+    if (isLoggedIn) {
+      const profile = updated.find(p => p.id === id);
+      if (profile) syncProfileToServer(profile, handleServerIdReceived);
+    }
+  }, [profiles, persist, isLoggedIn, handleServerIdReceived]);
 
   const deleteProfile = useCallback(async (id: string) => {
+    const profileToDelete = profiles.find(p => p.id === id);
     await persist(profiles.filter(p => p.id !== id));
-  }, [profiles, persist]);
+    if (isLoggedIn && profileToDelete) {
+      deleteProfileFromServer(profileToDelete);
+    }
+  }, [profiles, persist, isLoggedIn]);
 
   const getProfile = useCallback((id: string) => profiles.find(p => p.id === id), [profiles]);
 
