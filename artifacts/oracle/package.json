@@ -58,12 +58,12 @@
     "@expo-google-fonts/cinzel-decorative": "^0.4.1",
     "@expo-google-fonts/eb-garamond": "^0.4.2",
     "expo-camera": "~17.0.10",
-    "expo-clipboard": "56.0.0-canary-20260305-5163746",
-    "expo-crypto": "56.0.0-canary-20260305-5163746",
-    "expo-device": "7.0.3",
-    "expo-notifications": "0.31.5",
+    "expo-clipboard": "8.0.8",
+    "expo-crypto": "15.0.8",
+    "expo-device": "8.0.10",
+    "expo-notifications": "0.32.16",
     "expo-sharing": "~14.0.8",
-    "expo-store-review": "6.8.3",
+    "expo-store-review": "9.0.9",
     "react-native-view-shot": "^4.0.3"
   }
 }
