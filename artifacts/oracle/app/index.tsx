@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import Animated, {
   withSequence,
   Easing,
   FadeIn,
+  FadeInDown,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -29,8 +30,15 @@ import GoldSigil from "@/components/GoldSigil";
 import { useSubscription } from "@/lib/revenuecat";
 import { useAuth } from "@/context/AuthContext";
 import { trackEvent, trackFunnelStep, AnalyticsEvent } from "@/lib/analytics";
+import { useProfiles } from "@/context/ProfileContext";
 
 const { width } = Dimensions.get("window");
+
+function getApiUrl() {
+  const domain = process.env.EXPO_PUBLIC_DOMAIN;
+  if (domain) return `https://${domain}/`;
+  return "/";
+}
 
 const TRUST_LINES = [
   "Real vision analysis — not just archetypes",
@@ -38,12 +46,158 @@ const TRUST_LINES = [
   "Deep insights across love, career, health & purpose",
 ];
 
+function DailyOracleCard({ profile }: { profile: { id: string; name: string; dob: string } }) {
+  const [content, setContent] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const fetchDaily = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const baseUrl = getApiUrl();
+      const resp = await fetch(`${baseUrl}api/daily-oracle`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileId: profile.id, name: profile.name, dob: profile.dob }),
+      });
+      if (!resp.ok) throw new Error("Failed");
+      const data = await resp.json();
+      setContent(data.content);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [profile.id, profile.name, profile.dob]);
+
+  useEffect(() => {
+    fetchDaily();
+  }, [fetchDaily]);
+
+  const today = new Date();
+  const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const dateStr = `${dayNames[today.getDay()]}, ${monthNames[today.getMonth()]} ${today.getDate()}`;
+
+  return (
+    <Animated.View entering={FadeInDown.duration(700).delay(300)} style={styles.dailyCard}>
+      <View style={styles.dailyHeader}>
+        <Text style={styles.dailyTitle}>✦ Daily Oracle</Text>
+        <Pressable
+          onPress={() => router.push({ pathname: "/daily-history", params: { profileId: profile.id, profileName: profile.name } })}
+          style={({ pressed }) => [styles.historyBtn, pressed && { opacity: 0.6 }]}
+        >
+          <Feather name="clock" size={14} color={Colors.gold} />
+          <Text style={styles.historyBtnText}>History</Text>
+        </Pressable>
+      </View>
+      <Text style={styles.dailyDate}>{dateStr}</Text>
+      <Text style={styles.dailyFor}>For {profile.name}</Text>
+
+      {loading && (
+        <View style={styles.dailyLoadingContainer}>
+          <ActivityIndicator size="small" color={Colors.gold} />
+          <Text style={styles.dailyLoadingText}>The Oracle contemplates…</Text>
+        </View>
+      )}
+
+      {error && !loading && (
+        <Pressable onPress={fetchDaily} style={styles.dailyErrorContainer}>
+          <Text style={styles.dailyErrorText}>The veil is thick today. Tap to try again.</Text>
+        </Pressable>
+      )}
+
+      {content && !loading && (
+        <Text style={styles.dailyContent}>{content}</Text>
+      )}
+    </Animated.View>
+  );
+}
+
+function WeeklyForecastCard({ profile }: { profile: { id: string; name: string; dob: string } }) {
+  const [content, setContent] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  const fetchWeekly = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const baseUrl = getApiUrl();
+      const resp = await fetch(`${baseUrl}api/weekly-forecast`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileId: profile.id, name: profile.name, dob: profile.dob }),
+      });
+      if (!resp.ok) throw new Error("Failed");
+      const data = await resp.json();
+      setContent(data.content);
+      setExpanded(true);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [profile.id, profile.name, profile.dob]);
+
+  const handlePress = async () => {
+    if (content) {
+      setExpanded(!expanded);
+      return;
+    }
+    await fetchWeekly();
+  };
+
+  return (
+    <Animated.View entering={FadeInDown.duration(700).delay(500)} style={styles.weeklyCard}>
+      <Pressable
+        onPress={handlePress}
+        style={({ pressed }) => [styles.weeklyHeader, pressed && { opacity: 0.8 }]}
+      >
+        <View style={styles.weeklyTitleRow}>
+          <Text style={styles.weeklyTitle}>✦ This Week</Text>
+          {loading && <ActivityIndicator size="small" color={Colors.gold} style={{ marginLeft: 8 }} />}
+        </View>
+        <Feather
+          name={expanded ? "chevron-up" : "chevron-down"}
+          size={18}
+          color={Colors.gold}
+        />
+      </Pressable>
+
+      {error && !loading && (
+        <Pressable onPress={fetchWeekly} style={styles.weeklyErrorContainer}>
+          <Text style={styles.dailyErrorText}>Could not reach The Oracle. Tap to retry.</Text>
+        </Pressable>
+      )}
+
+      {expanded && content && (
+        <Animated.View entering={FadeIn.duration(400)}>
+          <Text style={styles.weeklyContent}>{content}</Text>
+        </Animated.View>
+      )}
+
+      {!content && !loading && !error && (
+        <Text style={styles.weeklyHint}>Tap to reveal your weekly forecast</Text>
+      )}
+    </Animated.View>
+  );
+}
+
 export default function LandingScreen() {
   const insets = useSafeAreaInsets();
   const glowOpacity = useSharedValue(0.5);
-  const buttonScale = useSharedValue(1);
   const { restore, isRestoring, isConfigured } = useSubscription();
   const { user, isLoggedIn, logout } = useAuth();
+  const { profiles, isLoaded } = useProfiles();
+
+  const mostRecentProfile = profiles.length > 0
+    ? profiles.reduce((a, b) => (a.createdAt > b.createdAt ? a : b))
+    : null;
+
+  const hasProfile = mostRecentProfile && mostRecentProfile.dob;
 
   useEffect(() => {
     glowOpacity.value = withRepeat(
@@ -130,26 +284,38 @@ export default function LandingScreen() {
         bounces={false}
       >
         <Animated.View entering={FadeIn.duration(1000)} style={styles.sigilContainer}>
-          <GoldSigil size={140} />
+          <GoldSigil size={hasProfile ? 100 : 140} />
         </Animated.View>
 
         <Animated.View entering={FadeIn.duration(1000).delay(200)}>
           <Text style={styles.appName}>THE ORACLE</Text>
-          <Text style={styles.tagline}>
-            Your palm. Your iris. Your face.{"\n"}Your truth.
-          </Text>
+          {!hasProfile && (
+            <Text style={styles.tagline}>
+              Your palm. Your iris. Your face.{"\n"}Your truth.
+            </Text>
+          )}
         </Animated.View>
 
-        <Animated.View entering={FadeIn.duration(800).delay(500)} style={styles.trustContainer}>
-          {TRUST_LINES.map((line, i) => (
-            <View key={i} style={styles.trustLine}>
-              <Text style={styles.trustDiamond}>✦</Text>
-              <Text style={styles.trustText}>{line}</Text>
-            </View>
-          ))}
-        </Animated.View>
+        {hasProfile && isLoaded && (
+          <>
+            <DailyOracleCard profile={{ id: mostRecentProfile.id, name: mostRecentProfile.name, dob: mostRecentProfile.dob }} />
+            <WeeklyForecastCard profile={{ id: mostRecentProfile.id, name: mostRecentProfile.name, dob: mostRecentProfile.dob }} />
+            <View style={styles.divider} />
+          </>
+        )}
 
-        <Animated.View entering={FadeIn.duration(800).delay(700)} style={styles.ctaContainer}>
+        {!hasProfile && (
+          <Animated.View entering={FadeIn.duration(800).delay(500)} style={styles.trustContainer}>
+            {TRUST_LINES.map((line, i) => (
+              <View key={i} style={styles.trustLine}>
+                <Text style={styles.trustDiamond}>✦</Text>
+                <Text style={styles.trustText}>{line}</Text>
+              </View>
+            ))}
+          </Animated.View>
+        )}
+
+        <Animated.View entering={FadeIn.duration(800).delay(hasProfile ? 400 : 700)} style={styles.ctaContainer}>
           <Animated.View style={[styles.ctaButtonWrapper, glowStyle]}>
             <Pressable
               style={({ pressed }) => [
@@ -160,7 +326,7 @@ export default function LandingScreen() {
               accessibilityLabel="Begin your Oracle reading"
               accessibilityRole="button"
             >
-              <Text style={styles.ctaText}>Begin Your Reading</Text>
+              <Text style={styles.ctaText}>{hasProfile ? "New Reading" : "Begin Your Reading"}</Text>
               <Feather name="arrow-right" size={20} color={Colors.bg} style={{ marginLeft: 8 }} />
             </Pressable>
           </Animated.View>
@@ -259,7 +425,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   sigilContainer: {
-    marginBottom: 32,
+    marginBottom: 24,
     alignItems: "center",
   },
   appName: {
@@ -373,5 +539,130 @@ const styles = StyleSheet.create({
     width: 1,
     height: 20,
     backgroundColor: "rgba(201,168,76,0.25)",
+  },
+  dailyCard: {
+    width: "100%",
+    maxWidth: 400,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(201,168,76,0.2)",
+    padding: 20,
+    marginBottom: 16,
+  },
+  dailyHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  dailyTitle: {
+    fontFamily: "CinzelDecorative_700Bold",
+    fontSize: 16,
+    color: Colors.gold,
+    letterSpacing: 2,
+  },
+  historyBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  historyBtnText: {
+    fontFamily: "EBGaramond_500Medium",
+    fontSize: 13,
+    color: Colors.gold,
+    opacity: 0.8,
+  },
+  dailyDate: {
+    fontFamily: "EBGaramond_400Regular_Italic",
+    fontSize: 13,
+    color: Colors.muted,
+    marginBottom: 2,
+  },
+  dailyFor: {
+    fontFamily: "EBGaramond_500Medium",
+    fontSize: 14,
+    color: Colors.goldLight,
+    marginBottom: 14,
+    opacity: 0.9,
+  },
+  dailyContent: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 16,
+    color: Colors.cream,
+    lineHeight: 26,
+    opacity: 0.92,
+  },
+  dailyLoadingContainer: {
+    alignItems: "center",
+    paddingVertical: 20,
+    gap: 10,
+  },
+  dailyLoadingText: {
+    fontFamily: "EBGaramond_400Regular_Italic",
+    fontSize: 14,
+    color: Colors.muted,
+  },
+  dailyErrorContainer: {
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  dailyErrorText: {
+    fontFamily: "EBGaramond_400Regular_Italic",
+    fontSize: 14,
+    color: Colors.muted,
+    textAlign: "center",
+  },
+  weeklyCard: {
+    width: "100%",
+    maxWidth: 400,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(201,168,76,0.12)",
+    padding: 20,
+    marginBottom: 16,
+  },
+  weeklyHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  weeklyTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  weeklyTitle: {
+    fontFamily: "CinzelDecorative_700Bold",
+    fontSize: 15,
+    color: Colors.gold,
+    letterSpacing: 2,
+  },
+  weeklyContent: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 16,
+    color: Colors.cream,
+    lineHeight: 26,
+    marginTop: 14,
+    opacity: 0.92,
+  },
+  weeklyHint: {
+    fontFamily: "EBGaramond_400Regular_Italic",
+    fontSize: 13,
+    color: Colors.muted,
+    marginTop: 8,
+  },
+  weeklyErrorContainer: {
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  divider: {
+    width: "80%",
+    maxWidth: 320,
+    height: 1,
+    backgroundColor: "rgba(201,168,76,0.12)",
+    marginVertical: 12,
   },
 });

@@ -32,6 +32,7 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 5. `app/chat.tsx` — Oracle chat with streaming responses, inverted FlatList, starter questions
 6. `app/journal.tsx` — Reading history / journal screen: chronological list of all past readings with type badges, previews, and favorite filter
 7. `app/journal-detail.tsx` — Full reading detail view with section-aware rendering and favorite toggle
+8. `app/daily-history.tsx` — Scrollable history of past Daily Oracle messages
 
 ### Journal / Reading History
 - **Context**: `context/JournalContext.tsx` — manages journal entries in AsyncStorage (`oracle_journal_v1`)
@@ -50,6 +51,9 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - `GET /api/profiles` — returns all profiles for authenticated user
 - `POST /api/profiles` — upsert a profile (matched by localId)
 - `DELETE /api/profiles/:id` — delete a server-side profile
+- `POST /api/daily-oracle` — Personalized daily message (cached per profile per day)
+- `POST /api/weekly-forecast` — Weekly outlook (cached per profile per week)
+- `GET /api/daily-history/:profileId` — Past daily oracle messages
 
 ### Authentication
 - Email magic code login (no passwords). JWT-based sessions (30-day expiry).
@@ -70,6 +74,10 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - Uses `react-native-view-shot` for capture, `expo-sharing` for native share sheet, web download fallback
 - Share triggers on reading completion, synastry completion, and deep-dive completion screens
 - Dark + gold mystical aesthetic with sigil, traits/highlights, and "Discover yours at theoracle.app" CTA
+
+### Database Tables
+- `sessions` — User reading sessions
+- `daily_content` — Cached daily/weekly content with unique constraint on (profile_id, content_type, content_date)
 
 ### Fonts
 - `@expo-google-fonts/cinzel-decorative` — CinzelDecorative_400Regular, CinzelDecorative_700Bold (headings)

@@ -90,6 +90,7 @@ export default function RootLayout() {
                       <Stack.Screen name="login" />
                       <Stack.Screen name="journal" />
                       <Stack.Screen name="journal-detail" />
+                      <Stack.Screen name="daily-history" />
                     </Stack>
                   </ErrorBoundary>
                 </KeyboardProvider>
