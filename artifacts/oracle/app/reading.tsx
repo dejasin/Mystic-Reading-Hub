@@ -37,6 +37,7 @@ import { useSubscription } from "@/lib/revenuecat";
 import { maybeRequestReview } from "@/lib/storeReview";
 import { trackEvent, trackFunnelStep, AnalyticsEvent } from "@/lib/analytics";
 import { hasBeenPromptedForNotifications, requestAndRegisterNotifications } from "@/lib/notifications";
+import { getApiUrl } from "@/lib/api";
 
 const LOADING_MESSAGES = [
   "Mapping your palm lines...",
@@ -784,12 +785,6 @@ export default function ReadingScreen() {
     if (profile) {
       await updateProfile(profile.id, { mainReading: fullReading });
     }
-  };
-
-  const getApiUrl = () => {
-    const domain = process.env.EXPO_PUBLIC_DOMAIN;
-    if (domain) return `https://${domain}/`;
-    return "/";
   };
 
   const buildJsonRequest = (extra: Record<string, string> = {}): { body: string; headers: Record<string, string> } => ({

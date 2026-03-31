@@ -14,12 +14,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
-
-function getApiUrl() {
-  const domain = process.env.EXPO_PUBLIC_DOMAIN;
-  if (domain) return `https://${domain}/`;
-  return "/";
-}
+import { getApiUrl } from "@/lib/api";
 
 interface DailyEntry {
   content: string;

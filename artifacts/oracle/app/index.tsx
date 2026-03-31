@@ -33,16 +33,11 @@ import { useAuth } from "@/context/AuthContext";
 import { trackEvent, trackFunnelStep, AnalyticsEvent } from "@/lib/analytics";
 import { useProfiles } from "@/context/ProfileContext";
 import { useReferral } from "@/context/ReferralContext";
+import { getApiUrl } from "@/lib/api";
 
 const ONBOARDING_COMPLETE_KEY = "@oracle/onboarding_complete";
 
 const { width } = Dimensions.get("window");
-
-function getApiUrl() {
-  const domain = process.env.EXPO_PUBLIC_DOMAIN;
-  if (domain) return `https://${domain}/`;
-  return "/";
-}
 
 const TRUST_LINES = [
   "Real vision analysis — not just archetypes",

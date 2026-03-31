@@ -22,6 +22,7 @@ import StarField from "@/components/StarField";
 import GoldSigil from "@/components/GoldSigil";
 import { useProfiles, OracleProfile } from "@/context/ProfileContext";
 import { useJournal } from "@/context/JournalContext";
+import { getApiUrl } from "@/lib/api";
 
 let msgCount = 0;
 function genId() { return `pm-${Date.now()}-${++msgCount}`; }
@@ -108,11 +109,6 @@ export default function ProfileReadingScreen() {
 
   const scrollRef = useRef<ScrollView>(null);
   const inputRef = useRef<TextInput>(null);
-
-  const getApiUrl = () => {
-    const domain = process.env.EXPO_PUBLIC_DOMAIN;
-    return domain ? `https://${domain}/` : "/";
-  };
 
   const buildProfilePayload = (p: OracleProfile) => ({
     name: p.name,

@@ -19,6 +19,7 @@ import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import { useOracle } from "@/context/OracleContext";
 import { trackEvent, AnalyticsEvent } from "@/lib/analytics";
+import { getApiUrl } from "@/lib/api";
 
 let messageCounter = 0;
 function generateId(): string {
@@ -117,12 +118,6 @@ export default function ChatScreen() {
   const [followupChips, setFollowupChips] = useState<string[]>([]);
   const followupAbortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<TextInput>(null);
-
-  const getApiUrl = () => {
-    const domain = process.env.EXPO_PUBLIC_DOMAIN;
-    if (domain) return `https://${domain}/`;
-    return "/";
-  };
 
   const fetchFollowups = async (lastResponse: string, conversationContext: string) => {
     followupAbortRef.current?.abort();

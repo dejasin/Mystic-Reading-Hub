@@ -16,6 +16,7 @@ import { Feather } from "@expo/vector-icons";
 import { fetch } from "expo/fetch";
 import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
+import { getApiUrl } from "@/lib/api";
 
 interface ExpandableParagraphProps {
   text: string;
@@ -32,12 +33,6 @@ interface Layout {
   y: number;
   width: number;
   height: number;
-}
-
-function getApiUrl() {
-  const domain = process.env.EXPO_PUBLIC_DOMAIN;
-  if (domain) return `https://${domain}/`;
-  return "/";
 }
 
 export default function ExpandableParagraph({

@@ -24,6 +24,7 @@ import ShareCardModal, { extractSynastryData } from "@/components/ShareCardModal
 import { useProfiles, OracleProfile } from "@/context/ProfileContext";
 import { useJournal } from "@/context/JournalContext";
 import { trackEvent, AnalyticsEvent } from "@/lib/analytics";
+import { getApiUrl } from "@/lib/api";
 
 let msgCount = 0;
 function genId() { return `sm-${Date.now()}-${++msgCount}`; }
@@ -198,11 +199,6 @@ export default function SynastryScreen() {
   const [showShareCard, setShowShareCard] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const inputRef = useRef<TextInput>(null);
-
-  const getApiUrl = () => {
-    const domain = process.env.EXPO_PUBLIC_DOMAIN;
-    return domain ? `https://${domain}/` : "/";
-  };
 
   const buildProfilePayload = (p: OracleProfile) => ({
     name: p.name,

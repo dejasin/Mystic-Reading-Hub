@@ -23,6 +23,7 @@ import { useProfiles } from "@/context/ProfileContext";
 import { useJournal } from "@/context/JournalContext";
 import { useSubscription } from "@/lib/revenuecat";
 import { trackEvent, AnalyticsEvent } from "@/lib/analytics";
+import { getApiUrl } from "@/lib/api";
 
 type CategoryKey = DeepDiveCategory;
 type FeatherIconName = React.ComponentProps<typeof Feather>["name"];
@@ -307,12 +308,6 @@ export default function DeepDiveScreen() {
   const [errorMsg, setErrorMsg] = useState("");
   const [showShareCard, setShowShareCard] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
-
-  const getApiUrl = () => {
-    const domain = process.env.EXPO_PUBLIC_DOMAIN;
-    if (domain) return `https://${domain}/`;
-    return "/";
-  };
 
   const saveDeepDiveToVault = async (category: DeepDiveCategory, text: string) => {
     const { name, dob } = state.userData;
