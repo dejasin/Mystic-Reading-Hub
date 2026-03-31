@@ -50,6 +50,20 @@ interface ProfileContextValue {
 const STORAGE_KEY = "oracle_profiles_v1";
 const FREE_MAX = 15;
 
+const SEED_PROFILE: OracleProfile = {
+  id: "seed-test-profile",
+  name: "Alex Chen",
+  dob: "1990-06-15",
+  birthCity: "San Francisco",
+  birthCountry: "USA",
+  gender: "Non-binary",
+  dominantHand: "Right",
+  eyeColor: "Brown",
+  photos: {},
+  notes: "Test profile",
+  createdAt: 1700000000000,
+};
+
 const ProfileContext = createContext<ProfileContextValue | null>(null);
 
 interface ServerProfile {
@@ -189,7 +203,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then(raw => {
-      if (raw) {
+      if (raw === null) {
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify([SEED_PROFILE]));
+        setProfiles([SEED_PROFILE]);
+      } else {
         try {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) setProfiles(parsed);
