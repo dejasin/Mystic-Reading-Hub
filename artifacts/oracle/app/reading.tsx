@@ -1015,6 +1015,19 @@ export default function ReadingScreen() {
   }, [activationDismissed]);
 
   useEffect(() => {
+    if (phase === "paywall") {
+      if (!journalSaved.current && state.freeReading.length > 0) {
+        journalSaved.current = true;
+        addJournalEntry({
+          readingType: "Full Reading",
+          title: state.userData.name || "Full Reading",
+          preview: "",
+          fullText: state.freeReading,
+          metadata: { profileNames: [state.userData.name].filter(Boolean) },
+        });
+      }
+    }
+
     if (phase === "complete") {
       const fullReading = [
         state.freeReading,
