@@ -122,8 +122,10 @@ export function JournalProvider({ children }: { children: React.ReactNode }) {
     AsyncStorage.getItem(STORAGE_KEY)
       .then(raw => {
         if (raw === null) {
-          AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_ENTRIES));
-          setEntries(SEED_ENTRIES);
+          if (__DEV__) {
+            AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_ENTRIES));
+            setEntries(SEED_ENTRIES);
+          }
         } else {
           try {
             const parsed = JSON.parse(raw);
