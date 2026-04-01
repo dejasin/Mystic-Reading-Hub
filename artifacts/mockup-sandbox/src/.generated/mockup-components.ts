@@ -7,5 +7,15 @@ export const modules: ModuleMap = {
   "./components/mockups/oracle-landing/LessMystic.tsx": () => import("../components/mockups/oracle-landing/LessMystic.tsx"),
   "./components/mockups/oracle-landing/Metaphysical.tsx": () => import("../components/mockups/oracle-landing/Metaphysical.tsx"),
   "./components/mockups/oracle-landing/OrbitalFloat.tsx": () => import("../components/mockups/oracle-landing/OrbitalFloat.tsx"),
-  "./components/mockups/oracle-landing/Surprising.tsx": () => import("../components/mockups/oracle-landing/Surprising.tsx")
+  "./components/mockups/oracle-landing/Surprising.tsx": () => import("../components/mockups/oracle-landing/Surprising.tsx"),
+  "./components/mockups/oracle-screenshots/S01-Welcome.tsx": () => import("../components/mockups/oracle-screenshots/S01-Welcome.tsx"),
+  "./components/mockups/oracle-screenshots/S02-TheSight.tsx": () => import("../components/mockups/oracle-screenshots/S02-TheSight.tsx"),
+  "./components/mockups/oracle-screenshots/S03-BeginRitual.tsx": () => import("../components/mockups/oracle-screenshots/S03-BeginRitual.tsx"),
+  "./components/mockups/oracle-screenshots/S04-PhotoRitual.tsx": () => import("../components/mockups/oracle-screenshots/S04-PhotoRitual.tsx"),
+  "./components/mockups/oracle-screenshots/S05-ReadingLoading.tsx": () => import("../components/mockups/oracle-screenshots/S05-ReadingLoading.tsx"),
+  "./components/mockups/oracle-screenshots/S06-ReadingResult.tsx": () => import("../components/mockups/oracle-screenshots/S06-ReadingResult.tsx"),
+  "./components/mockups/oracle-screenshots/S07-DeepDive.tsx": () => import("../components/mockups/oracle-screenshots/S07-DeepDive.tsx"),
+  "./components/mockups/oracle-screenshots/S08-DailyOracle.tsx": () => import("../components/mockups/oracle-screenshots/S08-DailyOracle.tsx"),
+  "./components/mockups/oracle-screenshots/S09-Journal.tsx": () => import("../components/mockups/oracle-screenshots/S09-Journal.tsx"),
+  "./components/mockups/oracle-screenshots/S10-Chat.tsx": () => import("../components/mockups/oracle-screenshots/S10-Chat.tsx")
 };

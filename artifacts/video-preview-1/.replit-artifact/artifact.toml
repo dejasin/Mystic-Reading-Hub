@@ -1,0 +1,31 @@
+kind = "video"
+previewPath = "/video-preview-1/"
+title = "Oracle Preview 1 — Meet the Oracle"
+version = "1.0.0"
+id = "artifacts/video-preview-1"
+router = "path"
+
+[[integratedSkills]]
+name = "video-js"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/video-preview-1/" ]
+localPort = 26001
+
+[services.development]
+run = "pnpm --filter @workspace/video-preview-1 run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/video-preview-1", "run", "build" ]
+publicDir = "artifacts/video-preview-1/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26001"
+BASE_PATH = "/video-preview-1/"

@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 58% 4%; /* #04040f */
+    --surface: 240 46% 8%; /* #0b0b1e */
+    --gold: 44 55% 54%; /* #c9a84c */
+    --gold-light: 45 72% 69%; /* #e8cc7a */
+    --cream: 40 55% 87%; /* #f0e6cc */
+    --muted: 240 14% 48%; /* #6b6b8a */
+    --input: 240 41% 10%; /* #0f0f24 */
+  }
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--cream));
+  font-family: 'EB Garamond', serif;
+}
+
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: 'Cormorant Garamond', serif;
+}
