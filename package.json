@@ -17,7 +17,14 @@
     "onlyBuiltDependencies": [
       "sharp",
       "esbuild"
-    ]
+    ],
+    "overrides": {
+      "@xmldom/xmldom": ">=0.8.12",
+      "node-forge": ">=1.4.0",
+      "path-to-regexp": ">=8.4.0",
+      "picomatch@^2": ">=2.3.2",
+      "picomatch@^4": ">=4.0.4"
+    }
   },
   "dependencies": {
     "@replit/revenuecat-sdk": "^4.1.0",
