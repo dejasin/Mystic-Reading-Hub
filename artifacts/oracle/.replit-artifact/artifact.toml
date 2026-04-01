@@ -18,6 +18,19 @@ localPort = 19943
 [services.development]
 run = "pnpm --filter @workspace/oracle run dev"
 
+[services.production]
+
+[services.production.build]
+args = ["pnpm", "--filter", "@workspace/oracle", "run", "build"]
+
+[services.production.run]
+args = ["pnpm", "--filter", "@workspace/oracle", "run", "serve"]
+
+[services.production.run.env]
+PORT = "19943"
+BASE_PATH = "/"
+NODE_ENV = "production"
+
 [services.env]
 PORT = "19943"
 BASE_PATH = "/"
