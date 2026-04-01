@@ -96,7 +96,7 @@ function ProfileSelector({
                   <Image source={{ uri: fi }} style={selStyles.dropAvatar} />
                 ) : (
                   <View style={[selStyles.dropAvatar, { backgroundColor: "rgba(201,168,76,0.12)", alignItems: "center", justifyContent: "center" }]}>
-                    <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 12, color: Colors.gold }}>{ini}</Text>
+                    <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 12, color: Colors.gold }}>{ini}</Text>
                   </View>
                 )}
                 <View style={{ flex: 1 }}>
@@ -119,7 +119,7 @@ const selStyles = StyleSheet.create({
   selectedRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   avatar: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, borderColor: Colors.gold, resizeMode: "cover" },
   avatarPlaceholder: { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(201,168,76,0.12)", borderWidth: 1, borderColor: Colors.gold, alignItems: "center", justifyContent: "center" },
-  initials: { fontFamily: "CinzelDecorative_400Regular", fontSize: 12, color: Colors.gold },
+  initials: { fontFamily: "CormorantGaramond_400Regular", fontSize: 12, color: Colors.gold },
   selectedName: { fontFamily: "EBGaramond_500Medium", fontSize: 16, color: Colors.cream },
   selectedDob: { fontFamily: "EBGaramond_400Regular", fontSize: 12, color: Colors.muted },
   emptyRow: { flexDirection: "row", alignItems: "center", gap: 10 },
@@ -582,10 +582,10 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 12 },
   backBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
-  headerTitle: { fontFamily: "CinzelDecorative_700Bold", fontSize: 15, color: Colors.gold, letterSpacing: 2 },
+  headerTitle: { fontFamily: "CormorantGaramond_700Bold", fontSize: 15, color: Colors.gold, letterSpacing: 2 },
   selectContent: { paddingHorizontal: 20, paddingTop: 4 },
   selectCard: { backgroundColor: Colors.surface, borderRadius: 20, padding: 24, borderWidth: 1, borderColor: "rgba(201,168,76,0.15)", gap: 16 },
-  selectTitle: { fontFamily: "CinzelDecorative_400Regular", fontSize: 17, color: Colors.cream, textAlign: "center", letterSpacing: 0.5 },
+  selectTitle: { fontFamily: "CormorantGaramond_400Regular", fontSize: 17, color: Colors.cream, textAlign: "center", letterSpacing: 0.5 },
   selectSubtitle: { fontFamily: "EBGaramond_400Regular_Italic", fontSize: 15, color: Colors.muted, textAlign: "center", lineHeight: 24 },
   divider: { fontFamily: "EBGaramond_400Regular", fontSize: 12, color: Colors.gold, textAlign: "center", letterSpacing: 4, opacity: 0.6 },
   notEnoughProfiles: { alignItems: "center", gap: 14, paddingVertical: 12 },
@@ -595,14 +595,14 @@ const styles = StyleSheet.create({
   errorText: { fontFamily: "EBGaramond_400Regular_Italic", fontSize: 14, color: Colors.error, textAlign: "center" },
   generateBtn: { backgroundColor: Colors.gold, borderRadius: 12, paddingVertical: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, minHeight: 52 },
   generateBtnDisabled: { backgroundColor: Colors.inputBg, borderWidth: 1, borderColor: Colors.inputBorder },
-  generateBtnText: { fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: Colors.bg, letterSpacing: 0.5 },
+  generateBtnText: { fontFamily: "CormorantGaramond_400Regular", fontSize: 13, color: Colors.bg, letterSpacing: 0.5 },
   loadingContainer: { flex: 1, alignItems: "center", justifyContent: "center", gap: 28, paddingHorizontal: 40 },
   loadingText: { fontFamily: "EBGaramond_400Regular_Italic", fontSize: 16, color: Colors.gold, textAlign: "center", lineHeight: 26 },
   connectionBar: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, paddingVertical: 12, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: "rgba(201,168,76,0.1)" },
   connectionAvatar: { alignItems: "center", gap: 4, maxWidth: 100 },
   connAvatarImg: { width: 40, height: 40, borderRadius: 20, borderWidth: 1.5, borderColor: Colors.gold, resizeMode: "cover" },
   connAvatarPlaceholder: { width: 40, height: 40, borderRadius: 20, backgroundColor: "rgba(201,168,76,0.12)", borderWidth: 1.5, borderColor: Colors.gold, alignItems: "center", justifyContent: "center" },
-  connInitials: { fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: Colors.gold },
+  connInitials: { fontFamily: "CormorantGaramond_400Regular", fontSize: 13, color: Colors.gold },
   connName: { fontFamily: "EBGaramond_500Medium", fontSize: 12, color: Colors.cream, textAlign: "center" },
   connSymbol: { fontFamily: "EBGaramond_400Regular", fontSize: 16, color: Colors.gold, letterSpacing: 4 },
   tabBar: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: "rgba(201,168,76,0.1)" },
@@ -617,7 +617,7 @@ const styles = StyleSheet.create({
   shareBtn: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, borderColor: Colors.gold, borderRadius: 10, paddingVertical: 12, paddingHorizontal: 20, minHeight: 48, width: "100%", justifyContent: "center" },
   shareText: { fontFamily: "EBGaramond_500Medium", fontSize: 15, color: Colors.gold },
   switchToChatBtn: { backgroundColor: Colors.gold, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 28, flexDirection: "row", alignItems: "center", gap: 8, width: "100%", justifyContent: "center" },
-  switchToChatText: { fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: Colors.bg, letterSpacing: 0.5 },
+  switchToChatText: { fontFamily: "CormorantGaramond_400Regular", fontSize: 13, color: Colors.bg, letterSpacing: 0.5 },
   newSynastryBtn: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 10 },
   newSynastryText: { fontFamily: "EBGaramond_400Regular", fontSize: 14, color: Colors.muted },
   chatList: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, flexGrow: 1 },

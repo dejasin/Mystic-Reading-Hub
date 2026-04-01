@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerTitle: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 14,
     color: Colors.cream,
     flex: 1,
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   questionsHeader: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 15,
     color: Colors.gold,
     letterSpacing: 1,
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   submitText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 13,
     color: Colors.bg,
     letterSpacing: 0.5,

@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   sectionBadge: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 11,
     color: Colors.gold,
     letterSpacing: 0.5,
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   phaseLabel: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 14,
     color: Colors.gold,
     letterSpacing: 0.5,
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(201,168,76,0.12)",
   },
   countdownNumber: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 32,
     color: Colors.gold,
   },
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
   },
   btnText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 13,
     color: Colors.bg,
     letterSpacing: 0.5,

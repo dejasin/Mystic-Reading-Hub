@@ -450,7 +450,7 @@ const cardStyles = StyleSheet.create({
     marginBottom: 4,
   },
   brandSmall: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 10,
     color: Colors.gold,
     letterSpacing: 4,
@@ -462,7 +462,7 @@ const cardStyles = StyleSheet.create({
     justifyContent: "center",
   },
   labelSmall: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 8,
     color: Colors.gold,
     letterSpacing: 2,
@@ -470,7 +470,7 @@ const cardStyles = StyleSheet.create({
     marginTop: 8,
   },
   archetypeName: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 26,
     color: Colors.cream,
     textAlign: "center",
@@ -530,7 +530,7 @@ const cardStyles = StyleSheet.create({
     marginVertical: 4,
   },
   synastryName: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 16,
     color: Colors.cream,
     textAlign: "center",
@@ -591,7 +591,7 @@ const modalStyles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 14,
     color: Colors.cream,
     letterSpacing: 0.5,
@@ -641,7 +641,7 @@ const modalStyles = StyleSheet.create({
     minHeight: 54,
   },
   shareBtnText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 13,
     color: Colors.bg,
     letterSpacing: 0.5,

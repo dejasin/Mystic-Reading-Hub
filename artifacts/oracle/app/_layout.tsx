@@ -1,8 +1,9 @@
 import {
-  CinzelDecorative_400Regular,
-  CinzelDecorative_700Bold,
-  useFonts as useCinzelFonts,
-} from "@expo-google-fonts/cinzel-decorative";
+  CormorantGaramond_400Regular,
+  CormorantGaramond_700Bold,
+  CormorantGaramond_400Regular_Italic,
+  useFonts as useCormorantFonts,
+} from "@expo-google-fonts/cormorant-garamond";
 import {
   EBGaramond_400Regular,
   EBGaramond_500Medium,
@@ -41,9 +42,10 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  const [cinzelLoaded, cinzelError] = useCinzelFonts({
-    CinzelDecorative_400Regular,
-    CinzelDecorative_700Bold,
+  const [cormorantLoaded, cormorantError] = useCormorantFonts({
+    CormorantGaramond_400Regular,
+    CormorantGaramond_700Bold,
+    CormorantGaramond_400Regular_Italic,
   });
 
   const [garamondLoaded, garamondError] = useGaramondFonts({
@@ -52,8 +54,8 @@ export default function RootLayout() {
     EBGaramond_400Regular_Italic,
   });
 
-  const fontsLoaded = cinzelLoaded && garamondLoaded;
-  const fontError = cinzelError || garamondError;
+  const fontsLoaded = cormorantLoaded && garamondLoaded;
+  const fontError = cormorantError || garamondError;
 
   const notificationListener = useRef<Notifications.EventSubscription>();
   const responseListener = useRef<Notifications.EventSubscription>();

@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerTitle: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 18,
     color: Colors.cream,
     letterSpacing: 1,
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   cardTitle: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 14,
     color: Colors.cream,
     letterSpacing: 0.3,
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   emptyTitle: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 18,
     color: Colors.cream,
     textAlign: "center",

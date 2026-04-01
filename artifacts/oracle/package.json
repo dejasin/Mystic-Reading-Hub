@@ -55,7 +55,7 @@
     "zod-validation-error": "^3.4.0"
   },
   "dependencies": {
-    "@expo-google-fonts/cinzel-decorative": "^0.4.1",
+    "@expo-google-fonts/cormorant-garamond": "^0.4.1",
     "@expo-google-fonts/eb-garamond": "^0.4.2",
     "@ngrok/ngrok": "^1.7.0",
     "expo-camera": "~17.0.10",

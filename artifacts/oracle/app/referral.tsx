@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerTitle: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 14,
     color: Colors.cream,
     flex: 1,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     color: Colors.gold,
   },
   heroTitle: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 22,
     color: Colors.gold,
     textAlign: "center",
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   codeText: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 28,
     color: Colors.gold,
     letterSpacing: 6,
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   statNumber: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 28,
     color: Colors.gold,
   },
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   sectionTitle: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 15,
     color: Colors.cream,
     letterSpacing: 1,
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   rewardText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 13,
     color: Colors.bg,
     letterSpacing: 0.5,

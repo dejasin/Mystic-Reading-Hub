@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerTitle: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 15,
     color: Colors.gold,
     letterSpacing: 2,
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   title: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 18,
     color: Colors.cream,
     textAlign: "center",
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
   primaryBtnText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 14,
     color: Colors.bg,
     letterSpacing: 0.5,

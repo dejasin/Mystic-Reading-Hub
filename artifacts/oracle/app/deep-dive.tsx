@@ -259,7 +259,7 @@ function ReadingSection({ text, sessionId, userData, isSubscribed }: ReadingSect
 const sectionStyles = StyleSheet.create({
   container: { marginBottom: 8 },
   heading: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 13,
     color: Colors.gold,
     letterSpacing: 1,
@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
   },
   backBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
   headerTitle: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 13,
     color: Colors.cream,
     letterSpacing: 0.5,
@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   sectionTitle: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 18,
     color: Colors.gold,
     textAlign: "center",
@@ -723,7 +723,7 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.97 }],
   },
   categoryLabel: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 12,
     color: Colors.gold,
     letterSpacing: 0.5,
@@ -763,7 +763,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   formTitle: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 16,
     color: Colors.gold,
     letterSpacing: 1,
@@ -818,14 +818,14 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   submitText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 12,
     color: Colors.bg,
     letterSpacing: 0.5,
   },
   readingContainer: { gap: 8, paddingTop: 4 },
   readingHeader: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 13,
     color: Colors.gold,
     letterSpacing: 3,
@@ -881,7 +881,7 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
   anotherBtnText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 12,
     color: Colors.bg,
     letterSpacing: 0.5,

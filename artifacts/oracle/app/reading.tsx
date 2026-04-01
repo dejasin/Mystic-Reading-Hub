@@ -294,7 +294,7 @@ const paywallStyles = StyleSheet.create({
     gap: 14,
   },
   title: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 18,
     color: Colors.gold,
     textAlign: "center",
@@ -329,7 +329,7 @@ const paywallStyles = StyleSheet.create({
     gap: 4,
   },
   price: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 26,
     color: Colors.gold,
   },
@@ -366,7 +366,7 @@ const paywallStyles = StyleSheet.create({
     minHeight: 52,
   },
   unlockText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 13,
     color: Colors.bg,
     letterSpacing: 0.5,
@@ -406,7 +406,7 @@ const paywallStyles = StyleSheet.create({
     borderColor: "rgba(201,168,76,0.3)",
   },
   modalTitle: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 16,
     color: Colors.gold,
     textAlign: "center",
@@ -443,7 +443,7 @@ const paywallStyles = StyleSheet.create({
     alignItems: "center",
   },
   modalConfirmText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 12,
     color: Colors.bg,
   },
@@ -532,7 +532,7 @@ function ReadingSection({ text, sessionId, userData, isSubscribed, parentScrollR
 const sectionStyles = StyleSheet.create({
   container: { marginBottom: 8 },
   heading: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 13,
     color: Colors.gold,
     letterSpacing: 1,
@@ -669,7 +669,7 @@ const activationStyles = StyleSheet.create({
     elevation: 6,
   },
   title: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 18,
     color: Colors.gold,
     textAlign: "center",
@@ -730,7 +730,7 @@ const activationStyles = StyleSheet.create({
     minHeight: 52,
   },
   confirmText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 13,
     color: Colors.bg,
     letterSpacing: 0.5,
@@ -1423,7 +1423,7 @@ const styles = StyleSheet.create({
   },
   backBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
   headerTitle: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 13,
     color: Colors.cream,
     letterSpacing: 1,
@@ -1438,7 +1438,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   readingTitle: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 13,
     color: Colors.gold,
     letterSpacing: 3,
@@ -1481,7 +1481,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   specialReadingBadge: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 10,
     color: Colors.gold,
     letterSpacing: 1,
@@ -1495,7 +1495,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   completeTitle: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 15,
     color: Colors.cream,
     letterSpacing: 1,
@@ -1538,7 +1538,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   chatBtnText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 13,
     color: Colors.bg,
     letterSpacing: 0.5,
@@ -1551,7 +1551,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   errorTitle: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 17,
     color: Colors.cream,
     textAlign: "center",
@@ -1600,7 +1600,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   retryText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 13,
     color: Colors.gold,
     letterSpacing: 0.5,
@@ -1642,7 +1642,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   deepDiveTitle: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 15,
     color: Colors.gold,
     letterSpacing: 1,
@@ -1699,7 +1699,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   deepDiveSummaryLabel: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 11,
     color: Colors.gold,
     letterSpacing: 1,

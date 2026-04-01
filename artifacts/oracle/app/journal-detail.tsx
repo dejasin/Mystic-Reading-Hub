@@ -60,7 +60,7 @@ const contentStyles = StyleSheet.create({
     marginBottom: 24,
   },
   heading: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 15,
     color: Colors.gold,
     letterSpacing: 0.5,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 14,
     color: Colors.cream,
     letterSpacing: 0.3,

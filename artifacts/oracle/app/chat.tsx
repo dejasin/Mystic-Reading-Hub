@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     color: Colors.gold,
   },
   headerTitle: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 14,
     color: Colors.gold,
     letterSpacing: 2,

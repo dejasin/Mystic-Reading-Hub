@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   headerTitle: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 18,
     color: Colors.gold,
     letterSpacing: 2,
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   emptyTitle: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 18,
     color: Colors.gold,
     marginBottom: 8,

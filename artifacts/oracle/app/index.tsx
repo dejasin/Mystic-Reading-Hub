@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   appName: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 28,
     color: Colors.gold,
     textAlign: "center",
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   ctaText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 15,
     color: Colors.bg,
     letterSpacing: 1,
@@ -593,7 +593,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   dailyTitle: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 16,
     color: Colors.gold,
     letterSpacing: 2,
@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   weeklyTitle: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 15,
     color: Colors.gold,
     letterSpacing: 2,

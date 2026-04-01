@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   slideTitle: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 24,
     color: Colors.gold,
     textAlign: "center",
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   ctaText: {
-    fontFamily: "CinzelDecorative_700Bold",
+    fontFamily: "CormorantGaramond_700Bold",
     fontSize: 15,
     color: Colors.bg,
     letterSpacing: 2,

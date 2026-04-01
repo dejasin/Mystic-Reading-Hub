@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
   },
   actionBtnText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 11,
     color: Colors.bg,
     letterSpacing: 0.5,
@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   sheetTitle: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 13,
     color: Colors.gold,
     letterSpacing: 1,

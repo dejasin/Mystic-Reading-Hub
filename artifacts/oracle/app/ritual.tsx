@@ -844,7 +844,7 @@ const styles = StyleSheet.create({
   },
   backBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
   stepCounter: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 12,
     color: Colors.gold,
     letterSpacing: 1,
@@ -872,7 +872,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(201,168,76,0.15)",
   },
   cardTitle: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 17,
     color: Colors.cream,
     textAlign: "center",
@@ -897,7 +897,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   sectionLabelText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 10,
     color: Colors.gold,
     letterSpacing: 0.5,
@@ -976,7 +976,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   captureBtnText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 13,
     color: Colors.bg,
     letterSpacing: 0.5,
@@ -1088,7 +1088,7 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
   proceedBtnText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 13,
     color: Colors.bg,
     letterSpacing: 0.5,
@@ -1144,7 +1144,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(201,168,76,0.1)",
   },
   summaryName: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 14,
     color: Colors.gold,
     letterSpacing: 1,
@@ -1172,7 +1172,7 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   revealBtnText: {
-    fontFamily: "CinzelDecorative_400Regular",
+    fontFamily: "CormorantGaramond_400Regular",
     fontSize: 14,
     color: Colors.bg,
     letterSpacing: 0.5,
