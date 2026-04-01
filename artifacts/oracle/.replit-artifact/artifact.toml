@@ -19,16 +19,13 @@ localPort = 19943
 run = "pnpm --filter @workspace/oracle run dev"
 
 [services.production]
+serve = "static"
+publicDir = "artifacts/oracle/dist"
 
 [services.production.build]
-args = ["pnpm", "--filter", "@workspace/oracle", "run", "build"]
+args = ["pnpm", "--filter", "@workspace/oracle", "run", "build:web"]
 
-[services.production.run]
-args = ["pnpm", "--filter", "@workspace/oracle", "run", "serve"]
-
-[services.production.run.env]
-PORT = "19943"
-BASE_PATH = "/"
+[services.production.build.env]
 NODE_ENV = "production"
 
 [services.env]
