@@ -1,25 +1,24 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  :root {
-    --background: 240 58% 4%; /* #04040f */
-    --surface: 240 46% 8%; /* #0b0b1e */
-    --gold: 44 55% 54%; /* #c9a84c */
-    --gold-light: 45 72% 69%; /* #e8cc7a */
-    --cream: 40 55% 87%; /* #f0e6cc */
-    --muted: 240 14% 48%; /* #6b6b8a */
-    --input: 240 41% 10%; /* #0f0f24 */
-  }
+@theme {
+  --color-background: hsl(240 58% 4%);
+  --color-surface: hsl(240 46% 8%);
+  --color-gold: hsl(44 55% 54%);
+  --color-goldLight: hsl(45 72% 69%);
+  --color-cream: hsl(40 55% 87%);
+  --color-muted: hsl(240 14% 48%);
+  --color-input: hsl(240 41% 10%);
+
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body: 'EB Garamond', serif;
 }
 
 body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--cream));
-  font-family: 'EB Garamond', serif;
+  background-color: var(--color-background);
+  color: var(--color-cream);
+  font-family: var(--font-body);
 }
 
 h1, h2, h3, h4, h5, h6, .font-display {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-display);
 }

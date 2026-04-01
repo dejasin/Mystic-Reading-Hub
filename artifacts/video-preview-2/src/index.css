@@ -1,14 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap');
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+  --color-oracle-bg: #04040f;
+  --color-oracle-surface: #0b0b1e;
+  --color-oracle-gold: #c9a84c;
+  --color-oracle-goldLight: #e8cc7a;
+  --color-oracle-cream: #f0e6cc;
+  --color-oracle-muted: #6b6b8a;
+  --color-oracle-inputBg: #0f0f24;
 
-@layer base {
-  body {
-    @apply bg-oracle-bg text-oracle-cream font-body antialiased overflow-hidden;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-display text-oracle-gold;
-  }
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body: 'EB Garamond', serif;
+}
+
+body {
+  background-color: var(--color-oracle-bg);
+  color: var(--color-oracle-cream);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: var(--font-display);
 }

@@ -41,8 +41,15 @@ The project is structured as a pnpm monorepo with `artifacts/` for deployable ap
 - **`lib/api-zod`:** Generated Zod schemas for API validation.
 - **`lib/api-client-react`:** Generated React Query hooks for API interaction.
 
+**App Store Assets (`artifacts/mockup-sandbox`, `artifacts/video-preview-*`):**
+- **Screenshot Mockups:** 10 iPhone-framed screenshots (S01–S10) rendered via the mockup sandbox, placed on canvas. Covers: Welcome, The Sight, Begin Ritual, Photo Ritual, Reading Loading, Reading Result, Deep Dive, Daily Oracle, Reading Vault, Chat.
+- **Preview Videos:** 3 animated 9:16 preview videos (Vite + React + Framer Motion, Tailwind v4):
+  - `video-preview-1`: "Meet the Oracle" — intro scenes, sigil reveal, feature triptych, truth awaits
+  - `video-preview-2`: "Your Reading Awaits" — loading sigil, reading reveal, deep dive, career, chat
+  - `video-preview-3`: "Live the Oracle Life" — morning ritual, journal, chat, community, begin
+
 **Monorepo Structure:**
-- `artifacts/`: `api-server`, `oracle`
+- `artifacts/`: `api-server`, `oracle`, `mockup-sandbox`, `video-preview-1`, `video-preview-2`, `video-preview-3`
 - `lib/`: `api-spec`, `api-client-react`, `api-zod`, `db`
 - `scripts/`: Utility scripts.
 - `tsconfig.base.json`: Shared TypeScript config with `composite: true`.
