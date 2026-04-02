@@ -16,7 +16,7 @@ export default {
         input: "hsl(var(--input))",
       },
       fontFamily: {
-        display: ['"Cormorant Garamond"', 'serif'],
+        display: ['"Cinzel Decorative"', 'serif'],
         body: ['"EB Garamond"', 'serif'],
       }
     },

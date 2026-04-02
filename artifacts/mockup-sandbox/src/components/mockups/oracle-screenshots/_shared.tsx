@@ -9,14 +9,14 @@ export const C = {
   inputBorder: "#2a2a4a",
 };
 
-export const FONT_HEADING = "'Cormorant Garamond', Georgia, serif";
+export const FONT_HEADING = "'Cinzel Decorative', Georgia, serif";
 export const FONT_BODY = "'EB Garamond', Georgia, serif";
 
 export function GoogleFonts() {
   return (
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap"
     />
   );
 }

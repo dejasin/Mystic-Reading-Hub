@@ -1,14 +1,8 @@
-import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useVideoPlayer } from '@/lib/video';
+import { useState, useEffect } from 'react';
 
-const SCENES = [
-  { id: 'daily', duration: 4500 },
-  { id: 'journal', duration: 4500 },
-  { id: 'expand', duration: 4000 },
-  { id: 'share', duration: 4000 },
-  { id: 'referral', duration: 4000 },
-  { id: 'home', duration: 4500 },
-];
+const SCENE_DURATIONS = { s1: 4500, s2: 4500, s3: 4000, s4: 4000, s5: 4000, s6: 4500 };
 
 const GOLD = '#c9a84c';
 const GOLD_L = '#e8cc7a';
@@ -17,7 +11,7 @@ const MUTED = '#6b6b8a';
 const SURFACE = '#0b0b1e';
 const BG = '#04040f';
 
-const FONT_D = '"Cormorant Garamond", serif';
+const FONT_D = '"Cinzel Decorative", serif';
 const FONT_B = '"EB Garamond", serif';
 
 function StarField() {
@@ -389,32 +383,17 @@ function SceneHome() {
 }
 
 export default function VideoTemplate() {
-  const [scene, setScene] = useState(0);
-  const [hasEnded, setHasEnded] = useState(false);
-
-  useEffect(() => {
-    if (hasEnded) return;
-    const duration = SCENES[scene].duration;
-    const timer = setTimeout(() => {
-      if (scene >= SCENES.length - 1) {
-        setHasEnded(true);
-        setTimeout(() => { setScene(0); setHasEnded(false); }, 600);
-      } else {
-        setScene(s => s + 1);
-      }
-    }, duration);
-    return () => clearTimeout(timer);
-  }, [scene, hasEnded]);
+  const { currentScene } = useVideoPlayer({ durations: SCENE_DURATIONS });
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: BG }}>
       <AnimatePresence mode="wait">
-        {scene === 0 && <SceneDaily key="daily" />}
-        {scene === 1 && <SceneJournal key="journal" />}
-        {scene === 2 && <SceneExpand key="expand" />}
-        {scene === 3 && <SceneShare key="share" />}
-        {scene === 4 && <SceneReferral key="referral" />}
-        {scene === 5 && <SceneHome key="home" />}
+        {currentScene === 0 && <SceneDaily key="daily" />}
+        {currentScene === 1 && <SceneJournal key="journal" />}
+        {currentScene === 2 && <SceneExpand key="expand" />}
+        {currentScene === 3 && <SceneShare key="share" />}
+        {currentScene === 4 && <SceneReferral key="referral" />}
+        {currentScene === 5 && <SceneHome key="home" />}
       </AnimatePresence>
     </div>
   );
