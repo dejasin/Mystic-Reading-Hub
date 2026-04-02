@@ -18,7 +18,7 @@ export default {
         }
       },
       fontFamily: {
-        display: ['"Cormorant Garamond"', 'serif'],
+        display: ['"Cinzel Decorative"', 'serif'],
         body: ['"EB Garamond"', 'serif'],
       }
     },

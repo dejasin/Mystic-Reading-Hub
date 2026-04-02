@@ -21,9 +21,9 @@ export default function Scene4Career() {
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
       >
         <div 
-          className="w-10 h-10 rounded-full flex items-center justify-center bg-oracle-bg shadow-[0_0_10px_rgba(74,144,226,0.4)]"
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-oracle-bg shadow-[0_0_10px_rgba(201,168,76,0.3)]"
         >
-          <Briefcase size={20} color="#4a90e2" />
+          <Briefcase size={20} color="#c9a84c" />
         </div>
         <span className="text-xl font-display text-oracle-gold tracking-wide">Career Forecast</span>
       </motion.div>
