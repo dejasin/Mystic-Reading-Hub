@@ -2,14 +2,13 @@ import {
   CormorantGaramond_400Regular,
   CormorantGaramond_700Bold,
   CormorantGaramond_400Regular_Italic,
-  useFonts as useCormorantFonts,
 } from "@expo-google-fonts/cormorant-garamond";
 import {
   EBGaramond_400Regular,
   EBGaramond_500Medium,
   EBGaramond_400Regular_Italic,
-  useFonts as useGaramondFonts,
 } from "@expo-google-fonts/eb-garamond";
+import { useFonts } from "expo-font";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -42,20 +41,14 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  const [cormorantLoaded, cormorantError] = useCormorantFonts({
+  const [fontsLoaded, fontError] = useFonts({
     CormorantGaramond_400Regular,
     CormorantGaramond_700Bold,
     CormorantGaramond_400Regular_Italic,
-  });
-
-  const [garamondLoaded, garamondError] = useGaramondFonts({
     EBGaramond_400Regular,
     EBGaramond_500Medium,
     EBGaramond_400Regular_Italic,
   });
-
-  const fontsLoaded = cormorantLoaded && garamondLoaded;
-  const fontError = cormorantError || garamondError;
 
   const notificationListener = useRef<Notifications.EventSubscription>();
   const responseListener = useRef<Notifications.EventSubscription>();
