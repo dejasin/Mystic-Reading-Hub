@@ -1,0 +1,133 @@
+
+Build a complete marketing and compliance website for my iOS app called The Oracle — an AI-powered mystical reading app that analyzes palm, iris, and face to deliver personalized readings rooted in palmistry, physiognomy, and esoteric traditions.
+This website must satisfy all Apple App Store requirements for a support URL and privacy policy URL. Build it as a static HTML/CSS/JS site with three pages, fully deployable on Replit's Static Deployment.
+
+DESIGN SYSTEM
+
+Background: Deep navy #0a0e1a
+Primary accent: Gold #c9a84c
+Secondary accent: Soft gold/cream #e8d5a3
+Text: White #ffffff and light gray #c0c0c0
+Font: Georgia serif for headings, system-ui for body
+Aesthetic: Mystical, premium, dark luxury — think ancient wisdom meets modern AI
+Decorative motifs: Subtle stars, celestial patterns, sacred geometry — use CSS/SVG, no external image dependencies
+All pages share a consistent nav and footer
+
+
+PAGE 1 — index.html (Landing Page)
+Hero section:
+
+App name: The Oracle
+Tagline: "Your hands hold the answers. Let AI reveal them."
+Subheading: "AI-powered palm, iris & face readings rooted in ancient wisdom"
+A prominent CTA button: "Download on the App Store" (link placeholder: #appstore — I will update this later)
+Decorative celestial/mystical SVG or CSS art in the hero
+
+Features section — 3 feature cards:
+
+🤚 Palm Reading — "Discover what your lines, mounts, and markings reveal about your destiny, love life, and hidden gifts."
+👁 Iris Analysis — "Your eyes are a map. Our AI reads the patterns within your iris to reflect your inner nature."
+🌀 Face Reading — "Ancient physiognomy meets modern AI — uncover personality traits and life tendencies written in your features."
+
+How It Works section:
+
+Step 1: Take or upload a photo
+Step 2: Our AI analyzes your unique features
+Step 3: Receive a personalized mystical reading
+
+Testimonials section (placeholder quotes, mystical tone — 3 testimonials)
+Footer:
+
+Links: Home | Privacy Policy | Support
+Copyright: © 2025 The Oracle. All rights reserved.
+Email: privacy@theoracleapp.com
+
+
+PAGE 2 — privacy.html (Privacy Policy)
+This page must be thorough enough to satisfy Apple's App Store review. Include all of the following sections with real, substantive content (not placeholder lorem ipsum):
+
+Introduction — what The Oracle is and that we take privacy seriously
+Information We Collect
+
+Photos submitted for readings (palm, iris, face) — processed in real time, not stored
+Device information (iOS version, device model)
+Usage data (features used, session length)
+Optional: name or display name if user creates an account
+
+
+How We Use Your Information
+
+To generate AI-powered readings via the Anthropic API
+To improve app performance and user experience
+We do not sell data to third parties
+
+
+Photo & Biometric Data Handling
+
+Photos are transmitted securely to our AI provider (Anthropic) for analysis
+Photos are not stored on our servers after the reading is generated
+We do not build biometric profiles or use data for facial recognition databases
+
+
+Third-Party Services
+
+Anthropic API (AI reading generation)
+Apple (App Store, StoreKit for any in-app purchases)
+
+
+Data Retention — session-only for photos; minimal retention for usage analytics
+Your Rights — access, deletion requests, contact info
+Children's Privacy — app is not directed at children under 13
+Changes to This Policy
+Contact Us — privacy@theoracleapp.com
+
+Style this page to match the dark navy/gold aesthetic. Make it readable with clear section headings. Include the effective date as January 1, 2025.
+
+PAGE 3 — support.html (Support Page)
+Apple requires a working support URL. This page must look professional and helpful.
+Sections:
+
+Header: "The Oracle — Support Center" with mystical styling
+FAQ section with these questions (write real helpful answers):
+
+How do I get the best palm reading result?
+What photos work best for iris and face analysis?
+My reading didn't generate — what should I do?
+Is my photo data stored or shared?
+How do I cancel a subscription or restore purchases?
+The app crashed or isn't responding — how do I fix it?
+
+
+Contact section:
+
+Heading: "Still need help? We're here."
+Support email: privacy@theoracleapp.com
+Response time: "We typically respond within 1–2 business days"
+A simple HTML contact form (Name, Email, Message, Submit button) — style it beautifully, form action can be mailto:privacy@theoracleapp.com
+
+
+Footer — same as other pages
+
+
+TECHNICAL REQUIREMENTS
+
+Pure HTML, CSS, and vanilla JS only — no frameworks, no npm, no build step
+All three pages in the root directory: index.html, privacy.html, support.html
+One shared stylesheet: styles.css
+Mobile responsive — must look great on iPhone
+Smooth scroll, subtle hover effects on buttons and cards
+All internal nav links work correctly between pages
+No broken links, no placeholder images that won't load
+Must be deployable instantly via Replit Static Deployment with zero configuration
+
+
+AFTER BUILDING
+Once all files are created and working:
+
+Confirm all three pages render correctly in the Replit preview
+Tell me the exact steps to deploy it as a Static Deployment on Replit
+Remind me to update the App Store download link in index.html once my app is live
+Remind me to update www.theoracleapp.com DNS records to point to Replit after deployment
+
+
+Build all files now. Start with styles.css, then index.html, then privacy.html, then support.html.
