@@ -1,0 +1,52 @@
+
+I need to modify The Oracle app to remove numerology functionality entirely and simplify the app to focus exclusively on palm reading only. Remove iris and face reading as well — palm is the only reading type.
+WHAT TO REMOVE
+Search the entire codebase and remove or refactor the following:
+
+Numerology calculations — any function that takes a full name, assigns numeric values to letters, calculates life path numbers, expression numbers, soul urge numbers, or any other numerology-derived values
+Full name input field — remove any input that collects the user's name for the purpose of numerology interpretation
+Numerology results in readings — remove any section of the AI prompt or output that references numerology, life path, master numbers, name vibration, or similar
+Iris reading — remove the iris photo upload option, its UI, its system prompt logic, and any routing tied to it
+Face reading — remove the face photo upload option, its UI, its system prompt logic, and any routing tied to it
+Any navigation items, tabs, or buttons that reference iris, face, or numerology
+
+
+WHAT TO KEEP
+
+Palm reading — all photo upload, analysis, and output logic stays intact
+Vault, Journal, Synastry, and referral system — do not touch these
+All existing UI styling (dark navy and gold aesthetic, Georgia serif font)
+The Anthropic API integration — keep it exactly as is, just update the system prompt (see below)
+
+
+SYSTEM PROMPT UPDATE
+Find the system prompt sent to the Anthropic API for readings. Replace it with the following, keeping all existing API call logic (model, max_tokens, headers) unchanged:
+You are The Oracle — an ancient, wise, and mystical palm reader with deep knowledge of both Western and Vedic palmistry traditions. You speak with authority, warmth, and poetic depth.
+
+When the user submits a palm image, deliver a comprehensive, personalized reading that covers:
+
+1. **The Major Lines** — Heart line, Head line, Life line, Fate line (if present)
+2. **The Minor Lines** — any visible secondary lines such as the Sun line, Mercury line, Mars lines, Girdle of Venus, Union lines
+3. **The Mounts** — evaluate the developed and flat mounts across the palm (Venus, Jupiter, Saturn, Apollo, Mercury, Mars, Moon, Neptune if visible)
+4. **Hand Shape & Fingers** — note the overall hand shape (earth, air, fire, water) and any notable finger characteristics
+5. **Special Markings** — stars, crosses, triangles, squares, grilles, islands, or any other markings of note
+
+For each element, provide an honest, specific, unvarnished interpretation — do not default to vague positivity. Speak as if you have read thousands of palms. Close the reading with a synthesized overall reflection on the person's path, strengths, and areas of growth.
+
+Tone: mystical, poetic, direct. Never generic. Never mention numerology, names, or anything outside of what the palm reveals.
+
+UI CLEANUP
+After removing the above features, clean up the UI so there are no gaps, orphaned buttons, or broken layouts:
+
+If there was a reading type selector (palm / iris / face), remove it entirely — the app now goes directly to palm reading
+If the home screen or dashboard had cards or icons for each reading type, remove the iris and face cards and center or reflow the palm card appropriately
+Remove any onboarding steps or instructions that mention iris, face, or name/numerology
+Update any page titles, headings, or descriptive text that says "palm, iris & face" — change to "palm reading" only
+
+
+FINAL CHECK
+After making all changes:
+
+Confirm every reference to numerology, iris, face reading, and name input has been removed from both the frontend and backend/API logic
+Confirm the palm reading flow works end-to-end — photo upload → API call → reading displayed
+List every file you modified so I can review them
