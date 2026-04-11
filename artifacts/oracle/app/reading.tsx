@@ -41,9 +41,9 @@ import { getApiUrl } from "@/lib/api";
 
 const LOADING_MESSAGES = [
   "Mapping your palm lines...",
-  "Reading the iris zones...",
-  "Cross-referencing your numerological signature...",
-  "Synthesizing the ancient patterns...",
+  "Reading the lines of heart and fate...",
+  "Tracing the ancient patterns in your hands...",
+  "Synthesizing your palm's hidden language...",
   "Your Oracle is preparing to speak...",
 ];
 
@@ -750,7 +750,7 @@ type Phase = "loading" | "streaming_free" | "paywall" | "streaming_paid" | "comp
 
 export default function ReadingScreen() {
   const insets = useSafeAreaInsets();
-  const { state, updateUserData, appendFreeReading, appendPaidReading, appendArchetype, appendChineseFaceReading, appendIridologyReading, resetFreeReading, resetPaidReading, setReadingComplete, resetAll } = useOracle();
+  const { state, updateUserData, appendFreeReading, appendPaidReading, appendArchetype, resetFreeReading, resetPaidReading, setReadingComplete, resetAll } = useOracle();
   const { profiles, updateProfile } = useProfiles();
   const { addEntry: addJournalEntry } = useJournal();
   const { customerInfo } = useSubscription();
@@ -948,10 +948,6 @@ export default function ReadingScreen() {
             if (parsed.chunk) {
               if (parsed.section === "archetype") {
                 appendArchetype(parsed.chunk);
-              } else if (parsed.section === "chinese_face") {
-                appendChineseFaceReading(parsed.chunk);
-              } else if (parsed.section === "iridology") {
-                appendIridologyReading(parsed.chunk);
               } else {
                 appendPaidReading(parsed.chunk);
               }
@@ -972,10 +968,6 @@ export default function ReadingScreen() {
             if (parsed.chunk) {
               if (parsed.section === "archetype") {
                 appendArchetype(parsed.chunk);
-              } else if (parsed.section === "chinese_face") {
-                appendChineseFaceReading(parsed.chunk);
-              } else if (parsed.section === "iridology") {
-                appendIridologyReading(parsed.chunk);
               } else {
                 appendPaidReading(parsed.chunk);
               }
@@ -1033,8 +1025,6 @@ export default function ReadingScreen() {
         state.freeReading,
         state.paidReading,
         state.archetypeReading,
-        state.chineseFaceReading,
-        state.iridologyReading,
       ].filter(Boolean).join("\n\n");
       saveReadingToVault(fullReading);
       maybeRequestReview();
@@ -1208,60 +1198,6 @@ export default function ReadingScreen() {
                 />
               </View>
             </>
-          )}
-
-          {/* Chinese Face Reading */}
-          {state.chineseFaceReading.length > 0 && (
-            <>
-              <Text style={sectionStyles.divider}>─── ✦ ───</Text>
-              <View style={styles.specialReadingCard}>
-                <View style={styles.specialReadingHeader}>
-                  <Text style={styles.specialReadingBadge}>Chinese Face Reading · 面相</Text>
-                </View>
-                <ReadingSection
-                  text={state.chineseFaceReading}
-                  sessionId={state.sessionId}
-                  userData={JSON.stringify(state.userData)}
-                  isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
-                  parentScrollRef={scrollRef}
-                  parentScrollOffset={scrollOffsetRef}
-                />
-              </View>
-            </>
-          )}
-
-          {/* Streaming chinese face indicator */}
-          {phase === "streaming_paid" && state.chineseFaceReading.length > 0 && state.iridologyReading.length === 0 && (
-            <View style={styles.streamingDots}>
-              <Text style={styles.streamingText}>Reading the face of destiny...</Text>
-            </View>
-          )}
-
-          {/* Iridology Health Reading */}
-          {state.iridologyReading.length > 0 && (
-            <>
-              <Text style={sectionStyles.divider}>─── ✦ ───</Text>
-              <View style={styles.specialReadingCard}>
-                <View style={styles.specialReadingHeader}>
-                  <Text style={styles.specialReadingBadge}>Iridology Health Reading</Text>
-                </View>
-                <ReadingSection
-                  text={state.iridologyReading}
-                  sessionId={state.sessionId}
-                  userData={JSON.stringify(state.userData)}
-                  isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
-                  parentScrollRef={scrollRef}
-                  parentScrollOffset={scrollOffsetRef}
-                />
-              </View>
-            </>
-          )}
-
-          {/* Streaming iridology indicator */}
-          {phase === "streaming_paid" && state.iridologyReading.length > 0 && (
-            <View style={styles.streamingDots}>
-              <Text style={styles.streamingText}>Reading the iris of the soul...</Text>
-            </View>
           )}
 
           {/* Complete — Deep Dive + chat CTA */}

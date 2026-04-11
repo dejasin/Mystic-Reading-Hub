@@ -122,12 +122,6 @@ export default function ProfileActionScreen() {
             });
             if (profile.photos.right_palm) setImage("right_palm", { uri: profile.photos.right_palm });
             if (profile.photos.left_palm) setImage("left_palm", { uri: profile.photos.left_palm });
-            if (profile.photos.right_iris) setImage("right_iris", { uri: profile.photos.right_iris });
-            if (profile.photos.left_iris) setImage("left_iris", { uri: profile.photos.left_iris });
-            if (profile.photos.face) setImage("face", { uri: profile.photos.face });
-            if (profile.photos.face_front) setImage("face_front", { uri: profile.photos.face_front });
-            if (profile.photos.face_left) setImage("face_left", { uri: profile.photos.face_left });
-            if (profile.photos.face_right) setImage("face_right", { uri: profile.photos.face_right });
             router.push("/reading");
           }}
         >

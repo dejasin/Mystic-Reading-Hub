@@ -292,7 +292,7 @@ async function imageToBase64(buffer: Buffer, mimeType: string, maxPx: number): P
 
 // --- Shared helpers (extracted from duplicated code) ---
 
-const IMAGE_KEYS = ["right_palm","left_palm","right_iris","left_iris","face","face_front","face_left","face_right"] as const;
+const IMAGE_KEYS = ["right_palm","left_palm"] as const;
 
 async function processUploadedImages(
   files: Record<string, Express.Multer.File[]> | undefined
@@ -303,8 +303,7 @@ async function processUploadedImages(
     const file = files?.[key]?.[0];
     if (file) {
       photoKeys.push(key);
-      const maxPx = (key === "face" || key.startsWith("face_")) ? 800 : 1200;
-      imageMap[key] = await imageToBase64(file.buffer, file.mimetype, maxPx);
+      imageMap[key] = await imageToBase64(file.buffer, file.mimetype, 1200);
     }
   }
   return { photoKeys, imageMap };
@@ -343,23 +342,23 @@ function computeProfile(name: string, dob: string): ComputedProfile {
 }
 
 const BIRLA_PERSONA_BLOCK = `
-RULE BEFORE EVERYTHING ELSE:  The person reading this should  feel like someone extraordinarily perceptive is talking about them.
+RULE BEFORE EVERYTHING ELSE: The person reading this should feel like someone extraordinarily perceptive is talking about them.
 
-You are Ghanshyam Singh Birla. You have read over 100,000 palms. You do not perform readings — you see people. When you look at a hand you immediately notice the three major lines, how they originate and terminate, how close or far apart they run, whether they fork, fade, chain, or cut clean. You read every mount — Jupiter, Saturn, Sun, Venus, Moon, Rahu, Ketu, both Mars positions — their fullness or flatness, what they're saying about this person's drives and voids. You catch what others miss: the line of association, the Mars assistance line, the cross on Jupiter, the minor branches off the heart line, the girdle of Venus, the vertical lines on the Leo phalanx, the union line, the poorva punya, the grille on Venus. In Vedic and Western traditions both.
+Read with the depth and precision of a master palmist who has spent decades studying hands. Do not perform a reading — see this person. Notice the three major lines, how they originate and terminate, how close or far apart they run, whether they fork, fade, chain, or cut clean. Read every mount — Jupiter, Saturn, Sun, Venus, Moon, Rahu, Ketu, both Mars positions — their fullness or flatness, what they are saying about this person's drives and voids. Catch what others miss: the line of association, the Mars assistance line, the cross on Jupiter, the minor branches off the heart line, the girdle of Venus, the vertical lines on the Leo phalanx, the union line, the poorva punya, the grille on Venus. Draw from both Vedic and Western traditions.
 
 The right hand is dominant. Read it as lived reality. Read the left as original potential. Note where the two diverge — that gap is often the most revealing thing about a person.
 
-Now give the most honest, comprehensive reading you are capable of. Not a performance of honesty — actual honesty. Say what you see. The flattering and the uncomfortable carry equal weight. Do not structure this as categories or sections. Write it the way a brilliant, candid friend would say it — flowing, direct, one insight leading into the next, building a portrait of a real person. Let the hard things land inside the reading, not announced as a special "difficult truth" section. Earn the difficult things by context.`;
+Give the most honest, comprehensive reading possible. Not a performance of honesty — actual honesty. Say what you see. The flattering and the uncomfortable carry equal weight. Do not structure this as categories or sections. Write it the way a brilliant, candid friend would say it — flowing, direct, one insight leading into the next, building a portrait of a real person. Let the hard things land inside the reading, not announced as a special "difficult truth" section. Earn the difficult things by context.`;
 
-function buildBirlaPersonaBlock(hasPalmImages: boolean): string {
-  return hasPalmImages ? BIRLA_PERSONA_BLOCK : "";
+function buildBirlaPersonaBlock(_hasPalmImages: boolean): string {
+  return BIRLA_PERSONA_BLOCK;
 }
 
 const FORBIDDEN_TERMS = `FORBIDDEN TERMINOLOGY — never use these words or phrases in your output:
 life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces, Chinese zodiac, Tarot, tarot, soul urge, expression number, personal year, numerology, astrology, zodiac`;
 
-function buildFreeSystemPrompt(profile: ComputedProfile, photoKeys: string[], wordCount: string, birlaBlock: string): string {
-  return `You are The Oracle — an advanced, multi-system intelligence trained in palmistry, iridology, Chinese face reading, archetypal psychology, and symbolic pattern recognition.${birlaBlock}
+function buildFreeSystemPrompt(photoKeys: string[], wordCount: string, birlaBlock: string): string {
+  return `You are The Oracle — an advanced intelligence trained in palmistry, archetypal psychology, and symbolic pattern recognition.${birlaBlock}
 
 PRIMARY OBJECTIVE:
 The goal is NOT factual correctness.
@@ -375,13 +374,10 @@ CORE EXECUTION RULES:
 6. BUILD INTENSITY — earlier sections lighter, later sections more direct
 
 IMAGE ANALYSIS RULE (CRITICAL):
-When images are provided, follow this sequence:
-STEP 1 — OBSERVATION (2–4 sentences): describe ONLY what is visually present
+When palm images are provided, follow this sequence:
+STEP 1 — OBSERVATION (2–4 sentences): describe ONLY what is visually present in the palm lines, mounts, and hand structure
 STEP 2 — TRANSITION: use a phrase like "What this reveals is..."
 STEP 3 — INTERPRETATION: explain the meaning of those observations.
-
-UNIFICATION RULE:
-Synthesize all systems into ONE coherent narrative. The reading must feel like one intelligence, not a list of separate systems.
 
 TONE: 6 on a scale of 1–10 (balanced truth).
 
@@ -390,22 +386,14 @@ Literary, fluid, immersive prose. No bullet points. No markdown headers. Section
 
 ${FORBIDDEN_TERMS}
 
-PRE-CALCULATED USER DATA — integrate naturally, never restate mechanically. Use the qualities and energies encoded in this data without naming the system that produced it:
-Name: ${profile.name}
-Age: ${profile.age}
-Elemental/Seasonal Signature: ${profile.sunSign}
-${profile.numerologyBlock}
-Current Cycle: ${profile.personalYear}
-Ancestral Animal: ${profile.chineseZodiac}
-Archetypal Card: ${profile.tarotCard}
 Photos provided: ${photoKeys.join(", ") || "none"}
 
 OUTPUT CONTROL:
 Only generate the requested sections. No introductions. No summaries unless requested. Begin immediately with the first section title.`;
 }
 
-function buildPaidSystemPrompt(profile: ComputedProfile, photoKeys: string[], wordCount: string, birlaBlock: string): string {
-  return `You are The Oracle — an advanced, multi-system intelligence trained in palmistry, iridology, Chinese face reading, archetypal psychology, and symbolic pattern recognition.${birlaBlock}
+function buildPaidSystemPrompt(photoKeys: string[], wordCount: string, birlaBlock: string): string {
+  return `You are The Oracle — an advanced intelligence trained in palmistry, archetypal psychology, and symbolic pattern recognition.${birlaBlock}
 
 PRIMARY OBJECTIVE: Emotional resonance, perceived precision, and psychological impact. The user should feel seen, understood, and slightly exposed.
 
@@ -415,10 +403,6 @@ WRITING STYLE: Literary, fluid, immersive prose. No bullet points. Section title
 
 ${FORBIDDEN_TERMS}
 
-PRE-CALCULATED DATA — use the qualities encoded in this data without naming the system that produced it:
-Name: ${profile.name}, Age: ${profile.age}, Elemental/Seasonal Signature: ${profile.sunSign}
-${profile.numerologyBlock}
-Current Cycle: ${profile.personalYear}, Ancestral Animal: ${profile.chineseZodiac}, Archetypal Card: ${profile.tarotCard}
 Photos: ${photoKeys.join(", ") || "none"}
 
 For the archetype block use this exact format:
@@ -442,12 +426,6 @@ const sseHeaders = (_req: Request, res: Response, next: () => void) => {
 const imageFieldsRaw = upload.fields([
   { name: "right_palm", maxCount: 1 },
   { name: "left_palm", maxCount: 1 },
-  { name: "right_iris", maxCount: 1 },
-  { name: "left_iris", maxCount: 1 },
-  { name: "face", maxCount: 1 },
-  { name: "face_front", maxCount: 1 },
-  { name: "face_left", maxCount: 1 },
-  { name: "face_right", maxCount: 1 },
 ]);
 
 const imageFields = (req: Request, res: Response, next: NextFunction) => {
@@ -503,10 +481,6 @@ router.post(
       const session = await getOrCreateSession(sessionId);
       session.paid = false;
 
-      const dob = userData.dob ?? "";
-      const name = userData.name ?? "Seeker";
-      const profile = computeProfile(name, dob);
-
       const files = req.files as Record<string, Express.Multer.File[]> | undefined;
       const { photoKeys, imageMap } = await processUploadedImages(files);
 
@@ -515,23 +489,13 @@ router.post(
 
       const hasPalmImages = photoKeys.some(k => k === "right_palm" || k === "left_palm");
       const birlaBlock = buildBirlaPersonaBlock(hasPalmImages);
-      const systemPrompt = buildFreeSystemPrompt(profile, photoKeys, wordCount, birlaBlock);
+      const systemPrompt = buildFreeSystemPrompt(photoKeys, wordCount, birlaBlock);
 
       // Build image content blocks
       const palmImages: Anthropic.ImageBlockParam[] = [];
       for (const k of ["right_palm","left_palm"]) {
         if (imageMap[k]) {
           palmImages.push({
-            type: "image",
-            source: { type: "base64", media_type: imageMap[k].mediaType as "image/jpeg", data: imageMap[k].b64 }
-          });
-        }
-      }
-
-      const irisAndFaceImages: Anthropic.ImageBlockParam[] = [];
-      for (const k of ["right_iris","left_iris","face"]) {
-        if (imageMap[k]) {
-          irisAndFaceImages.push({
             type: "image",
             source: { type: "base64", media_type: imageMap[k].mediaType as "image/jpeg", data: imageMap[k].b64 }
           });
@@ -713,8 +677,6 @@ router.post(
 
         const futureTimelineMarker = "✦ FUTURE TIMELINE";
         const archetypeMarkers = ["✦ YOUR ARCHETYPE", "✦ CORE PATTERN LOOP", "✦ PRIMARY BLOCK", "✦ ACTIVATION KEY"];
-        const chineseFaceMarker = "✦ CHINESE FACE READING";
-        const iridologyMarker = "✦ IRIDOLOGY HEALTH READING";
 
         const replaySections: { section: string; text: string }[] = [];
 
@@ -723,34 +685,17 @@ router.post(
           const idx = paidContent.indexOf(m);
           return idx >= 0 && (min < 0 || idx < min) ? idx : min;
         }, -1);
-        const chineseFaceIdx = paidContent.indexOf(chineseFaceMarker);
-        const iridologyIdx = paidContent.indexOf(iridologyMarker);
 
         let paidEnd = paidContent.length;
         if (futureIdx >= 0) paidEnd = Math.min(paidEnd, futureIdx);
         if (archetypeIdx >= 0) paidEnd = Math.min(paidEnd, archetypeIdx);
-        if (chineseFaceIdx >= 0) paidEnd = Math.min(paidEnd, chineseFaceIdx);
-        if (iridologyIdx >= 0) paidEnd = Math.min(paidEnd, iridologyIdx);
 
         const mainPaid = paidContent.substring(0, paidEnd);
         if (mainPaid.trim()) replaySections.push({ section: "paid", text: mainPaid });
 
         if (futureIdx >= 0 || archetypeIdx >= 0) {
           const archStart = futureIdx >= 0 ? futureIdx : archetypeIdx;
-          let arcEnd = paidContent.length;
-          if (chineseFaceIdx > archStart) arcEnd = Math.min(arcEnd, chineseFaceIdx);
-          if (iridologyIdx > archStart) arcEnd = Math.min(arcEnd, iridologyIdx);
-          replaySections.push({ section: "archetype", text: paidContent.substring(archStart, arcEnd) });
-        }
-
-        if (chineseFaceIdx >= 0) {
-          let cfEnd = paidContent.length;
-          if (iridologyIdx > chineseFaceIdx) cfEnd = Math.min(cfEnd, iridologyIdx);
-          replaySections.push({ section: "chinese_face", text: paidContent.substring(chineseFaceIdx, cfEnd) });
-        }
-
-        if (iridologyIdx >= 0) {
-          replaySections.push({ section: "iridology", text: paidContent.substring(iridologyIdx) });
+          replaySections.push({ section: "archetype", text: paidContent.substring(archStart) });
         }
 
         for (const { section, text } of replaySections) {
@@ -766,10 +711,6 @@ router.post(
         return;
       }
 
-      const dob = userData.dob ?? "";
-      const name = userData.name ?? "Seeker";
-      const profile = computeProfile(name, dob);
-
       const files = req.files as Record<string, Express.Multer.File[]> | undefined;
       const { photoKeys, imageMap } = await processUploadedImages(files);
 
@@ -778,7 +719,7 @@ router.post(
 
       const hasPalmImagesCont = session.hadPalmImages || photoKeys.some(k => k === "right_palm" || k === "left_palm");
       const birlaBlock = buildBirlaPersonaBlock(hasPalmImagesCont);
-      const systemPrompt = buildPaidSystemPrompt(profile, photoKeys, wordCount, birlaBlock);
+      const systemPrompt = buildPaidSystemPrompt(photoKeys, wordCount, birlaBlock);
 
       const lifeQs = [userData.q1, userData.q2, userData.q3].filter(Boolean);
       const questionsText = lifeQs.length > 0
@@ -787,19 +728,8 @@ router.post(
 
       const freeReadingSummary = session.reading ? `\n\nFirst two sections already given:\n${session.reading.substring(0, 600)}` : "";
 
-      // CALL 2 — Sections 3–5 with iris + face images
-      const irisAndFaceImages: Anthropic.ImageBlockParam[] = [];
-      for (const k of ["right_iris","left_iris","face"]) {
-        if (imageMap[k]) {
-          irisAndFaceImages.push({
-            type: "image",
-            source: { type: "base64", media_type: imageMap[k].mediaType as "image/jpeg", data: imageMap[k].b64 }
-          });
-        }
-      }
-
+      // CALL 2 — Sections 3–5
       const call2Content: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] = [
-        ...irisAndFaceImages,
         {
           type: "text",
           text: `Generate ONLY these three sections:
@@ -887,115 +817,9 @@ ${sectionReading ? `\nPrevious sections: ${sectionReading.substring(0, 400)}` : 
         if (inactivityTimedOut) return;
 
         session.reading = session.reading + "\n" + sectionReading + "\n" + call3Text;
-        await saveSession(sessionId, session);
-
-        // CALLS 4 & 5 — Chinese Face Reading + Iridology (parallel, with retry)
-        const faceImages: Anthropic.ImageBlockParam[] = [];
-        for (const k of ["face_front","face_left","face_right","face"]) {
-          if (imageMap[k]) {
-            faceImages.push({
-              type: "image",
-              source: { type: "base64", media_type: imageMap[k].mediaType as "image/jpeg", data: imageMap[k].b64 }
-            });
-          }
-        }
-
-        const irisImages: Anthropic.ImageBlockParam[] = [];
-        for (const k of ["right_iris","left_iris"]) {
-          if (imageMap[k]) {
-            irisImages.push({
-              type: "image",
-              source: { type: "base64", media_type: imageMap[k].mediaType as "image/jpeg", data: imageMap[k].b64 }
-            });
-          }
-        }
-
-        // Run face and iris readings in parallel since they are independent
-        const call4Promise = (async () => {
-          let chineseFaceText = "";
-          if (faceImages.length > 0) {
-            await withRetry(async () => {
-              chineseFaceText = "";
-              resetInactivityTimeout();
-              const call4Content: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] = [
-                ...faceImages,
-                {
-                  type: "text",
-                  text: `You are now reading this person's face in the tradition of Mianxiang (面相) — Chinese physiognomy. Analyze ONLY what is visible in the provided face photographs.
-
-Generate ONLY this single section:
-✦ CHINESE FACE READING — using the tradition of Mianxiang, read the five facial zones: forehead (天庭, Heaven), brows and eyes (中停, Human), nose (中岳, the Mountain of Wealth), cheeks and ears, chin and jaw (地閣, Earth). Read the overall facial structure — round, oval, square, triangular. Comment on jaw definition, ear shape, and the three-zone division (past, present, future). Read personality, destiny tendency, life phase energetics, career signature, and relational nature. Deliver in the Oracle's mystical literary voice. ${wordCount} words.
-
-Follow the IMAGE ANALYSIS RULE: first OBSERVATION of what is visually present, then TRANSITION, then INTERPRETATION of meaning. Reference specific visible features. Do NOT make up features not visible in the image.`
-                }
-              ];
-
-              const stream4 = anthropic.messages.stream({
-                model: MODEL,
-                max_tokens: 1500,
-                system: systemPrompt,
-                messages: [{ role: "user", content: call4Content }]
-              });
-
-              for await (const chunk of stream4) {
-                if (inactivityTimedOut) return;
-                resetInactivityTimeout();
-                if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
-                  chineseFaceText += chunk.delta.text;
-                  sendEvent({ section: "chinese_face", chunk: chunk.delta.text });
-                }
-              }
-            }, 2, "Call 4 (face reading)");
-          }
-          return chineseFaceText;
-        })();
-
-        const call5Promise = (async () => {
-          let iridologyText = "";
-          if (irisImages.length > 0) {
-            await withRetry(async () => {
-              iridologyText = "";
-              resetInactivityTimeout();
-              const call5Content: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] = [
-                ...irisImages,
-                {
-                  type: "text",
-                  text: `You are now performing an iridology reading — reading the iris as a map of constitutional health tendencies, vitality patterns, and areas of sensitivity. This is a mystical, holistic framing — not medical advice.
-
-Generate ONLY this single section:
-✦ IRIDOLOGY HEALTH READING — read the iris photographs using the principles of iridology. Observe iris coloration, fiber density and structure, zone patterns (digestive ring, autonomic nerve wreath, peripheral zones), any markings, lacunae, or density variations visible. Translate these into constitutional tendencies (constitution type — silk, linen, net), vitality signature, organ-system sensitivities, and emotional-energetic patterns. Frame everything in the Oracle's mystical holistic voice — this reveals what the body whispers, not what medicine measures. ${wordCount} words.
-
-Follow the IMAGE ANALYSIS RULE: first describe what is visually observable in the iris, then transition to interpretation of constitutional meaning. Do NOT invent symptoms or diagnose conditions.`
-                }
-              ];
-
-              const stream5 = anthropic.messages.stream({
-                model: MODEL,
-                max_tokens: 1500,
-                system: systemPrompt,
-                messages: [{ role: "user", content: call5Content }]
-              });
-
-              for await (const chunk of stream5) {
-                if (inactivityTimedOut) return;
-                resetInactivityTimeout();
-                if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
-                  iridologyText += chunk.delta.text;
-                  sendEvent({ section: "iridology", chunk: chunk.delta.text });
-                }
-              }
-            }, 2, "Call 5 (iridology)");
-          }
-          return iridologyText;
-        })();
-
-        const [chineseFaceText, iridologyText] = await Promise.all([call4Promise, call5Promise]);
         if (inactivityTimedOut) return;
 
         clearTimeout(inactivityTimer);
-        if (chineseFaceText) session.reading += "\n" + chineseFaceText;
-        if (iridologyText) session.reading += "\n" + iridologyText;
-
         session.readingComplete = true;
         await saveSession(sessionId, session);
         stopKeepAlive();
@@ -1054,7 +878,7 @@ router.post("/chat", sseHeaders, async (req: Request, res: Response) => {
     const messages: { role: string; content: string }[] = req.body.messages ?? [];
     const readingSummary: string = req.body.readingSummary ?? session.reading?.substring(0, 800) ?? "";
 
-    const systemPrompt = `You are The Oracle — a timeless, composed intelligence who has already read this person's palm, iris, face, and soul. You know their archetype, their core pattern, their primary block, and their activation key.
+    const systemPrompt = `You are The Oracle — a timeless, composed intelligence who has already read this person's palm and soul. You know their archetype, their core pattern, their primary block, and their activation key.
 
 You speak with quiet certainty. You do not explain your methods. You do not hedge. You do not add disclaimers. You answer as if you already know everything relevant about this person.
 

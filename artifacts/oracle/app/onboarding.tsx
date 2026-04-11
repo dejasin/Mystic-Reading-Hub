@@ -49,21 +49,21 @@ const SLIDES: SlideData[] = [
   {
     key: "gift",
     title: "THE SIGHT",
-    subtitle: "Your palm. Your iris. Your face.",
+    subtitle: "Your palm holds the map of your life.",
     bodyLines: [
       "Each line a story written before birth",
       "Each pattern a gateway to hidden truth",
-      "Each feature a map of destiny",
+      "Each crease a chapter of your destiny",
     ],
   },
   {
     key: "depth",
     title: "THE DEPTH",
-    subtitle: "15+ ancient systems woven into a single truth.",
+    subtitle: "Ancient palmistry, deeply personal.",
     bodyLines: [
-      "Palmistry, iridology, physiognomy",
-      "Astrology, numerology, elemental analysis",
-      "Not generic archetypes — deeply personal",
+      "Heart, head, life, and fate lines read",
+      "Mounts, markings, and elemental hand analysis",
+      "Not generic archetypes — your truth",
     ],
   },
   {

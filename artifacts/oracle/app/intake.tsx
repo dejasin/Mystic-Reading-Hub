@@ -22,7 +22,6 @@ import { useReferral } from "@/context/ReferralContext";
 
 const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"];
 const HAND_OPTIONS = ["Right", "Left", "Ambidextrous"];
-const EYE_OPTIONS = ["Brown", "Blue", "Green", "Hazel", "Gray", "Dark Brown", "Other"];
 
 function SelectOption({
   options,
@@ -182,7 +181,6 @@ export default function IntakeScreen() {
   const { setUserData } = useOracle();
   const { pendingReferralCode, redeemReferralCode, clearPendingReferralCode } = useReferral();
 
-  const [name, setName] = useState("");
   const [referralCode, setReferralCode] = useState(pendingReferralCode ?? "");
   const [dob, setDob] = useState("");
   const [birthTime, setBirthTime] = useState("");
@@ -191,16 +189,11 @@ export default function IntakeScreen() {
   const [birthCountry, setBirthCountry] = useState("");
   const [gender, setGender] = useState("");
   const [dominantHand, setDominantHand] = useState("");
-  const [eyeColor, setEyeColor] = useState("");
   const [q1, setQ1] = useState("");
   const [q2, setQ2] = useState("");
   const [q3, setQ3] = useState("");
 
   const handleSubmit = async () => {
-    if (!name.trim()) {
-      Alert.alert("The Oracle requires your name to proceed.");
-      return;
-    }
     if (!dob.trim()) {
       Alert.alert("The Oracle requires your date of birth to proceed.");
       return;
@@ -220,7 +213,7 @@ export default function IntakeScreen() {
     }
 
     const userData: UserData = {
-      name: name.trim(),
+      name: "",
       dob,
       birthTime: birthTimeUnknown ? "" : birthTime,
       birthTimeUnknown,
@@ -228,7 +221,7 @@ export default function IntakeScreen() {
       birthCountry,
       gender,
       dominantHand,
-      eyeColor,
+      eyeColor: "",
       q1,
       q2,
       q3,
@@ -251,7 +244,7 @@ export default function IntakeScreen() {
         <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back" accessibilityRole="button">
           <Feather name="arrow-left" size={20} color={Colors.gold} />
         </Pressable>
-        <Text style={styles.headerTitle}>Tell The Oracle Who You Are</Text>
+        <Text style={styles.headerTitle}>Prepare for Your Palm Reading</Text>
       </View>
 
       <ScrollView
@@ -284,10 +277,6 @@ export default function IntakeScreen() {
         </Field>
 
         <Text style={styles.divider}>─── ✦ ───</Text>
-
-        <Field label="Full Name">
-          <StyledInput value={name} onChangeText={setName} placeholder="Your full name" />
-        </Field>
 
         <Field label="Date of Birth">
           <StyledInput
@@ -336,10 +325,6 @@ export default function IntakeScreen() {
 
         <Field label="Dominant Hand" optional>
           <SelectOption options={HAND_OPTIONS} value={dominantHand} onSelect={setDominantHand} />
-        </Field>
-
-        <Field label="Eye Color" optional>
-          <SelectOption options={EYE_OPTIONS} value={eyeColor} onSelect={setEyeColor} />
         </Field>
 
         <Text style={styles.divider}>─── ✦ ───</Text>

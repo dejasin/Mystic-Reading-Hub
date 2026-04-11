@@ -40,9 +40,9 @@ const ONBOARDING_COMPLETE_KEY = "@oracle/onboarding_complete";
 const { width } = Dimensions.get("window");
 
 const TRUST_LINES = [
-  "Real vision analysis — not just archetypes",
-  "15+ ancient systems synthesized into one reading",
-  "Deep insights across love, career, health & purpose",
+  "Real palm analysis — not generic archetypes",
+  "Ancient palmistry synthesized with modern insight",
+  "Deep readings across love, career, health & purpose",
 ];
 
 function DailyOracleCard({ profile }: { profile: { id: string; name: string; dob: string } }) {
@@ -307,7 +307,7 @@ export default function LandingScreen() {
           <Text style={styles.appName}>THE ORACLE</Text>
           {!hasProfile && (
             <Text style={styles.tagline}>
-              Your palm. Your iris. Your face.{"\n"}Your truth.
+              Your palm holds the truth.{"\n"}Let The Oracle read it.
             </Text>
           )}
         </Animated.View>
