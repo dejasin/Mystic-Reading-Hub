@@ -279,7 +279,7 @@ export default function SynastryScreen() {
         metadata: { profileNames: [profile1.name, profile2.name] },
       });
     }
-  }, [phase, reading]);
+  }, [phase, reading, profile1, profile2, addJournalEntry]);
 
   const handleSendChat = async (text: string) => {
     const trimmed = text.trim();

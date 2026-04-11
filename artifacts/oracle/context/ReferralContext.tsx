@@ -58,9 +58,14 @@ export function ReferralProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      const deviceId = await getOrCreateDeviceId();
-      const pending = await AsyncStorage.getItem(REFERRAL_CODE_PENDING_KEY);
-      setState(prev => ({ ...prev, deviceId, pendingReferralCode: pending, loading: false }));
+      try {
+        const deviceId = await getOrCreateDeviceId();
+        const pending = await AsyncStorage.getItem(REFERRAL_CODE_PENDING_KEY);
+        setState(prev => ({ ...prev, deviceId, pendingReferralCode: pending, loading: false }));
+      } catch (e) {
+        console.error("Failed to initialize referral context:", e);
+        setState(prev => ({ ...prev, loading: false }));
+      }
     })();
   }, []);
 

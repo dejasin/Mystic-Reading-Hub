@@ -1051,11 +1051,15 @@ export default function ReadingScreen() {
 
       if (Platform.OS !== "web") {
         (async () => {
-          const alreadyPrompted = await hasBeenPromptedForNotifications();
-          if (!alreadyPrompted) {
-            setTimeout(() => {
-              requestAndRegisterNotifications();
-            }, 3000);
+          try {
+            const alreadyPrompted = await hasBeenPromptedForNotifications();
+            if (!alreadyPrompted) {
+              setTimeout(() => {
+                requestAndRegisterNotifications();
+              }, 3000);
+            }
+          } catch (e) {
+            console.warn("Failed to check notification prompt status:", e);
           }
         })();
       }
