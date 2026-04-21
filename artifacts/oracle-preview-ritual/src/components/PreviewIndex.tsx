@@ -27,6 +27,14 @@ const previews = [
   },
 ] as const;
 
+const screenshots = [
+  { slug: 'shot-1', number: '01', title: 'The Ritual', blurb: 'Read your palm in seconds.' },
+  { slug: 'shot-2', number: '02', title: 'Your Reading', blurb: 'Personally written, five chapters deep.' },
+  { slug: 'shot-3', number: '03', title: 'Go Deeper', blurb: 'Chat with The Oracle anytime.' },
+  { slug: 'shot-4', number: '04', title: 'Daily & Journal', blurb: 'Every reading kept and remembered.' },
+  { slug: 'shot-5', number: '05', title: 'People & Synastry', blurb: 'Two souls, one reading.' },
+] as const;
+
 export function PreviewIndex() {
   useEffect(() => {
     document.body.style.overflow = 'auto';
@@ -166,6 +174,95 @@ export function PreviewIndex() {
                 }}
               >
                 Open →
+              </div>
+            </a>
+          ))}
+        </div>
+
+        <div
+          className="font-display"
+          style={{
+            marginTop: '4rem',
+            fontSize: 'clamp(11px, 1.2vw, 14px)',
+            letterSpacing: '0.55em',
+            color: '#c9a84c',
+            opacity: 0.7,
+            textTransform: 'uppercase',
+            marginBottom: '1.2rem',
+          }}
+        >
+          App Store Screenshots — 6.5" iPhone
+        </div>
+        <p
+          className="font-serif italic"
+          style={{
+            fontSize: 'clamp(15px, 1.5vw, 19px)',
+            lineHeight: 1.6,
+            color: '#e8cc7a',
+            opacity: 0.85,
+            maxWidth: '720px',
+          }}
+        >
+          Five marketing compositions rendered at exact 1242 × 2688. Open one and
+          append <code style={{ color: '#e8cc7a' }}>?capture=1</code> for the
+          unscaled capture frame.
+        </p>
+        <div
+          style={{
+            marginTop: '1.6rem',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '1rem',
+          }}
+        >
+          {screenshots.map((s) => (
+            <a
+              key={s.slug}
+              href={`#${s.slug}`}
+              style={{
+                display: 'block',
+                padding: '1.2rem 1.2rem',
+                borderRadius: '6px',
+                background:
+                  'linear-gradient(160deg, rgba(20,18,42,0.7) 0%, rgba(11,11,30,0.9) 100%)',
+                border: '1px solid rgba(201,168,76,0.3)',
+                textDecoration: 'none',
+                color: 'inherit',
+              }}
+            >
+              <div
+                className="font-display"
+                style={{
+                  fontSize: '12px',
+                  letterSpacing: '0.45em',
+                  color: '#c9a84c',
+                  opacity: 0.75,
+                }}
+              >
+                {s.number}
+              </div>
+              <div
+                className="font-display"
+                style={{
+                  marginTop: '0.4rem',
+                  fontSize: '20px',
+                  letterSpacing: '0.06em',
+                  color: '#f0e6cc',
+                }}
+              >
+                {s.title}
+              </div>
+              <div
+                className="font-serif italic"
+                style={{
+                  marginTop: '0.4rem',
+                  fontSize: '14px',
+                  lineHeight: 1.5,
+                  color: '#c9a84c',
+                  opacity: 0.85,
+                }}
+              >
+                {s.blurb}
               </div>
             </a>
           ))}
