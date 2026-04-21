@@ -1,27 +1,33 @@
 @import "tailwindcss";
 
-/* REPLACE THESE -- define your own palette and fonts for each video */
 :root {
-  --color-primary: #000000;
-  --color-secondary: #6B7280;
-  --color-accent: #3B82F6;
+  --color-bg: #04040f;
+  --color-surface: #0b0b1e;
+  --color-surface-2: #14122a;
+  --color-gold: #c9a84c;
+  --color-gold-light: #e8cc7a;
+  --color-gold-dim: #6f5a26;
+  --color-cream: #f0e6cc;
+  --color-muted: #6b6b8a;
 
-  --color-bg-light: #FFFFFF;
-  --color-bg-dark: #0F172A;
-  --color-bg-muted: #F8FAFC;
+  --color-bg-light: #04040f;
+  --color-bg-dark: #04040f;
+  --color-bg-muted: #0b0b1e;
+  --color-text-primary: #f0e6cc;
+  --color-text-secondary: #c9a84c;
+  --color-text-muted: #6b6b8a;
+  --color-text-inverse: #04040f;
+  --color-primary: #c9a84c;
+  --color-secondary: #e8cc7a;
+  --color-accent: #c9a84c;
+  --color-success: #c9a84c;
+  --color-warning: #e8cc7a;
+  --color-error: #d96a4a;
 
-  --color-text-primary: #111827;
-  --color-text-secondary: #6B7280;
-  --color-text-muted: #9CA3AF;
-  --color-text-inverse: #FFFFFF;
-
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-error: #EF4444;
-
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Cinzel Decorative', serif;
+  --font-serif: 'Cormorant Garamond', serif;
+  --font-body: 'EB Garamond', serif;
+  --font-mono: 'EB Garamond', serif;
 }
 
 @theme inline {
@@ -39,12 +45,31 @@
   --color-warning: var(--color-warning);
   --color-error: var(--color-error);
   --font-display: var(--font-display);
+  --font-serif: var(--font-serif);
   --font-body: var(--font-body);
   --font-mono: var(--font-mono);
+}
+
+html, body, #root {
+  background-color: var(--color-bg);
+  color: var(--color-cream);
 }
 
 body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  overflow: hidden;
 }
+
+.font-display { font-family: var(--font-display); letter-spacing: 0.08em; }
+.font-serif { font-family: var(--font-serif); }
+.font-body { font-family: var(--font-body); }
+
+.text-gold { color: var(--color-gold); }
+.text-gold-light { color: var(--color-gold-light); }
+.text-cream { color: var(--color-cream); }
+.text-muted { color: var(--color-muted); }
+.bg-noir { background-color: var(--color-bg); }
+.bg-surface { background-color: var(--color-surface); }
