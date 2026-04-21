@@ -1,0 +1,59 @@
+Build me a complete, production-ready app support and marketing website for my iOS app called The Oracle. This is a single HTML file (no frameworks, no build steps) that can be deployed instantly on Replit as a static site.
+App description:
+The Oracle is an AI-powered mystical reading app that analyzes photos of your palm to generate deeply personalized spiritual insights, personality readings, and guidance. It blends ancient palmistry traditions with modern AI to reveal what your hands say about your path, personality, and potential.
+
+The site must include these pages/sections (single page with smooth scroll anchoring):
+
+Hero section — App name, tagline, a brief 2-sentence description, and a prominent "Download on the App Store" button (use the official Apple badge SVG, linked to # as a placeholder — I will swap in the real App Store URL later)
+Features section — Highlight 3 core features: Palm Reading, Personalized Insights, Ancient Wisdom Meets AI — each with a relevant mystical icon (use Unicode symbols or simple SVG — no external icon libraries)
+Support section (must have id="support" for the Support URL anchor) — Includes:
+
+A friendly intro paragraph
+An HTML mailto contact form UI (visually looks like a form with Name, Email, Subject, Message fields, and a Submit button — but on submit it opens the user's mail client using a mailto link constructed from the field values using JavaScript)
+Support email address displayed visibly: support@theoracleapp.com (placeholder — I'll update later)
+An FAQ section with these 5 questions and answers:
+
+What photos does The Oracle analyze? — The Oracle analyzes photos of your palm, either taken in-app or uploaded from your camera roll
+Is my photo data stored or shared? — Palm photos are processed by AI and not stored on our servers after your reading is complete
+How do I cancel my subscription? — Open Settings > Apple ID > Subscriptions on your iPhone and cancel from there
+The app crashed or isn't working — what do I do? — Force close the app, restart your device, and contact us at the support email if the issue persists
+Is The Oracle available on Android? — Currently iOS only; Android is on our roadmap
+
+
+
+
+Privacy Policy section (must have id="privacy") — A complete, plain-English privacy policy covering:
+
+What data is collected (palm photos, device info, usage data)
+That palm photos are sent to a third-party AI provider (Anthropic) for processing and are not permanently stored after the reading is complete
+That the app uses Apple's in-app purchase system for subscriptions
+That we do not sell personal data
+User rights (access, deletion requests via support email)
+Contact info for privacy questions
+An "Effective Date" of today
+
+
+Footer — Copyright © 2026 The Oracle, links to #support and #privacy, support email
+
+
+Design requirements:
+
+Deep mystical aesthetic: dark background (near black #0a0a0f), rich purple and gold accent colors (#7c3aed and #f59e0b), subtle starfield or cosmic texture using CSS (pure CSS, no images or external assets)
+Elegant serif or mixed serif/sans typography using only Google Fonts (load via <link> tag): use Cinzel for headings and Raleway for body text
+Fully responsive — must look great on mobile and desktop
+Smooth scroll behavior
+Subtle hover animations on buttons and cards
+The overall feel should be: premium, mystical, trustworthy — like a luxury tarot or astrology brand
+
+
+Technical requirements:
+
+Single index.html file only
+No frameworks, no npm, no build steps
+No external dependencies except the two Google Fonts
+The mailto form must actually work: on submit, open mailto:support@theoracleapp.com?subject=...&body=... with the field values injected via JavaScript
+Must pass Apple's requirement of having a reachable Support URL — so the #support anchor must exist and load cleanly
+Include a <meta name="description"> tag and proper <title> tag for SEO
+
+
+Deploy this as a Replit static site so it gets a live .replit.app URL immediately. The final file should be complete and require zero editing to go live — I will only need to swap in the real App Store link once the app is approved.
