@@ -1,6 +1,6 @@
 kind = "video"
 previewPath = "/oracle-preview-ritual/"
-title = "App Store Preview 1 — The Ritual"
+title = "App Store Previews — The Oracle (6.5\" iPhone)"
 version = "1.0.0"
 id = "artifacts/oracle-preview-ritual"
 router = "path"
