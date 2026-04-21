@@ -18,9 +18,8 @@ localPort = 21258
 run = "pnpm --filter @workspace/oracle-website run dev"
 
 [services.production]
-publicDir = "artifacts/oracle-website/public"
+publicDir = "artifacts/oracle-website"
 serve = "static"
 
 [services.env]
 PORT = "21258"
-BASE_PATH = "/oracle-website/"

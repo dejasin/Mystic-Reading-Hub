@@ -1,16 +1,745 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>The Oracle — Marketing & Compliance Website</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Oracle — Palm Reading & Mystical Insights | iOS App</title>
+  <meta name="description" content="The Oracle is an iOS app that fuses ancient palmistry with modern AI to deliver personalized readings, daily insights, and timeless wisdom — right from your phone." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after { box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg-soft: #11111c;
+      --panel: rgba(20, 18, 36, 0.6);
+      --border: rgba(124, 58, 237, 0.25);
+      --text: #ece9f7;
+      --muted: #a39fc2;
+      --purple: #7c3aed;
+      --purple-soft: #a78bfa;
+      --gold: #f59e0b;
+      --gold-soft: #fcd34d;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: 'Raleway', system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Cosmic starfield background — pure CSS */
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -2;
+    }
+
+    body::before {
+      background:
+        radial-gradient(ellipse at 20% 10%, rgba(124, 58, 237, 0.25), transparent 55%),
+        radial-gradient(ellipse at 85% 30%, rgba(245, 158, 11, 0.12), transparent 55%),
+        radial-gradient(ellipse at 50% 95%, rgba(124, 58, 237, 0.18), transparent 60%),
+        linear-gradient(180deg, #05050b 0%, #0a0a0f 50%, #07060e 100%);
+    }
+
+    body::after {
+      background-image:
+        radial-gradient(1px 1px at 12% 18%, #fff 99%, transparent),
+        radial-gradient(1px 1px at 27% 62%, #fff 99%, transparent),
+        radial-gradient(1px 1px at 41% 8%, #fcd34d 99%, transparent),
+        radial-gradient(1px 1px at 53% 47%, #fff 99%, transparent),
+        radial-gradient(1px 1px at 67% 79%, #a78bfa 99%, transparent),
+        radial-gradient(1.5px 1.5px at 73% 23%, #fff 99%, transparent),
+        radial-gradient(1px 1px at 81% 55%, #fff 99%, transparent),
+        radial-gradient(1px 1px at 9% 88%, #fff 99%, transparent),
+        radial-gradient(1.5px 1.5px at 35% 33%, #fcd34d 99%, transparent),
+        radial-gradient(1px 1px at 91% 12%, #fff 99%, transparent),
+        radial-gradient(1px 1px at 47% 91%, #fff 99%, transparent),
+        radial-gradient(1px 1px at 60% 15%, #a78bfa 99%, transparent);
+      background-size: 100% 100%;
+      opacity: 0.55;
+      animation: twinkle 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes twinkle {
+      from { opacity: 0.35; }
+      to   { opacity: 0.7;  }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Header / Nav */
+    header.site-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+      background: rgba(10, 10, 15, 0.72);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-family: 'Cinzel', serif;
+      font-weight: 600;
+      font-size: 1.15rem;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+      filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.45));
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover { color: var(--gold-soft); }
+
+    /* Hero */
+    .hero {
+      padding: 6rem 0 5rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      display: inline-block;
+      padding: 0.4rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold-soft);
+      background: rgba(124, 58, 237, 0.08);
+      margin-bottom: 1.5rem;
+    }
+
+    h1.hero-title {
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      line-height: 1.1;
+      margin: 0 0 1rem;
+      background: linear-gradient(135deg, #fff 0%, #c4b5fd 50%, #fcd34d 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: 0.04em;
+    }
+
+    .hero-tagline {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+      color: var(--gold);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin: 0 0 1.5rem;
+    }
+
+    .hero-desc {
+      max-width: 640px;
+      margin: 0 auto 2.5rem;
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+
+    .app-store-badge {
+      display: inline-block;
+      transition: transform 0.25s ease, filter 0.25s ease;
+      filter: drop-shadow(0 8px 24px rgba(124, 58, 237, 0.45));
+    }
+
+    .app-store-badge:hover {
+      transform: translateY(-3px) scale(1.03);
+      filter: drop-shadow(0 12px 28px rgba(245, 158, 11, 0.5));
+    }
+
+    .hero-orb {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 2rem;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 35%, #fcd34d, transparent 50%),
+        radial-gradient(circle at 65% 70%, #7c3aed, transparent 60%),
+        radial-gradient(circle at 50% 50%, #1a1330 0%, #0a0a0f 100%);
+      box-shadow:
+        0 0 60px rgba(124, 58, 237, 0.5),
+        0 0 120px rgba(245, 158, 11, 0.2),
+        inset 0 0 30px rgba(0, 0, 0, 0.6);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    /* Section header */
+    .section { padding: 5rem 0; }
+
+    .section-head { text-align: center; margin-bottom: 3rem; }
+
+    .section-eyebrow {
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-size: 0.8rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      margin: 0 0 0.75rem;
+      letter-spacing: 0.04em;
+    }
+
+    .section-sub {
+      color: var(--muted);
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    /* Features */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      padding: 2rem;
+      border-radius: 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(8px);
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      text-align: center;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(245, 158, 11, 0.55);
+      box-shadow: 0 18px 40px rgba(124, 58, 237, 0.25);
+    }
+
+    .feature-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(245, 158, 11, 0.15));
+      border: 1px solid var(--border);
+      color: var(--gold-soft);
+    }
+
+    .feature-card h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.25rem;
+      margin: 0 0 0.5rem;
+      color: var(--text);
+      letter-spacing: 0.05em;
+    }
+
+    .feature-card p { color: var(--muted); margin: 0; font-size: 0.98rem; }
+
+    /* Support / Privacy panels */
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(8px);
+      border-radius: 18px;
+      padding: 2.5rem;
+    }
+
+    .panel + .panel { margin-top: 2rem; }
+
+    .support-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 1.5rem;
+    }
+
+    @media (max-width: 760px) {
+      .support-grid { grid-template-columns: 1fr; }
+      .panel { padding: 1.75rem; }
+      .hero { padding: 4rem 0 3rem; }
+    }
+
+    /* Form */
+    form.contact {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: rgba(10, 10, 20, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+    }
+
+    .field textarea { min-height: 130px; resize: vertical; }
+
+    .btn {
+      display: inline-block;
+      padding: 0.85rem 1.6rem;
+      border: none;
+      border-radius: 999px;
+      font-family: 'Cinzel', serif;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: #0a0a0f;
+      background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.08);
+      box-shadow: 0 10px 28px rgba(245, 158, 11, 0.5);
+    }
+
+    .support-info h3,
+    .faq h3 {
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.06em;
+      margin-top: 0;
+    }
+
+    .support-email {
+      display: inline-block;
+      margin-top: 0.5rem;
+      color: var(--gold-soft);
+      font-weight: 600;
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(245, 158, 11, 0.5);
+      transition: color 0.2s ease;
+    }
+
+    .support-email:hover { color: #fff; }
+
+    .faq { margin-top: 2.5rem; }
+
+    .faq-item {
+      border-top: 1px solid var(--border);
+      padding: 1.25rem 0;
+    }
+
+    .faq-item:last-child { border-bottom: 1px solid var(--border); }
+
+    .faq-q {
+      font-family: 'Cinzel', serif;
+      color: var(--gold-soft);
+      font-size: 1.05rem;
+      margin: 0 0 0.5rem;
+      letter-spacing: 0.04em;
+    }
+
+    .faq-a { color: var(--muted); margin: 0; }
+
+    /* Privacy */
+    .privacy-content h3 {
+      font-family: 'Cinzel', serif;
+      color: var(--gold-soft);
+      margin: 1.75rem 0 0.5rem;
+      letter-spacing: 0.05em;
+      font-size: 1.1rem;
+    }
+
+    .privacy-content h3:first-child { margin-top: 0; }
+
+    .privacy-content p,
+    .privacy-content li { color: var(--muted); }
+
+    .privacy-content ul { padding-left: 1.25rem; }
+
+    .effective-date {
+      display: inline-block;
+      margin-top: 1.5rem;
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(124, 58, 237, 0.18);
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--gold-soft);
+      letter-spacing: 0.06em;
+    }
+
+    /* Footer */
+    footer.site-footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 0;
+      margin-top: 3rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover { color: var(--gold-soft); }
+
+    /* Form status */
+    .form-status {
+      min-height: 1.25rem;
+      font-size: 0.9rem;
+      color: var(--gold-soft);
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a href="#top" class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 3 L12 21 M3 12 L21 12 M5.6 5.6 L18.4 18.4 M18.4 5.6 L5.6 18.4" opacity="0.55" />
+            <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" />
+          </svg>
+        </span>
+        The Oracle
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#support">Support</a>
+        <a href="#privacy">Privacy</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-orb" aria-hidden="true"></div>
+        <span class="hero-eyebrow">Now on iOS</span>
+        <h1 class="hero-title">The Oracle</h1>
+        <p class="hero-tagline">Ancient Wisdom · Modern Intelligence</p>
+        <p class="hero-desc">
+          Unlock the secrets written in the lines of your hands. The Oracle pairs centuries-old palmistry tradition with state-of-the-art AI to deliver deeply personal readings whenever the moment calls.
+        </p>
+        <a class="app-store-badge" href="#" aria-label="Download on the App Store">
+          <!-- Official Apple "Download on the App Store" badge (SVG) -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 120 40" role="img" aria-label="Download on the App Store">
+            <rect x="0" y="0" width="120" height="40" rx="6.5" ry="6.5" fill="#000" />
+            <rect x="0.5" y="0.5" width="119" height="39" rx="6" ry="6" fill="none" stroke="#A6A6A6" stroke-width="0.5" />
+            <g fill="#fff">
+              <path d="M24.77 20.27c-.02-2.36 1.93-3.5 2.02-3.56-1.1-1.61-2.82-1.83-3.43-1.86-1.46-.15-2.85.86-3.59.86-.74 0-1.89-.84-3.11-.81-1.6.02-3.07.93-3.89 2.36-1.66 2.88-.42 7.13 1.2 9.46.79 1.14 1.74 2.42 2.96 2.38 1.19-.05 1.64-.77 3.08-.77 1.43 0 1.85.77 3.1.74 1.28-.02 2.09-1.16 2.87-2.31.91-1.32 1.28-2.6 1.3-2.66-.03-.01-2.5-.96-2.51-3.83zm-2.36-7.04c.66-.8 1.1-1.92.98-3.03-.95.04-2.1.63-2.78 1.42-.61.7-1.14 1.84-1 2.92 1.06.08 2.14-.54 2.8-1.31z" />
+              <text x="36" y="17" font-family="Helvetica, Arial, sans-serif" font-size="6" fill="#fff">Download on the</text>
+              <text x="36" y="29" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#fff">App Store</text>
+            </g>
+          </svg>
+        </a>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-head">
+          <div class="section-eyebrow">Features</div>
+          <h2 class="section-title">Guidance Without Limits</h2>
+          <p class="section-sub">Three pillars guide every reading the Oracle bestows.</p>
+        </div>
+        <div class="features-grid">
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 22V11a2 2 0 1 1 4 0v-3a2 2 0 1 1 4 0v4a2 2 0 1 1 4 0v6a6 6 0 0 1-6 6H10a4 4 0 0 1-4-4z" />
+                <path d="M12 11V4a2 2 0 1 0-4 0v7" />
+              </svg>
+            </div>
+            <h3>Palm Reading</h3>
+            <p>Snap a photo of your palm and receive a thoughtful, line-by-line interpretation drawn from classical palmistry.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2 L14.5 9 L22 9.5 L16 14 L18 21.5 L12 17.5 L6 21.5 L8 14 L2 9.5 L9.5 9 Z" />
+              </svg>
+            </div>
+            <h3>Personalized Insights</h3>
+            <p>Every reading adapts to your unique markings, history, and questions, surfacing patterns meant for you alone.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 3 a9 9 0 0 0 0 18 a4.5 9 0 0 0 0 -18" />
+                <path d="M3 12 H21" />
+              </svg>
+            </div>
+            <h3>Ancient Wisdom Meets AI</h3>
+            <p>Time-honored palmistry traditions are interpreted through modern AI for guidance that's both grounded and inspired.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Support -->
+    <section class="section" id="support">
+      <div class="container">
+        <div class="section-head">
+          <div class="section-eyebrow">Support</div>
+          <h2 class="section-title">We're Here to Help</h2>
+          <p class="section-sub">Have a question, a concern, or feedback to share? Reach out — a real human will reply.</p>
+        </div>
+
+        <div class="panel">
+          <div class="support-grid">
+            <div class="support-info">
+              <h3>Send us a message</h3>
+              <p>Fill in the form below and your default mail app will open with everything ready to send.</p>
+              <form class="contact" id="support-form" novalidate>
+                <div class="field">
+                  <label for="name">Name</label>
+                  <input type="text" id="name" name="name" required autocomplete="name" />
+                </div>
+                <div class="field">
+                  <label for="email">Email</label>
+                  <input type="email" id="email" name="email" required autocomplete="email" />
+                </div>
+                <div class="field">
+                  <label for="subject">Subject</label>
+                  <input type="text" id="subject" name="subject" required />
+                </div>
+                <div class="field">
+                  <label for="message">Message</label>
+                  <textarea id="message" name="message" required></textarea>
+                </div>
+                <button type="submit" class="btn">Send Message</button>
+                <div class="form-status" id="form-status" role="status" aria-live="polite"></div>
+              </form>
+            </div>
+
+            <div class="support-info">
+              <h3>Or email us directly</h3>
+              <p>Prefer your own email client? Write to us anytime at:</p>
+              <a class="support-email" href="mailto:support@theoracleapp.com">support@theoracleapp.com</a>
+              <p style="margin-top:1.5rem;">We typically respond within 1–2 business days. The stars take their time, and so do we.</p>
+            </div>
+          </div>
+
+          <div class="faq">
+            <h3 style="font-size:1.4rem;">Frequently Asked Questions</h3>
+
+            <div class="faq-item">
+              <p class="faq-q">How accurate are the readings?</p>
+              <p class="faq-a">Our readings combine traditional palmistry knowledge with advanced AI analysis. While we strive for thoughtful, meaningful interpretations, readings are intended for entertainment and self-reflection purposes.</p>
+            </div>
+
+            <div class="faq-item">
+              <p class="faq-q">Is my palm photo stored?</p>
+              <p class="faq-a">No. Photos are processed for your reading and are not permanently stored on our servers.</p>
+            </div>
+
+            <div class="faq-item">
+              <p class="faq-q">How do I cancel my subscription?</p>
+              <p class="faq-a">Subscriptions are managed through your Apple ID. Open Settings on your iPhone, tap your name, then Subscriptions to manage or cancel.</p>
+            </div>
+
+            <div class="faq-item">
+              <p class="faq-q">What if I'm not satisfied with my reading?</p>
+              <p class="faq-a">Email us at support@theoracleapp.com and we'll do our best to make it right.</p>
+            </div>
+
+            <div class="faq-item">
+              <p class="faq-q">Is The Oracle available on Android?</p>
+              <p class="faq-a">Currently, The Oracle is available exclusively on iOS. Stay tuned for future updates.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Privacy -->
+    <section class="section" id="privacy">
+      <div class="container">
+        <div class="section-head">
+          <div class="section-eyebrow">Privacy Policy</div>
+          <h2 class="section-title">Your Trust, Honored</h2>
+          <p class="section-sub">Plain language. No tricks. Here's exactly how The Oracle handles your information.</p>
+        </div>
+
+        <div class="panel privacy-content">
+          <h3>Information We Collect</h3>
+          <p>To provide your readings and improve the experience, The Oracle collects:</p>
+          <ul>
+            <li><strong>Palm photos</strong> you choose to upload for a reading.</li>
+            <li><strong>Device information</strong> such as device model, operating system version, and app version.</li>
+            <li><strong>Usage data</strong> including which features you use and how often, used solely to improve the app.</li>
+          </ul>
+
+          <h3>How Your Palm Photos Are Used</h3>
+          <p>Palm photos are securely transmitted to <strong>Anthropic</strong>, our AI processing partner, where they are analyzed to generate your personalized reading. Photos are <strong>not permanently stored</strong> after the reading is generated. Once your reading is complete, the image is discarded from our processing pipeline.</p>
+
+          <h3>Subscriptions & Payments</h3>
+          <p>The Oracle uses <strong>Apple in-app purchases</strong> for all subscription billing. We never see or store your payment details — Apple handles all transactions in accordance with its own privacy practices.</p>
+
+          <h3>We Do Not Sell Your Data</h3>
+          <p>We do not sell, rent, or trade your personal information to third parties. Period.</p>
+
+          <h3>Your Rights</h3>
+          <p>You may request access to, or deletion of, any personal information we hold by emailing <a class="support-email" href="mailto:support@theoracleapp.com">support@theoracleapp.com</a>. We will respond within a reasonable timeframe.</p>
+
+          <h3>Privacy Contact</h3>
+          <p>For any privacy-related questions or concerns, please contact us at <a class="support-email" href="mailto:support@theoracleapp.com">support@theoracleapp.com</a>.</p>
+
+          <span class="effective-date" id="effective-date">Effective Date: April 21, 2026</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-links">
+        <a href="#features">Features</a>
+        <a href="#support">Support</a>
+        <a href="#privacy">Privacy</a>
+        <a href="mailto:support@theoracleapp.com">Contact</a>
+      </div>
+      <div>© 2026 The Oracle. All rights reserved. Crafted with starlight and code.</div>
+    </div>
+  </footer>
+
+  <script>
+    // Smooth-scroll fallback for older browsers (CSS handles modern ones).
+    document.querySelectorAll('a[href^="#"]').forEach((link) => {
+      link.addEventListener('click', (e) => {
+        const id = link.getAttribute('href');
+        if (!id || id === '#') return;
+        const target = document.querySelector(id);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          history.replaceState(null, '', id);
+        }
+      });
+    });
+
+    // Contact form -> mailto:
+    const form = document.getElementById('support-form');
+    const status = document.getElementById('form-status');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      const name = (data.get('name') || '').toString().trim();
+      const email = (data.get('email') || '').toString().trim();
+      const subject = (data.get('subject') || '').toString().trim();
+      const message = (data.get('message') || '').toString().trim();
+
+      if (!name || !email || !subject || !message) {
+        status.textContent = 'Please fill in all fields before sending.';
+        return;
+      }
+
+      const mailSubject = encodeURIComponent(`[Oracle Support] ${subject}`);
+      const bodyLines = [
+        `Name: ${name}`,
+        `Email: ${email}`,
+        '',
+        message,
+      ];
+      const mailBody = encodeURIComponent(bodyLines.join('\n'));
+      const href = `mailto:support@theoracleapp.com?subject=${mailSubject}&body=${mailBody}`;
+      status.textContent = 'Opening your mail app...';
+      window.location.href = href;
+    });
+  </script>
+</body>
 </html>
