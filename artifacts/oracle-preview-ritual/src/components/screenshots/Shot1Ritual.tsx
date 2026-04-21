@@ -1,5 +1,12 @@
 import { ScreenshotShell } from './ScreenshotShell';
 
+interface ReticleCorner {
+  top?: number;
+  right?: number;
+  bottom?: number;
+  left?: number;
+}
+
 export function Shot1Ritual() {
   const palmUrl = `${import.meta.env.BASE_URL}images/palm.png`;
   return (
@@ -103,26 +110,28 @@ function MockRitualScreen({ palmUrl }: { palmUrl: string }) {
           }}
         />
         {/* reticle corners */}
-        {[
-          { top: 28, left: 28, br: { tl: 18 } },
-          { top: 28, right: 28, br: { tr: 18 } },
-          { bottom: 28, left: 28, br: { bl: 18 } },
-          { bottom: 28, right: 28, br: { br: 18 } },
-        ].map((c, i) => (
+        {(
+          [
+            { top: 28, left: 28 },
+            { top: 28, right: 28 },
+            { bottom: 28, left: 28 },
+            { bottom: 28, right: 28 },
+          ] satisfies ReticleCorner[]
+        ).map((c, i) => (
           <div
             key={i}
             style={{
               position: 'absolute',
-              top: (c as any).top,
-              left: (c as any).left,
-              right: (c as any).right,
-              bottom: (c as any).bottom,
+              top: c.top,
+              left: c.left,
+              right: c.right,
+              bottom: c.bottom,
               width: '46px',
               height: '46px',
-              borderTop: (c as any).top != null ? '2.5px solid #e8cc7a' : undefined,
-              borderBottom: (c as any).bottom != null ? '2.5px solid #e8cc7a' : undefined,
-              borderLeft: (c as any).left != null ? '2.5px solid #e8cc7a' : undefined,
-              borderRight: (c as any).right != null ? '2.5px solid #e8cc7a' : undefined,
+              borderTop: c.top != null ? '2.5px solid #e8cc7a' : undefined,
+              borderBottom: c.bottom != null ? '2.5px solid #e8cc7a' : undefined,
+              borderLeft: c.left != null ? '2.5px solid #e8cc7a' : undefined,
+              borderRight: c.right != null ? '2.5px solid #e8cc7a' : undefined,
             }}
           />
         ))}
