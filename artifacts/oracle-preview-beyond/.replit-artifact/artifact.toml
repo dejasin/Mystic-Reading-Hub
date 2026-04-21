@@ -1,0 +1,31 @@
+kind = "video"
+previewPath = "/oracle-preview-beyond/"
+title = "App Store Preview 3 — Beyond the Reading"
+version = "1.0.0"
+id = "artifacts/oracle-preview-beyond"
+router = "path"
+
+[[integratedSkills]]
+name = "video-js"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/oracle-preview-beyond/" ]
+localPort = 23056
+
+[services.development]
+run = "pnpm --filter @workspace/oracle-preview-beyond run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/oracle-preview-beyond", "run", "build" ]
+publicDir = "artifacts/oracle-preview-beyond/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23056"
+BASE_PATH = "/oracle-preview-beyond/"

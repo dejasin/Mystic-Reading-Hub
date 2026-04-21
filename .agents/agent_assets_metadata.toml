@@ -1,0 +1,26 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "fDJNMr6dpuH29OQamAkgh"
+uri = "file://artifacts/oracle-preview-ritual/public/assets/palm.png"
+type = "image"
+title = "detailed palm photography"
+
+[[generated]]
+id = "ls7Sp8732LzLgGVdbucBF"
+uri = "file://artifacts/oracle-preview-reading/public/assets/tarot-frame.png"
+type = "image"
+title = "ornate tarot card frame"
+
+[[generated]]
+id = "O4LkS-tUxYCtIcytYP-eD"
+uri = "file://artifacts/oracle-preview-beyond/public/assets/sigil-1.png"
+type = "image"
+title = "mystical astrology sigil"
+
+[[generated]]
+id = "mb71y4gMBA4-bV0Dx9pqf"
+uri = "file://artifacts/oracle-preview-beyond/public/assets/sigil-2.png"
+type = "image"
+title = "mystical esoteric glyph"
