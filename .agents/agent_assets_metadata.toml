@@ -59,3 +59,9 @@ id = "d2mbb9zRMkyKBZ8n9ychT"
 uri = "file://artifacts/oracle/assets/app-store/screenshots-6.5/05-people-synastry.png"
 type = "image"
 title = "05 — People / Synastry (1242×2688)"
+
+[[outputs]]
+id = "vvYgjylUA8CgFRmaFBH1Z"
+uri = "file://artifacts/oracle/assets/app-store/app-previews-6.5/oracle-app-preview-6.5.mp4"
+type = "video"
+title = "Oracle App Preview — 6.5\" iPhone (1920×886, H.264 High@L4.0, 11 Mbps, AAC stereo)"
