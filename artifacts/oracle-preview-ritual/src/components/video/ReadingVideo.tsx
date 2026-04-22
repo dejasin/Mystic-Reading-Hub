@@ -1,18 +1,18 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useVideoPlayer } from '@/lib/video';
 import { StarField } from './video_scenes/StarField';
-import { SceneIntake } from './video_scenes/reading/SceneIntake';
+import { SceneHook } from './video_scenes/SceneHook';
+import { SceneAppStoreClose } from './video_scenes/SceneAppStoreClose';
 import { SceneCurrents } from './video_scenes/reading/SceneCurrents';
 import { SceneCrossroads } from './video_scenes/reading/SceneCrossroads';
 import { SceneArchetype } from './video_scenes/reading/SceneArchetype';
-import { SceneCounsel } from './video_scenes/reading/SceneCounsel';
 
 const SCENE_DURATIONS = {
-  intake: 4000,
-  currents: 5000,
-  crossroads: 5000,
-  archetype: 7000,
-  counsel: 4500,
+  hook: 2800,
+  currents: 4800,
+  crossroads: 4800,
+  archetype: 6500,
+  close: 4200,
 };
 
 export default function ReadingVideo() {
@@ -45,11 +45,17 @@ export default function ReadingVideo() {
       />
 
       <AnimatePresence mode="popLayout">
-        {currentScene === 0 && <SceneIntake key="intake" />}
+        {currentScene === 0 && (
+          <SceneHook
+            key="hook"
+            headline="A reading written for you."
+            subline="Five chapters deep, every time."
+          />
+        )}
         {currentScene === 1 && <SceneCurrents key="currents" />}
         {currentScene === 2 && <SceneCrossroads key="crossroads" />}
         {currentScene === 3 && <SceneArchetype key="archetype" />}
-        {currentScene === 4 && <SceneCounsel key="counsel" />}
+        {currentScene === 4 && <SceneAppStoreClose key="close" />}
       </AnimatePresence>
     </div>
   );

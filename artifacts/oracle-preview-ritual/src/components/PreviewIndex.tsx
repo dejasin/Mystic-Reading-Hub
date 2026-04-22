@@ -22,7 +22,7 @@ const previews = [
     number: 'III',
     title: 'Beyond the Reading',
     blurb:
-      'Oracle Chat, Deep Dives, Synastry, and the Vault — the ongoing companion.',
+      'Mystic Chat, Deep Dives, Synastry, and the Vault — the ongoing companion.',
     duration: '~25s',
   },
 ] as const;
@@ -30,7 +30,7 @@ const previews = [
 const screenshots = [
   { slug: 'shot-1', number: '01', title: 'The Ritual', blurb: 'Read your palm in seconds.' },
   { slug: 'shot-2', number: '02', title: 'Your Reading', blurb: 'Personally written, five chapters deep.' },
-  { slug: 'shot-3', number: '03', title: 'Go Deeper', blurb: 'Chat with The Oracle anytime.' },
+  { slug: 'shot-3', number: '03', title: 'Go Deeper', blurb: 'Chat with Mystic Oracle anytime.' },
   { slug: 'shot-4', number: '04', title: 'Daily & Journal', blurb: 'Every reading kept and remembered.' },
   { slug: 'shot-5', number: '05', title: 'People & Synastry', blurb: 'Two souls, one reading.' },
 ] as const;
@@ -64,7 +64,7 @@ export function PreviewIndex() {
             marginBottom: '1.2rem',
           }}
         >
-          The Oracle — App Store Previews
+          Mystic Oracle: Palm Reading — App Store Previews
         </div>
         <h1
           className="font-display"

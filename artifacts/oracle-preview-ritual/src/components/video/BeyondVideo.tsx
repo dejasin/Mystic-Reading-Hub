@@ -1,22 +1,26 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useVideoPlayer } from '@/lib/video';
 import { StarField } from './video_scenes/StarField';
+import { SceneHook } from './video_scenes/SceneHook';
+import { SceneAppStoreClose } from './video_scenes/SceneAppStoreClose';
 import { SceneChat } from './video_scenes/beyond/SceneChat';
 import { SceneDeepDive } from './video_scenes/beyond/SceneDeepDive';
 import { SceneSynastry } from './video_scenes/beyond/SceneSynastry';
 import { SceneVault } from './video_scenes/beyond/SceneVault';
-import { SceneCloseBeyond } from './video_scenes/beyond/SceneCloseBeyond';
 
 const SCENE_DURATIONS = {
-  chat: 5500,
-  deepDive: 5000,
-  synastry: 5500,
-  vault: 5000,
-  close: 4000,
+  hook: 2800,
+  chat: 5000,
+  deepDive: 4500,
+  synastry: 5000,
+  vault: 4500,
+  close: 4200,
 };
 
 export default function BeyondVideo() {
   const { currentScene } = useVideoPlayer({ durations: SCENE_DURATIONS });
+  const isHook = currentScene === 0;
+  const isClose = currentScene === 5;
 
   return (
     <div
@@ -38,12 +42,12 @@ export default function BeyondVideo() {
           textTransform: 'uppercase',
         }}
         animate={{
-          opacity: currentScene === 4 ? 0 : 0.55,
-          y: currentScene === 4 ? -10 : 0,
+          opacity: isHook || isClose ? 0 : 0.55,
+          y: isHook || isClose ? -10 : 0,
         }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.6 }}
       >
-        The Oracle
+        Mystic Oracle
       </motion.div>
 
       <motion.div
@@ -59,17 +63,24 @@ export default function BeyondVideo() {
             'radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 65%)',
         }}
         animate={{
-          opacity: [0.7, 0.5, 0.9, 0.6, 1][currentScene] ?? 0.6,
+          opacity: [0.7, 0.5, 0.9, 0.6, 0.8, 1][currentScene] ?? 0.6,
         }}
         transition={{ duration: 1.4 }}
       />
 
       <AnimatePresence mode="popLayout">
-        {currentScene === 0 && <SceneChat key="chat" />}
-        {currentScene === 1 && <SceneDeepDive key="deepDive" />}
-        {currentScene === 2 && <SceneSynastry key="synastry" />}
-        {currentScene === 3 && <SceneVault key="vault" />}
-        {currentScene === 4 && <SceneCloseBeyond key="close" />}
+        {currentScene === 0 && (
+          <SceneHook
+            key="hook"
+            headline="Your daily mystic companion."
+            subline="Chat, deep dives, synastry, vault."
+          />
+        )}
+        {currentScene === 1 && <SceneChat key="chat" />}
+        {currentScene === 2 && <SceneDeepDive key="deepDive" />}
+        {currentScene === 3 && <SceneSynastry key="synastry" />}
+        {currentScene === 4 && <SceneVault key="vault" />}
+        {currentScene === 5 && <SceneAppStoreClose key="close" />}
       </AnimatePresence>
     </div>
   );

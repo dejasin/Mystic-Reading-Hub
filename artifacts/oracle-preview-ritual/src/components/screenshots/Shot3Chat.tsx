@@ -6,7 +6,7 @@ export function Shot3Chat() {
       index={3}
       eyebrow="Go Deeper"
       headline={<>Ask anything.<br />Anytime.</>}
-      subhead={<>Chat with The Oracle —<br />day or night, ages of wisdom away.</>}
+      subhead={<>Chat with Mystic Oracle —<br />day or night, ages of wisdom away.</>}
     >
       <MockChatScreen />
     </ScreenshotShell>
@@ -62,7 +62,7 @@ function MockChatScreen() {
             color: '#c9a84c',
           }}
         >
-          ✦  THE ORACLE
+          ✦  MYSTIC ORACLE
         </div>
       </div>
 
@@ -70,7 +70,7 @@ function MockChatScreen() {
       <div style={{ padding: '36px 28px 0', display: 'flex', flexDirection: 'column', gap: '22px' }}>
         <UserBubble>When will I find love?</UserBubble>
         <OracleBubble>
-          The Oracle sees a name you have already spoken aloud — once, recently,
+          Mystic Oracle sees a name you have already spoken aloud — once, recently,
           to someone who laughed too quickly. Pay attention to that name when it
           surfaces again. It will arrive twice more before the new moon.
         </OracleBubble>
@@ -126,7 +126,7 @@ function MockChatScreen() {
             color: 'rgba(240,230,204,0.4)',
           }}
         >
-          Ask The Oracle...
+          Ask Mystic Oracle...
         </div>
         <div
           style={{

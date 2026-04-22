@@ -4,8 +4,8 @@ export function Shot4Journal() {
   return (
     <ScreenshotShell
       index={4}
-      eyebrow="Daily Oracle & Journal"
-      headline={<>Your daily oracle.<br />Saved, forever.</>}
+      eyebrow="Daily Mystic & Journal"
+      headline={<>Your daily mystic.<br />Saved, forever.</>}
       subhead={<>Every reading kept.<br />Every insight remembered.</>}
     >
       <MockJournalScreen />
@@ -83,7 +83,7 @@ function MockJournalScreen() {
             textTransform: 'uppercase',
           }}
         >
-          <span>✦ Today's Oracle</span>
+          <span>✦ Today's Mystic Oracle</span>
           <span style={{ opacity: 0.7 }}>April 21</span>
         </div>
         <div

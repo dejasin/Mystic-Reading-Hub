@@ -58,7 +58,7 @@ function MockReadingScreen() {
           textTransform: 'uppercase',
         }}
       >
-        Your Oracle Reading
+        Your Mystic Oracle Reading
       </div>
 
       {/* section heading */}
@@ -107,7 +107,7 @@ function MockReadingScreen() {
         </p>
         <p style={{ margin: '0 0 22px' }}>
           The minor branches near its origin reveal a season of guarded hope:
-          you are not closed, but you are choosing carefully. The Oracle sees
+          you are not closed, but you are choosing carefully. Mystic Oracle sees
           someone you have already met — not yet recognised — circling back into
           your awareness within the next three lunar cycles.
         </p>

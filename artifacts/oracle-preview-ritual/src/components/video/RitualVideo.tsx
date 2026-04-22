@@ -1,18 +1,16 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useVideoPlayer } from '@/lib/video';
 import { StarField } from './video_scenes/StarField';
-import { SceneSigil } from './video_scenes/ritual/SceneSigil';
-import { SceneTagline } from './video_scenes/ritual/SceneTagline';
+import { SceneHook } from './video_scenes/SceneHook';
+import { SceneAppStoreClose } from './video_scenes/SceneAppStoreClose';
 import { ScenePalmFrame } from './video_scenes/ritual/ScenePalmFrame';
 import { ScenePalmTrace } from './video_scenes/ritual/ScenePalmTrace';
-import { SceneClose } from './video_scenes/ritual/SceneClose';
 
 const SCENE_DURATIONS = {
-  sigil: 3500,
-  tagline: 2800,
+  hook: 2800,
   frame: 3500,
   trace: 7000,
-  close: 3500,
+  close: 4200,
 };
 
 export default function RitualVideo() {
@@ -38,18 +36,23 @@ export default function RitualVideo() {
             'radial-gradient(circle at center, rgba(201,168,76,0.10) 0%, rgba(201,168,76,0.04) 30%, rgba(4,4,15,0) 60%)',
         }}
         animate={{
-          opacity: [0.6, 0.9, 0.7, 1, 0.65][currentScene] ?? 0.7,
-          scale: [1, 1.05, 0.95, 1.1, 1][currentScene] ?? 1,
+          opacity: [0.7, 0.9, 1, 0.7][currentScene] ?? 0.7,
+          scale: [1, 1.05, 1.1, 1][currentScene] ?? 1,
         }}
-        transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
       />
 
       <AnimatePresence mode="popLayout">
-        {currentScene === 0 && <SceneSigil key="sigil" />}
-        {currentScene === 1 && <SceneTagline key="tagline" />}
-        {currentScene === 2 && <ScenePalmFrame key="frame" />}
-        {currentScene === 3 && <ScenePalmTrace key="trace" />}
-        {currentScene === 4 && <SceneClose key="close" />}
+        {currentScene === 0 && (
+          <SceneHook
+            key="hook"
+            headline="Read your palm in seconds."
+            subline="Ancient wisdom, modern AI."
+          />
+        )}
+        {currentScene === 1 && <ScenePalmFrame key="frame" />}
+        {currentScene === 2 && <ScenePalmTrace key="trace" />}
+        {currentScene === 3 && <SceneAppStoreClose key="close" />}
       </AnimatePresence>
     </div>
   );
