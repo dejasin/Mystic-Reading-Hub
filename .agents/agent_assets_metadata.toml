@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "fDJNMr6dpuH29OQamAkgh"
@@ -30,3 +29,33 @@ id = "C9OL24ik79iF-f8qsygTt"
 uri = "file://artifacts/oracle-preview-ritual/public/images/deep-dive-cover.png"
 type = "image"
 title = "generated_image"
+
+[[outputs]]
+id = "_xWtz1gIPsHOECDsZ-b4N"
+uri = "file://artifacts/oracle/assets/app-store/screenshots-6.5/01-ritual-palm-capture.png"
+type = "image"
+title = "01 — Ritual / Palm Capture (1242×2688)"
+
+[[outputs]]
+id = "_yCD4aIW7JmyWgUPfkBmg"
+uri = "file://artifacts/oracle/assets/app-store/screenshots-6.5/02-your-reading.png"
+type = "image"
+title = "02 — Your Reading (1242×2688)"
+
+[[outputs]]
+id = "MIbEG8THcccbUSHl_a667"
+uri = "file://artifacts/oracle/assets/app-store/screenshots-6.5/03-go-deeper-chat.png"
+type = "image"
+title = "03 — Go Deeper / Chat (1242×2688)"
+
+[[outputs]]
+id = "vAaFn7DinOEQ1WYKelwQr"
+uri = "file://artifacts/oracle/assets/app-store/screenshots-6.5/04-daily-oracle-journal.png"
+type = "image"
+title = "04 — Daily Oracle / Journal (1242×2688)"
+
+[[outputs]]
+id = "d2mbb9zRMkyKBZ8n9ychT"
+uri = "file://artifacts/oracle/assets/app-store/screenshots-6.5/05-people-synastry.png"
+type = "image"
+title = "05 — People / Synastry (1242×2688)"
