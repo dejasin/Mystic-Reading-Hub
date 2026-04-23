@@ -144,6 +144,9 @@ try {
 
     const totalDur = frameLog[frameLog.length - 1].ts - baseTs;
 
+    // App Store Connect rejects previews with no audio track at all
+    // ("corrupt or missing audio"). Mux a silent stereo AAC track that
+    // matches Apple's 6.5" preview spec (48 kHz, 256 kbps, stereo).
     await new Promise((res, rej) => {
       const ff = spawn(
         'ffmpeg',
@@ -153,13 +156,20 @@ try {
           '-f', 'concat',
           '-safe', '0',
           '-i', listPath,
+          '-f', 'lavfi',
+          '-i', 'anullsrc=channel_layout=stereo:sample_rate=48000',
           '-vf', `fps=${FPS},scale=${STAGE_W}:${STAGE_H}:flags=lanczos,format=yuv420p`,
           '-c:v', 'libx264',
           '-preset', 'medium',
           '-crf', '20',
           '-pix_fmt', 'yuv420p',
-          '-movflags', '+faststart',
           '-r', String(FPS),
+          '-c:a', 'aac',
+          '-b:a', '256k',
+          '-ar', '48000',
+          '-ac', '2',
+          '-shortest',
+          '-movflags', '+faststart',
           outPath,
         ],
         { stdio: ['ignore', 'inherit', 'inherit'] },
