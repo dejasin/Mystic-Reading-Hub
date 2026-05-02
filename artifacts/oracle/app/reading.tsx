@@ -24,6 +24,7 @@ import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { Feather } from "@expo/vector-icons";
 import { fetch } from "expo/fetch";
+import type { PurchasesPackage } from "react-native-purchases";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Colors from "@/constants/colors";
 import { safeOpenURL } from "@/lib/safeOpenURL";
@@ -119,14 +120,14 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
   }));
 
   const currentOffering = offerings?.current;
-  const availablePackages = currentOffering?.availablePackages ?? [];
+  const availablePackages: PurchasesPackage[] = currentOffering?.availablePackages ?? [];
 
-  const annualPackage =
-    availablePackages.find((p: any) => p.packageType === "ANNUAL") ??
-    availablePackages.find((p: any) => /annual|yearly|year/i.test(p?.product?.identifier ?? ""));
-  const monthlyPackage =
-    availablePackages.find((p: any) => p.packageType === "MONTHLY") ??
-    availablePackages.find((p: any) => /monthly|month/i.test(p?.product?.identifier ?? ""));
+  const annualPackage: PurchasesPackage | undefined =
+    availablePackages.find((p) => p.packageType === "ANNUAL") ??
+    availablePackages.find((p) => /annual|yearly|year/i.test(p.product?.identifier ?? ""));
+  const monthlyPackage: PurchasesPackage | undefined =
+    availablePackages.find((p) => p.packageType === "MONTHLY") ??
+    availablePackages.find((p) => /monthly|month/i.test(p.product?.identifier ?? ""));
 
   const [selectedPlan, setSelectedPlan] = useState<"annual" | "monthly">("annual");
 

@@ -212,7 +212,7 @@ export default function SettingsScreen() {
 
   const handleManageSubscription = () => {
     if (!isSubscribed) {
-      router.push("/intake");
+      router.push("/reading");
       return;
     }
     if (Platform.OS === "ios") {
@@ -282,7 +282,7 @@ export default function SettingsScreen() {
           {
             label: "Upgrade to Oracle Pro",
             icon: "star" as const,
-            onPress: () => router.push("/intake"),
+            onPress: () => router.push("/reading"),
           },
         ]),
     {
