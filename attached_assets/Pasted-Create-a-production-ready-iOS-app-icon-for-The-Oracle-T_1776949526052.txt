@@ -1,0 +1,41 @@
+Create a production-ready iOS app icon for The Oracle. This icon will be submitted directly to the Apple App Store so it must be technically perfect.
+Step 1 — Generate the icon
+Write and execute a Python script that programmatically generates the icon using the Pillow library. Install Pillow first with pip install Pillow if needed. The script must:
+
+Output a single PNG file at exactly 1024x1024 pixels
+Use RGB mode (not RGBA — no alpha channel, no transparency)
+Save to artifacts/oracle/assets/images/icon.png (overwrite whatever is there)
+Also save an identical copy to artifacts/oracle/assets/images/splash-icon.png
+
+Run the script immediately after writing it and confirm the output file exists and is exactly 1024x1024 RGB PNG with no alpha channel. Use Python's PIL to verify: Image.open('icon.png').mode must return RGB and size must return (1024, 1024).
+Step 2 — Design specification
+The Oracle is a premium mystical AI palm reading app. The icon must look sharp at all sizes from 29x29 to 1024x1024 so use bold simple shapes only — no fine details, no thin lines, no text, no letterforms.
+Design: A glowing open palm centered on the icon against a deep dark background. Specific colors and elements:
+
+Background: Deep space gradient from #0a0a0f (center) to #1a0a2e (edges) or solid #0d0015
+Palm shape: Simple, bold, centered hand silhouette in deep purple #2d1b4e with a warm gold/amber outer glow
+Palm lines: 3-4 bold glowing lines (heart, head, life, fate) rendered in gold #f59e0b with a soft blur/glow effect — thick enough to be visible at 60x60
+Center of palm: A small glowing orb or eye in bright gold/white #ffd700 that acts as the focal point
+Optional: Very subtle star particles in the background
+Overall feel: Premium, mysterious, otherworldly — like if Apple designed a tarot app
+
+Step 3 — Update app.json
+After generating the icon, open artifacts/oracle/app.json and verify these fields are set correctly:
+json"icon": "./assets/images/icon.png",
+"splash": {
+  "image": "./assets/images/splash-icon.png"
+}
+If they are already correct, leave them alone. If they point to a different path, update them.
+Step 4 — Verify everything
+Before committing, verify:
+
+artifacts/oracle/assets/images/icon.png exists
+File is exactly 1024x1024 pixels
+File mode is RGB (no alpha)
+File size is greater than 50KB (confirms it's not an empty or broken file)
+app.json icon path is correct
+
+Print confirmation of all four checks in the terminal output.
+Step 5 — Commit and push
+Commit the new icon and any app.json changes to GitHub with the message "Add production app icon for App Store submission". Push to master. Confirm the commit hash.
+Do not stop until all five steps are complete and the commit is pushed.
