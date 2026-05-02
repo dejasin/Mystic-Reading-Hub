@@ -220,7 +220,7 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
 
       <Text style={paywallStyles.title}>There is more to map.</Text>
       <Text style={paywallStyles.cliffhanger}>
-        Your behavioral profile points to a pattern worth examining. The full reading and ongoing chat help you turn that pattern into a clearer next step — without telling you what will happen.
+        Your behavioral profile points to a pattern worth examining. The full session and ongoing advisor chats help you turn that pattern into a clearer next step — without telling you what will happen.
       </Text>
       <Text style={paywallStyles.divider}>─── ✦ ───</Text>
       <Text style={paywallStyles.pitch}>
