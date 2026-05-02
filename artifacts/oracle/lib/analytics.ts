@@ -21,6 +21,8 @@ export enum AnalyticsEvent {
   READING_STARTED = "reading_started",
   READING_FREE_COMPLETED = "reading_free_completed",
   READING_PAID_COMPLETED = "reading_paid_completed",
+  READING_PAID_STREAM_INTERRUPTED = "reading_paid_stream_interrupted",
+  READING_PAID_STREAM_RESUMED = "reading_paid_stream_resumed",
   READING_COMPLETED = "reading_completed",
 
   PAYWALL_SHOWN = "paywall_shown",

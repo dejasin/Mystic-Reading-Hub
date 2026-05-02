@@ -870,7 +870,14 @@ const activationStyles = StyleSheet.create({
   },
 });
 
-type Phase = "loading" | "streaming_free" | "paywall" | "streaming_paid" | "complete" | "error";
+type Phase = "loading" | "streaming_free" | "paywall" | "streaming_paid" | "paid_interrupted" | "complete" | "error";
+
+// Task #68 — paid stream resilience tuning. If neither a chunk nor a server
+// keep-alive `ping` event arrives within this window we treat the stream as
+// stalled rather than waiting for the request's 180s wall-clock abort. The
+// server pings every 5s, so 15s gives us 3 missed pings before we give up.
+const PAID_STREAM_STALL_MS = 15000;
+const PAID_STREAM_RESUME_DIVIDER = "\n\n─── ✦ continued ✦ ───\n\n";
 
 export default function ReadingScreen() {
   const insets = useSafeAreaInsets();
@@ -1112,13 +1119,49 @@ export default function ReadingScreen() {
     }
   };
 
-  const streamPaidReading = async () => {
-    resetPaidReading();
+  // Task #68 — paid stream resilience.
+  //
+  // streamPaidReading now supports two modes:
+  //   • fresh start (resume = false): clear any prior paid text, reset phase
+  //     to "streaming_paid", begin from scratch.
+  //   • resume after interruption (resume = true): KEEP existing paid text,
+  //     append a visible divider, then continue appending new chunks the
+  //     server re-streams from the top. The server doesn't support true
+  //     checkpoint/resume, so we accept duplicate content rather than throw
+  //     away anything the seeker already received.
+  //
+  // A watchdog timer aborts the request if neither a data chunk nor a server
+  // keep-alive `ping` arrives within PAID_STREAM_STALL_MS, so brief network
+  // blips don't get swallowed by the 180s wall-clock timeout, and a fully
+  // dead connection surfaces a recovery CTA in seconds rather than minutes.
+  const streamPaidReading = async (opts: { resume?: boolean } = {}) => {
+    const isResume = opts.resume === true;
+    if (!isResume) {
+      resetPaidReading();
+    } else {
+      // Add a visible boundary so the seeker can tell where the new attempt
+      // picks up. Server replays the section from scratch — duplication is
+      // intentional per Task #68 (preserve > de-dupe).
+      appendPaidReading(PAID_STREAM_RESUME_DIVIDER);
+    }
     setPhase("streaming_paid");
     const baseUrl = getApiUrl();
 
     const abortController = new AbortController();
+    let didStall = false;
     const abortTimeout = setTimeout(() => abortController.abort(), 180000);
+
+    let lastActivity = Date.now();
+    const stallWatchdog = setInterval(() => {
+      if (Date.now() - lastActivity > PAID_STREAM_STALL_MS) {
+        didStall = true;
+        abortController.abort();
+      }
+    }, 2000);
+    const stopWatchdog = () => {
+      clearInterval(stallWatchdog);
+      clearTimeout(abortTimeout);
+    };
 
     try {
       const rcAppUserId = customerInfo?.originalAppUserId ?? "";
@@ -1136,6 +1179,8 @@ export default function ReadingScreen() {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
+        // Any read activity — chunks OR keep-alive pings — counts as life.
+        lastActivity = Date.now();
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? "";
@@ -1145,6 +1190,10 @@ export default function ReadingScreen() {
           const raw = line.slice(6);
           try {
             const parsed = JSON.parse(raw);
+            if (parsed.event === "ping") {
+              // Heartbeat — already counted via lastActivity above.
+              continue;
+            }
             if (parsed.event === "error") {
               setErrorMsg(parsed.message ?? "The Oracle is temporarily unavailable.");
               setErrorSource("paid");
@@ -1197,8 +1246,28 @@ export default function ReadingScreen() {
       setPhase("complete");
       void fetchBehavioralScores();
     } catch (err) {
-      if (abortController.signal.aborted) {
+      const wallClock = abortController.signal.aborted && !didStall;
+      const hasPartial = state.paidReading.length > 0;
+
+      if (hasPartial) {
+        // Preserve the partial text and offer a one-tap continue. This is
+        // the common cellular-blip case — paying users should never see a
+        // generic "Try Again" that wipes their reading.
+        trackEvent(AnalyticsEvent.READING_PAID_STREAM_INTERRUPTED, {
+          partial_length: state.paidReading.length,
+          stalled: didStall,
+          wall_clock_timeout: wallClock,
+        });
+        setErrorSource("paid");
+        setPhase("paid_interrupted");
+        return;
+      }
+
+      // Nothing to preserve — fall through to the existing error screen.
+      if (wallClock) {
         setErrorMsg("The session took too long. Please try again.");
+      } else if (didStall) {
+        setErrorMsg("The thread was cut before the full vision could be delivered. Check your network.");
       } else {
         const isNetwork = err instanceof TypeError || String(err).includes("fetch");
         setErrorMsg(
@@ -1210,8 +1279,15 @@ export default function ReadingScreen() {
       setErrorSource("paid");
       setPhase("error");
     } finally {
-      clearTimeout(abortTimeout);
+      stopWatchdog();
     }
+  };
+
+  const handlePaidContinue = () => {
+    trackEvent(AnalyticsEvent.READING_PAID_STREAM_RESUMED, {
+      partial_length: state.paidReading.length,
+    });
+    void streamPaidReading({ resume: true });
   };
 
   useEffect(() => {
@@ -1386,8 +1462,10 @@ export default function ReadingScreen() {
             <PaywallGate onUnlock={streamPaidReading} />
           )}
 
-          {/* Paid sections */}
-          {(phase === "streaming_paid" || phase === "complete") && state.paidReading.length > 0 && (
+          {/* Paid sections — also rendered while paid_interrupted so the
+              partial paid text the seeker already received stays on screen
+              behind the "Continue where Oracle left off" CTA. */}
+          {(phase === "streaming_paid" || phase === "complete" || phase === "paid_interrupted") && state.paidReading.length > 0 && (
             <>
               <Text style={sectionStyles.divider}>─── ✦ ───</Text>
               <ReadingSection
@@ -1406,6 +1484,41 @@ export default function ReadingScreen() {
             <View style={styles.streamingDots}>
               <Text style={styles.streamingText}>The depths open...</Text>
             </View>
+          )}
+
+          {/* Task #68 — paid stream interrupted recovery CTA. The partial
+              paid text remains rendered above; this block adds a clear
+              "Continue where Oracle left off" affordance plus a secondary
+              "Begin a New Session" escape hatch. */}
+          {phase === "paid_interrupted" && (
+            <Animated.View entering={FadeIn.duration(500)} style={styles.interruptedBlock}>
+              <Text style={styles.interruptedDivider}>─── ✦ ───</Text>
+              <Text style={styles.interruptedTitle}>Connection lost</Text>
+              <Text style={styles.interruptedBody}>
+                The thread was momentarily severed. Your reading so far is preserved — continue where Oracle left off.
+              </Text>
+              <View style={styles.errorActions}>
+                <Pressable
+                  style={styles.retryBtn}
+                  onPress={handlePaidContinue}
+                  accessibilityLabel="Continue where Oracle left off"
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.retryText}>Continue</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.errorBackBtn}
+                  onPress={() => {
+                    resetAll();
+                    router.replace("/");
+                  }}
+                  accessibilityLabel="Begin a New Session"
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.errorBackText}>Begin a New Session</Text>
+                </Pressable>
+              </View>
+            </Animated.View>
           )}
 
           {/* Archetype */}
@@ -1787,6 +1900,36 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.gold,
     letterSpacing: 0.5,
+  },
+  interruptedBlock: {
+    marginTop: 24,
+    marginBottom: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    alignItems: "center",
+    gap: 12,
+  },
+  interruptedDivider: {
+    fontFamily: "CormorantGaramond_400Regular",
+    fontSize: 13,
+    color: Colors.muted,
+    textAlign: "center",
+    letterSpacing: 4,
+  },
+  interruptedTitle: {
+    fontFamily: "CormorantGaramond_400Regular",
+    fontSize: 18,
+    color: Colors.gold,
+    letterSpacing: 1,
+    textAlign: "center",
+  },
+  interruptedBody: {
+    fontFamily: "EBGaramond_400Regular_Italic",
+    fontSize: 14,
+    color: Colors.muted,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 4,
   },
   endDivider: {
     flexDirection: "row",
