@@ -16,15 +16,20 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.theoracle.app",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "infoPlist": {
-        "NSCameraUsageDescription": "The Oracle uses your camera to capture palm, iris, and face images for your personalized reading.",
-        "NSPhotoLibraryUsageDescription": "The Oracle accesses your photo library so you can choose images for your reading."
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "Oracle uses your camera to capture biometric reference images (your hand and face) used as the input signal for your behavioral analysis. Images are sent securely for analysis and never stored.",
+        "NSPhotoLibraryUsageDescription": "Oracle uses your photo library so you can choose existing biometric reference images for your behavioral analysis."
       },
       "associatedDomains": ["applinks:theoracle.app"]
     },
     "android": {
       "backgroundColor": "#04040f",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#0d0015"
+      },
       "intentFilters": [
         {
           "action": "VIEW",
@@ -52,7 +57,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/icon.png",
+          "icon": "./assets/images/notification-icon.png",
           "color": "#c9a84c"
         }
       ]

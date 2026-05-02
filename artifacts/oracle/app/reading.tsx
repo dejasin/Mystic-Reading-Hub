@@ -40,9 +40,9 @@ import { hasBeenPromptedForNotifications, requestAndRegisterNotifications } from
 import { getApiUrl } from "@/lib/api";
 
 const LOADING_MESSAGES = [
-  "Mapping your palm...",
+  "Capturing your biometric signal...",
   "Reading your behavioral patterns...",
-  "Tracing the patterns in your hands...",
+  "Tracing your unique profile...",
   "Synthesizing your personal blueprint...",
   "Oracle is preparing your insights...",
 ];
@@ -1184,14 +1184,21 @@ export default function ReadingScreen() {
 
           {/* Free sections */}
           {state.freeReading.length > 0 && (
-            <ReadingSection
-              text={state.freeReading}
-              sessionId={state.sessionId}
-              userData={JSON.stringify(state.userData)}
-              isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
-              parentScrollRef={scrollRef}
-              parentScrollOffset={scrollOffsetRef}
-            />
+            <>
+              <Animated.View entering={FadeIn.duration(700)} style={styles.disclaimerWrap}>
+                <Text style={styles.disclaimer}>
+                  What follows is not a prediction. It is a map of the patterns The Oracle reads in your behavioral profile — to help you see yourself more clearly.
+                </Text>
+              </Animated.View>
+              <ReadingSection
+                text={state.freeReading}
+                sessionId={state.sessionId}
+                userData={JSON.stringify(state.userData)}
+                isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
+                parentScrollRef={scrollRef}
+                parentScrollOffset={scrollOffsetRef}
+              />
+            </>
           )}
 
           {/* Streaming indicator */}
@@ -1361,6 +1368,18 @@ export default function ReadingScreen() {
                 <Feather name="message-circle" size={18} color={Colors.bg} />
                 <Text style={styles.chatBtnText}>Ask Oracle Anything</Text>
               </Pressable>
+
+              <View style={styles.bridgeCtaWrap}>
+                <Pressable
+                  style={({ pressed }) => [styles.bridgeCta, pressed && { opacity: 0.85 }]}
+                  onPress={() => router.push("/behavioral-profile")}
+                  accessibilityLabel="Talk to Oracle About Your Profile"
+                  accessibilityRole="button"
+                >
+                  <Feather name="user" size={16} color={Colors.bg} />
+                  <Text style={styles.bridgeCtaText}>Talk to Oracle About Your Profile →</Text>
+                </Pressable>
+              </View>
 
               <View style={styles.endDivider}>
                 <View style={styles.endDividerLine} />
@@ -1621,6 +1640,40 @@ const styles = StyleSheet.create({
     fontFamily: "EBGaramond_400Regular",
     fontSize: 15,
     color: Colors.muted,
+  },
+  disclaimerWrap: {
+    paddingHorizontal: 8,
+    paddingBottom: 12,
+  },
+  disclaimer: {
+    fontFamily: "EBGaramond_400Regular_Italic",
+    fontSize: 14,
+    color: Colors.muted,
+    lineHeight: 22,
+    textAlign: "center",
+    opacity: 0.85,
+  },
+  bridgeCtaWrap: {
+    width: "100%",
+    marginTop: 24,
+  },
+  bridgeCta: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    backgroundColor: Colors.gold,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    minHeight: 52,
+  },
+  bridgeCtaText: {
+    color: Colors.bg,
+    fontSize: 14,
+    fontWeight: "600",
+    letterSpacing: 0.5,
   },
   deepDiveSection: {
     width: "100%",

@@ -28,58 +28,26 @@ import { useProfiles } from "@/context/ProfileContext";
 import { trackEvent, trackFunnelStep, AnalyticsEvent } from "@/lib/analytics";
 import Svg, { Path } from "react-native-svg";
 
-// ── Palm diagram ──────────────────────────────────────────────
-function PalmDiagram() {
+// ── Hand outline diagram (decorative, no palmistry annotations) ──
+function HandDiagram() {
   return (
     <View style={diagStyles.container}>
-      <Svg width={100} height={130} viewBox="0 0 100 130">
-        {/* Palm outline */}
+      <Svg width={120} height={150} viewBox="0 0 100 130">
+        {/* Hand outline only — no line annotations */}
         <Path
           d="M 30 120 Q 15 110 18 80 L 20 50 Q 20 38 28 38 Q 34 38 34 50 L 34 55 Q 34 28 42 28 Q 50 28 50 55 L 50 52 Q 50 26 58 26 Q 66 26 66 52 L 66 55 Q 66 40 72 40 Q 78 40 78 55 L 76 80 Q 82 110 68 120 Z"
           fill="none"
-          stroke={Colors.muted}
+          stroke={Colors.gold}
           strokeWidth={1.5}
         />
-        {/* Heart line */}
-        <Path d="M 25 65 Q 50 60 75 65" fill="none" stroke={Colors.gold} strokeWidth={1.2} />
-        {/* Head line */}
-        <Path d="M 28 78 Q 52 82 72 75" fill="none" stroke={Colors.gold} strokeWidth={1.2} />
-        {/* Life line */}
-        <Path d="M 35 50 Q 28 75 30 105" fill="none" stroke={Colors.gold} strokeWidth={1.2} />
-        {/* Fate line */}
-        <Path d="M 50 120 Q 52 90 50 60" fill="none" stroke={Colors.goldLight} strokeWidth={0.8} strokeDasharray="3,2" />
-        {/* Labels */}
       </Svg>
-      <View style={diagStyles.labels}>
-        <View style={diagStyles.labelItem}>
-          <View style={[diagStyles.labelDot, { backgroundColor: Colors.gold }]} />
-          <Text style={diagStyles.labelText}>Heart</Text>
-        </View>
-        <View style={diagStyles.labelItem}>
-          <View style={[diagStyles.labelDot, { backgroundColor: Colors.gold }]} />
-          <Text style={diagStyles.labelText}>Head</Text>
-        </View>
-        <View style={diagStyles.labelItem}>
-          <View style={[diagStyles.labelDot, { backgroundColor: Colors.gold }]} />
-          <Text style={diagStyles.labelText}>Life</Text>
-        </View>
-        <View style={diagStyles.labelItem}>
-          <View style={[diagStyles.labelDot, { backgroundColor: Colors.goldLight }]} />
-          <Text style={diagStyles.labelText}>Fate</Text>
-        </View>
-      </View>
     </View>
   );
 }
 
 
 const diagStyles = StyleSheet.create({
-  container: { flexDirection: "row", alignItems: "center", gap: 16 },
-  svg: {},
-  labels: { gap: 8 },
-  labelItem: { flexDirection: "row", alignItems: "center", gap: 6 },
-  labelDot: { width: 8, height: 8, borderRadius: 4 },
-  labelText: { fontFamily: "EBGaramond_400Regular", fontSize: 13, color: Colors.cream, opacity: 0.7 },
+  container: { alignItems: "center", justifyContent: "center" },
 });
 
 // ── Main screen ────────────────────────────────────────────────
@@ -105,29 +73,29 @@ type OracleImages = {
 const STEPS: StepConfig[] = [
   {
     key: null,
-    title: "Palm Analysis",
+    title: "Behavioral Imprint Capture",
     intro: true,
     instructions: [],
   },
   {
     key: "right_palm",
-    title: "Your Dominant Palm",
+    title: "Your Dominant Hand",
     required: true,
     instructions: [
       "Find natural light (window light, not direct sun)",
-      "Hold palm flat, fingers relaxed and slightly spread",
-      "Camera 20–25cm above palm",
-      "Ensure all major lines are visible",
+      "Hold your hand flat, fingers relaxed and slightly spread",
+      "Camera 20–25cm above your hand",
+      "Ensure your full hand is in frame",
     ],
     diagram: "palm",
   },
   {
     key: "left_palm",
-    title: "Your Non-Dominant Palm",
-    subtitle: "Reveals Past & Potential",
+    title: "Your Non-Dominant Hand",
+    subtitle: "Behavioral imprint — secondary signal",
     instructions: [
-      "Same technique as your dominant palm",
-      "This hand carries your inherited patterns",
+      "Same technique as your dominant hand",
+      "This image refines the behavioral profile",
       "Take your time — soft natural light",
     ],
     diagram: "palm",
@@ -297,7 +265,7 @@ export default function RitualScreen() {
             <Text style={styles.cardTitle}>{currentStep.title}</Text>
             <Text style={styles.divider}>─── ✦ ───</Text>
             <Text style={styles.introText}>
-              Oracle reads behavioral and personality patterns from your palm. These images are the foundation of your session. Take your time — good light matters.
+              Oracle reads behavioral and personality patterns from your hand imprint. These images are the foundation of your session. Take your time — good light matters.
             </Text>
             <Pressable
               style={({ pressed }) => [styles.proceedBtn, pressed && { opacity: 0.85 }]}
@@ -384,7 +352,7 @@ export default function RitualScreen() {
             {/* Diagram */}
             {currentStep.diagram && (
               <View style={styles.diagramContainer}>
-                {currentStep.diagram === "palm" && <PalmDiagram />}
+                {currentStep.diagram === "palm" && <HandDiagram />}
               </View>
             )}
 

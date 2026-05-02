@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { createContext, useContext, useState, useRef } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 
 export interface UserData {
   name: string;
@@ -46,6 +46,7 @@ export interface OracleState {
   isPaid: boolean;
   deepDives: Partial<Record<DeepDiveCategory, string>>;
   behavioralScores: BehavioralScores | null;
+  behavioralScoresUpdatedAt: number | null;
 }
 
 interface OracleContextValue {
@@ -92,12 +93,38 @@ const defaultState: OracleState = {
   isPaid: false,
   deepDives: {},
   behavioralScores: null,
+  behavioralScoresUpdatedAt: null,
 };
+
+const BEHAVIORAL_SCORES_KEY = "oracle_behavioral_scores";
 
 const OracleContext = createContext<OracleContextValue | null>(null);
 
 export function OracleProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<OracleState>(defaultState);
+  const hydratedRef = useRef(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(BEHAVIORAL_SCORES_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.scores && typeof parsed.scores.intuition === "number") {
+            setState(prev => ({
+              ...prev,
+              behavioralScores: parsed.scores,
+              behavioralScoresUpdatedAt: parsed.updatedAt ?? null,
+            }));
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to hydrate behavioral scores:", e);
+      } finally {
+        hydratedRef.current = true;
+      }
+    })();
+  }, []);
 
   const setUserData = (data: UserData) => {
     setState(prev => ({
@@ -110,7 +137,6 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
       readingComplete: false,
       isPaid: false,
       deepDives: {},
-      behavioralScores: null,
       sessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     }));
   };
@@ -173,7 +199,26 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
   };
 
   const setBehavioralScores = (scores: BehavioralScores | null) => {
-    setState(prev => ({ ...prev, behavioralScores: scores }));
+    const updatedAt = scores ? Date.now() : null;
+    setState(prev => ({
+      ...prev,
+      behavioralScores: scores,
+      behavioralScoresUpdatedAt: updatedAt,
+    }));
+    (async () => {
+      try {
+        if (scores) {
+          await AsyncStorage.setItem(
+            BEHAVIORAL_SCORES_KEY,
+            JSON.stringify({ scores, updatedAt }),
+          );
+        } else {
+          await AsyncStorage.removeItem(BEHAVIORAL_SCORES_KEY);
+        }
+      } catch (e) {
+        console.warn("Failed to persist behavioral scores:", e);
+      }
+    })();
   };
 
   const resetAll = () => {

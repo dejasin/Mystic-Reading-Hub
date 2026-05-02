@@ -51,14 +51,14 @@ const htmlPage = (title: string, body: string) => `<!DOCTYPE html>
 router.get("/privacy", (_req: Request, res: Response) => {
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.send(htmlPage("Privacy Policy", `
-    <p><strong>Effective date:</strong> March 26, 2026</p>
+    <p><strong>Effective date:</strong> May 02, 2026</p>
 
     <h2>1. Who We Are</h2>
-    <p>The Oracle is a mobile application that acts as a personal AI life advisor, generating personalised guidance from palm imagery and birth-data inputs you provide. References to "we", "us", or "our" refer to the developers and operators of The Oracle app.</p>
+    <p>The Oracle is a mobile application that acts as a personal AI life advisor. It generates personalised guidance from biometric reference imagery and personal context (such as your name, date of birth, and the questions you bring) that you provide. References to "we", "us", or "our" refer to the developers and operators of The Oracle app.</p>
 
     <h2>2. What Information We Collect</h2>
     <ul>
-      <li><strong>Images you provide.</strong> When you begin a reading, you may submit photographs of your palm, iris, or face. These images are transmitted securely to our AI analysis service solely to generate your reading and are never stored on our servers beyond the duration of your session. We do not retain, share, or sell your images.</li>
+      <li><strong>Reference images you provide.</strong> When you begin a reading, you may submit biometric reference photographs (such as your hand, iris, or face) as input signals for the behavioral analysis. These images are transmitted securely to our AI analysis service solely to generate your reading and are never stored on our servers beyond the duration of your session. We do not retain, share, or sell your images.</li>
       <li><strong>Profile data stored on your device.</strong> Any reading profiles you save (names, dates of birth, and reading results) are stored locally on your device only. We do not have access to this data.</li>
       <li><strong>Purchase information.</strong> In-app purchases are processed through Apple's App Store. We use RevenueCat to verify your purchase entitlements. RevenueCat may associate your purchase record with your Apple ID or an anonymous identifier for the purpose of restoring purchases across devices. RevenueCat's privacy policy is available at <a href="https://www.revenuecat.com/privacy">revenuecat.com/privacy</a>.</li>
       <li><strong>Usage and analytics.</strong> We collect anonymous, non-personally-identifiable usage analytics to understand how the app is used and to improve the experience. This includes events such as which screens are viewed, which features are used, and aggregate conversion metrics. No names, dates of birth, photos, or other personally identifiable information is included in analytics data. Each device is assigned a random anonymous identifier that cannot be linked back to you. You may opt out of analytics collection by disabling network access for the app.</li>
@@ -94,13 +94,13 @@ router.get("/privacy", (_req: Request, res: Response) => {
 router.get("/terms", (_req: Request, res: Response) => {
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.send(htmlPage("Terms of Use", `
-    <p><strong>Effective date:</strong> March 26, 2026</p>
+    <p><strong>Effective date:</strong> May 02, 2026</p>
 
     <h2>1. Acceptance of Terms</h2>
     <p>By downloading, installing, or using The Oracle app, you agree to be bound by these Terms of Use. If you do not agree, do not use the app.</p>
 
     <h2>2. Description of Service</h2>
-    <p>The Oracle is an entertainment application that generates readings based on images and personal data you provide, drawing on symbolic systems including palmistry, facial analysis, numerology, and archetypal psychology. The readings are provided for entertainment and personal reflection purposes only. They do not constitute professional advice of any kind — medical, legal, financial, psychological, or otherwise.</p>
+    <p>The Oracle is an entertainment and self-reflection application that acts as a personal AI life advisor. It generates readings based on biometric reference imagery and personal context (your name, date of birth, and the questions you bring) that you provide, drawing on behavioral pattern recognition and archetypal psychology. The readings are provided for entertainment, reflection, and personal insight purposes only. They do not constitute professional advice of any kind — medical, legal, financial, psychological, or otherwise — and they do not predict the future.</p>
 
     <h2>3. In-App Purchases</h2>
     <ul>

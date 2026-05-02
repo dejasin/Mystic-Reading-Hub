@@ -49,7 +49,7 @@ const SLIDES: SlideData[] = [
   {
     key: "gift",
     title: "PERSONAL INSIGHT",
-    subtitle: "Powered by your palm. Guided by AI.",
+    subtitle: "Powered by AI. Refined by your biometrics.",
     bodyLines: [
       "Real understanding, not generic horoscopes",
       "Insight rooted in who you actually are",

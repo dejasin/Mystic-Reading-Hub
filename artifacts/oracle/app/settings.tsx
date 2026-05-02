@@ -85,7 +85,7 @@ export default function SettingsScreen() {
   const [notifReadings, setNotifReadings] = useState(true);
   const [notifUpdates, setNotifUpdates] = useState(true);
 
-  const planLabel = isSubscribed ? "Full Reading (Purchased)" : "Free";
+  const planLabel = isSubscribed ? "Oracle Pro" : "Free";
 
   const handleBack = () => {
     if (Platform.OS !== "web") {
@@ -267,6 +267,20 @@ export default function SettingsScreen() {
       label: `Current Plan: ${planLabel}`,
       icon: "star",
     },
+    ...(isSubscribed
+      ? [
+          {
+            label: "Oracle Pro — Active",
+            icon: "check-circle" as const,
+          },
+        ]
+      : [
+          {
+            label: "Upgrade to Oracle Pro",
+            icon: "star" as const,
+            onPress: () => router.push("/intake"),
+          },
+        ]),
     {
       label: "Manage Subscription",
       icon: "external-link",

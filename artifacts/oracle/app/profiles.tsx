@@ -32,31 +32,11 @@ const EYE_OPTIONS = ["Brown", "Blue", "Green", "Hazel", "Gray", "Dark Brown", "O
 
 const PHOTO_SLOTS: { key: keyof ProfilePhoto; label: string; icon: string }[] = [
   { key: "face", label: "Face", icon: "user" },
-  { key: "right_palm", label: "Right Palm", icon: "hand" },
-  { key: "left_palm", label: "Left Palm", icon: "hand" },
+  { key: "right_palm", label: "Right Hand", icon: "hand" },
+  { key: "left_palm", label: "Left Hand", icon: "hand" },
   { key: "right_iris", label: "Right Iris", icon: "eye" },
   { key: "left_iris", label: "Left Iris", icon: "eye" },
 ];
-
-function computeSunSign(dob: string): string {
-  if (!dob || !dob.includes("-")) return "";
-  const parts = dob.split("-");
-  if (parts.length < 3) return "";
-  const m = parseInt(parts[1] ?? "0");
-  const d = parseInt(parts[2] ?? "0");
-  if ((m === 3 && d >= 21) || (m === 4 && d <= 19)) return "♈ Aries";
-  if ((m === 4 && d >= 20) || (m === 5 && d <= 20)) return "♉ Taurus";
-  if ((m === 5 && d >= 21) || (m === 6 && d <= 20)) return "♊ Gemini";
-  if ((m === 6 && d >= 21) || (m === 7 && d <= 22)) return "♋ Cancer";
-  if ((m === 7 && d >= 23) || (m === 8 && d <= 22)) return "♌ Leo";
-  if ((m === 8 && d >= 23) || (m === 9 && d <= 22)) return "♍ Virgo";
-  if ((m === 9 && d >= 23) || (m === 10 && d <= 22)) return "♎ Libra";
-  if ((m === 10 && d >= 23) || (m === 11 && d <= 21)) return "♏ Scorpio";
-  if ((m === 11 && d >= 22) || (m === 12 && d <= 21)) return "♐ Sagittarius";
-  if ((m === 12 && d >= 22) || (m === 1 && d <= 19)) return "♑ Capricorn";
-  if ((m === 1 && d >= 20) || (m === 2 && d <= 18)) return "♒ Aquarius";
-  return "♓ Pisces";
-}
 
 // ── Profile Card ──────────────────────────────────────────────
 function ProfileCard({
@@ -68,7 +48,6 @@ function ProfileCard({
   onPress: () => void;
   onLongPress: () => void;
 }) {
-  const sunSign = computeSunSign(profile.dob);
   const faceUri = profile.photos.face;
   const initials = profile.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
@@ -78,7 +57,7 @@ function ProfileCard({
         style={({ pressed }) => [styles.profileCard, pressed && { opacity: 0.85 }]}
         onPress={onPress}
         onLongPress={onLongPress}
-        accessibilityLabel={`${profile.name}${sunSign ? `, ${sunSign}` : ""}, born ${profile.dob}`}
+        accessibilityLabel={`${profile.name}, born ${profile.dob}`}
         accessibilityRole="button"
         accessibilityHint="Double tap to view, long press for more options"
       >
@@ -91,7 +70,7 @@ function ProfileCard({
         )}
         <View style={styles.cardInfo}>
           <Text style={styles.cardName}>{profile.name}</Text>
-          <Text style={styles.cardDob}>{profile.dob}{sunSign ? ` · ${sunSign}` : ""}</Text>
+          <Text style={styles.cardDob}>{profile.dob}</Text>
           {profile.notes ? (
             <Text style={styles.cardNotes} numberOfLines={1}>{profile.notes}</Text>
           ) : null}

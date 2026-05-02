@@ -1,4 +1,12 @@
-"""Generate The Oracle's 1024x1024 iOS App Store icon."""
+"""Generate The Oracle's full icon set:
+
+- icon.png            (1024x1024 RGB, App Store master)
+- splash-icon.png     (1024x1024 RGB, splash mirror)
+- adaptive-icon.png   (432x432 RGBA, transparent background, foreground sigil
+                       inside ~66% safe zone — Android adaptive icon foreground)
+- notification-icon.png (96x96 RGBA, monochrome white silhouette — Android
+                         notification icon)
+"""
 from __future__ import annotations
 
 import json
@@ -9,8 +17,11 @@ from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 SIZE = 1024
-ICON_PATH = Path("artifacts/oracle/assets/images/icon.png")
-SPLASH_PATH = Path("artifacts/oracle/assets/images/splash-icon.png")
+ASSETS_DIR = Path("artifacts/oracle/assets/images")
+ICON_PATH = ASSETS_DIR / "icon.png"
+SPLASH_PATH = ASSETS_DIR / "splash-icon.png"
+ADAPTIVE_PATH = ASSETS_DIR / "adaptive-icon.png"
+NOTIFICATION_PATH = ASSETS_DIR / "notification-icon.png"
 APP_JSON_PATH = Path("artifacts/oracle/app.json")
 
 
@@ -51,7 +62,6 @@ def add_stars(img: Image.Image, count: int = 70) -> None:
 
 
 def smooth_curve(points, samples_per_seg: int = 24):
-    """Catmull-Rom spline through a list of points."""
     pts = [points[0]] + list(points) + [points[-1]]
     out = []
     for i in range(len(pts) - 3):
@@ -77,13 +87,12 @@ def smooth_curve(points, samples_per_seg: int = 24):
 
 
 def palm_silhouette_mask(size: int) -> Image.Image:
-    """Bold, simple palm/hand silhouette as a grayscale mask."""
+    """Bold, simple hand silhouette as a grayscale mask."""
     mask = Image.new("L", (size, size), 0)
     d = ImageDraw.Draw(mask)
 
     cx = size / 2
 
-    # Palm body (rounded rectangle)
     palm_top = size * 0.44
     palm_bottom = size * 0.86
     palm_left = size * 0.30
@@ -94,7 +103,6 @@ def palm_silhouette_mask(size: int) -> Image.Image:
         fill=255,
     )
 
-    # Wrist taper
     d.polygon(
         [
             (size * 0.36, size * 0.84),
@@ -105,18 +113,16 @@ def palm_silhouette_mask(size: int) -> Image.Image:
         fill=255,
     )
 
-    # Fingers (4) — bold rounded rectangles, slight height variation
     finger_w = size * 0.085
     finger_gap = size * 0.012
     total_w = finger_w * 4 + finger_gap * 3
     start_x = cx - total_w / 2
     finger_bottom = palm_top + size * 0.05
-    # Top y for each finger (lower number = taller); index, middle, ring, pinky
     finger_tops = [
-        size * 0.20,  # index
-        size * 0.16,  # middle (tallest)
-        size * 0.18,  # ring
-        size * 0.24,  # pinky (shortest)
+        size * 0.20,
+        size * 0.16,
+        size * 0.18,
+        size * 0.24,
     ]
     for i in range(4):
         fx = start_x + i * (finger_w + finger_gap)
@@ -127,9 +133,6 @@ def palm_silhouette_mask(size: int) -> Image.Image:
             fill=255,
         )
 
-    # Thumb — angled rounded rectangle, drawn on a separate layer then composed.
-    # Build it pointing up from a base near the left edge of the palm, then rotate
-    # counter-clockwise so it sticks up-and-to-the-left like a real thumb.
     thumb = Image.new("L", (size, size), 0)
     td = ImageDraw.Draw(thumb)
     tw = size * 0.11
@@ -144,7 +147,6 @@ def palm_silhouette_mask(size: int) -> Image.Image:
     thumb = thumb.rotate(55, resample=Image.BICUBIC, center=(base_x, base_y))
     mask = ImageChops.lighter(mask, thumb)
 
-    # Soften edges very slightly
     mask = mask.filter(ImageFilter.GaussianBlur(radius=1.5))
     return mask
 
@@ -168,7 +170,6 @@ def gold_glow(mask: Image.Image, color=(245, 158, 11), radius=70, intensity=1.0)
 
 
 def draw_palm_lines(size: int, palm_mask: Image.Image) -> Image.Image:
-    """Draw 4 thick smoothly-curving glowing gold palm lines, clipped to palm."""
     layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
     gold = (245, 158, 11, 255)
@@ -256,18 +257,72 @@ def render_icon() -> Image.Image:
     return composite.convert("RGB")
 
 
+def render_adaptive_foreground() -> Image.Image:
+    """Adaptive icon foreground: 432x432 RGBA, transparent background.
+
+    Android places this on a 432x432 canvas where the inner ~264x264 (~66%)
+    is the always-visible safe zone. Render the sigil at full SIZE then
+    downscale and composite it within that safe zone.
+    """
+    target = 432
+    safe = int(target * 0.66)
+
+    palm_mask = palm_silhouette_mask(SIZE)
+    outer = gold_glow(palm_mask, color=(245, 158, 11), radius=95, intensity=1.2)
+    amber = gold_glow(palm_mask, color=(255, 180, 60), radius=42, intensity=1.4)
+    palm = colored_silhouette(palm_mask, (45, 27, 78))
+    lines = draw_palm_lines(SIZE, palm_mask)
+    orb = draw_focal_orb(SIZE)
+
+    composite = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
+    composite = Image.alpha_composite(composite, outer)
+    composite = Image.alpha_composite(composite, amber)
+    composite = Image.alpha_composite(composite, palm)
+    composite = Image.alpha_composite(composite, lines)
+    composite = Image.alpha_composite(composite, orb)
+
+    scaled = composite.resize((safe, safe), resample=Image.LANCZOS)
+    canvas = Image.new("RGBA", (target, target), (0, 0, 0, 0))
+    offset = (target - safe) // 2
+    canvas.paste(scaled, (offset, offset), scaled)
+    return canvas
+
+
+def render_notification_icon() -> Image.Image:
+    """96x96 RGBA monochrome silhouette for Android notification icon.
+
+    Android renders notification icons as solid white masks tinted by the
+    system. Output a transparent canvas with the hand silhouette drawn as
+    pure white alpha.
+    """
+    target = 96
+    mask = palm_silhouette_mask(SIZE)
+    scaled_mask = mask.resize((target, target), resample=Image.LANCZOS)
+    canvas = Image.new("RGBA", (target, target), (0, 0, 0, 0))
+    white = Image.new("RGBA", (target, target), (255, 255, 255, 255))
+    canvas.paste(white, (0, 0), scaled_mask)
+    return canvas
+
+
 def main() -> None:
-    ICON_PATH.parent.mkdir(parents=True, exist_ok=True)
-    img = render_icon()
-    img.save(ICON_PATH, format="PNG", optimize=True)
-    img.save(SPLASH_PATH, format="PNG", optimize=True)
+    ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+
+    icon = render_icon()
+    icon.save(ICON_PATH, format="PNG", optimize=True)
+    icon.save(SPLASH_PATH, format="PNG", optimize=True)
+
+    adaptive = render_adaptive_foreground()
+    adaptive.save(ADAPTIVE_PATH, format="PNG", optimize=True)
+
+    notification = render_notification_icon()
+    notification.save(NOTIFICATION_PATH, format="PNG", optimize=True)
 
     print("=" * 60)
     print("Verification")
     print("=" * 60)
 
     checks_passed = 0
-    total = 5
+    total = 8
 
     if ICON_PATH.exists():
         print(f"[PASS] icon exists at {ICON_PATH}")
@@ -277,32 +332,62 @@ def main() -> None:
 
     with Image.open(ICON_PATH) as v:
         if v.size == (1024, 1024):
-            print("[PASS] size is 1024x1024")
+            print("[PASS] icon size 1024x1024")
             checks_passed += 1
         else:
-            print(f"[FAIL] size is {v.size}")
+            print(f"[FAIL] icon size {v.size}")
         if v.mode == "RGB":
-            print("[PASS] mode is RGB (no alpha)")
+            print("[PASS] icon mode RGB (no alpha)")
             checks_passed += 1
         else:
-            print(f"[FAIL] mode is {v.mode}")
+            print(f"[FAIL] icon mode {v.mode}")
 
     fsize = ICON_PATH.stat().st_size
     if fsize > 50 * 1024:
-        print(f"[PASS] file size {fsize} bytes (> 50KB)")
+        print(f"[PASS] icon file size {fsize} bytes (> 50KB)")
         checks_passed += 1
     else:
-        print(f"[FAIL] file size {fsize} bytes (<= 50KB)")
+        print(f"[FAIL] icon file size {fsize} bytes (<= 50KB)")
+
+    if ADAPTIVE_PATH.exists():
+        with Image.open(ADAPTIVE_PATH) as v:
+            if v.size == (432, 432) and v.mode == "RGBA":
+                print(f"[PASS] adaptive 432x432 RGBA at {ADAPTIVE_PATH}")
+                checks_passed += 1
+            else:
+                print(f"[FAIL] adaptive size/mode: {v.size} / {v.mode}")
+    else:
+        print(f"[FAIL] adaptive missing at {ADAPTIVE_PATH}")
+
+    if NOTIFICATION_PATH.exists():
+        with Image.open(NOTIFICATION_PATH) as v:
+            if v.size == (96, 96) and v.mode == "RGBA":
+                print(f"[PASS] notification 96x96 RGBA at {NOTIFICATION_PATH}")
+                checks_passed += 1
+            else:
+                print(f"[FAIL] notification size/mode: {v.size} / {v.mode}")
+    else:
+        print(f"[FAIL] notification missing at {NOTIFICATION_PATH}")
 
     with open(APP_JSON_PATH) as f:
         app = json.load(f)
     icon_ok = app["expo"]["icon"] == "./assets/images/icon.png"
     splash_ok = app["expo"]["splash"]["image"] == "./assets/images/splash-icon.png"
+    adaptive_cfg_ok = (
+        app["expo"]["android"]["adaptiveIcon"]["foregroundImage"]
+        == "./assets/images/adaptive-icon.png"
+    )
     if icon_ok and splash_ok:
-        print("[PASS] app.json icon and splash.image paths correct")
+        print("[PASS] app.json icon + splash paths")
         checks_passed += 1
     else:
-        print(f"[FAIL] app.json paths: icon_ok={icon_ok}, splash_ok={splash_ok}")
+        print(f"[FAIL] icon_ok={icon_ok} splash_ok={splash_ok}")
+
+    if adaptive_cfg_ok:
+        print("[PASS] app.json android.adaptiveIcon.foregroundImage path")
+        checks_passed += 1
+    else:
+        print("[FAIL] app.json adaptiveIcon path missing or wrong")
 
     if SPLASH_PATH.exists() and SPLASH_PATH.stat().st_size == ICON_PATH.stat().st_size:
         print(f"[INFO] splash-icon.png mirrored ({SPLASH_PATH.stat().st_size} bytes)")

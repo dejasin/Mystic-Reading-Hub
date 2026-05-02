@@ -41,9 +41,12 @@ const { width } = Dimensions.get("window");
 
 const TRUST_LINES = [
   "Personal AI advisor — not generic horoscopes",
-  "Powered by your palm. Guided by AI.",
+  "Powered by AI. Refined by your biometrics.",
   "Honest guidance across love, career, health & purpose",
 ];
+
+const PRO_BANNER_DISMISS_KEY = "oracle_pro_banner_dismissed_at";
+const PRO_BANNER_DISMISS_HOURS = 24;
 
 function DailyOracleCard({ profile }: { profile: { id: string; name: string; dob: string } }) {
   const [content, setContent] = useState<string | null>(null);
@@ -82,7 +85,7 @@ function DailyOracleCard({ profile }: { profile: { id: string; name: string; dob
   return (
     <Animated.View entering={FadeInDown.duration(700).delay(300)} style={styles.dailyCard}>
       <View style={styles.dailyHeader}>
-        <Text style={styles.dailyTitle}>✦ Daily Oracle</Text>
+        <Text style={styles.dailyTitle}>✦ Daily Reflection</Text>
         <Pressable
           onPress={() => router.push({ pathname: "/daily-history", params: { profileId: profile.id, profileName: profile.name } })}
           style={({ pressed }) => [styles.historyBtn, pressed && { opacity: 0.6 }]}
@@ -97,13 +100,13 @@ function DailyOracleCard({ profile }: { profile: { id: string; name: string; dob
       {loading && (
         <View style={styles.dailyLoadingContainer}>
           <ActivityIndicator size="small" color={Colors.gold} />
-          <Text style={styles.dailyLoadingText}>The Oracle contemplates…</Text>
+          <Text style={styles.dailyLoadingText}>Generating today's reflection…</Text>
         </View>
       )}
 
       {error && !loading && (
         <Pressable onPress={fetchDaily} style={styles.dailyErrorContainer}>
-          <Text style={styles.dailyErrorText}>The veil is thick today. Tap to try again.</Text>
+          <Text style={styles.dailyErrorText}>Could not load today's reflection. Tap to retry.</Text>
         </Pressable>
       )}
 
@@ -156,7 +159,7 @@ function WeeklyForecastCard({ profile }: { profile: { id: string; name: string; 
         style={({ pressed }) => [styles.weeklyHeader, pressed && { opacity: 0.8 }]}
       >
         <View style={styles.weeklyTitleRow}>
-          <Text style={styles.weeklyTitle}>✦ This Week</Text>
+          <Text style={styles.weeklyTitle}>✦ This Week's Reflection</Text>
           {loading && <ActivityIndicator size="small" color={Colors.gold} style={{ marginLeft: 8 }} />}
         </View>
         <Feather
@@ -168,7 +171,7 @@ function WeeklyForecastCard({ profile }: { profile: { id: string; name: string; 
 
       {error && !loading && (
         <Pressable onPress={fetchWeekly} style={styles.weeklyErrorContainer}>
-          <Text style={styles.dailyErrorText}>Could not reach The Oracle. Tap to retry.</Text>
+          <Text style={styles.dailyErrorText}>Could not load this week's reflection. Tap to retry.</Text>
         </Pressable>
       )}
 
@@ -179,7 +182,7 @@ function WeeklyForecastCard({ profile }: { profile: { id: string; name: string; 
       )}
 
       {!content && !loading && !error && (
-        <Text style={styles.weeklyHint}>Tap to reveal your weekly forecast</Text>
+        <Text style={styles.weeklyHint}>Tap to load this week's reflection</Text>
       )}
     </Animated.View>
   );
@@ -188,11 +191,43 @@ function WeeklyForecastCard({ profile }: { profile: { id: string; name: string; 
 export default function LandingScreen() {
   const insets = useSafeAreaInsets();
   const glowOpacity = useSharedValue(0.5);
-  const { restore, isRestoring, isConfigured } = useSubscription();
+  const { restore, isRestoring, isConfigured, isSubscribed } = useSubscription();
   const { user, isLoggedIn, logout } = useAuth();
   const { profiles, isLoaded } = useProfiles();
   const { referralCount, freeDeepDives } = useReferral();
   const [onboardingChecked, setOnboardingChecked] = useState(false);
+  const [proBannerVisible, setProBannerVisible] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      if (isSubscribed) {
+        setProBannerVisible(false);
+        return;
+      }
+      try {
+        const raw = await AsyncStorage.getItem(PRO_BANNER_DISMISS_KEY);
+        const dismissedAt = raw ? parseInt(raw, 10) : 0;
+        const cutoff = Date.now() - PRO_BANNER_DISMISS_HOURS * 60 * 60 * 1000;
+        setProBannerVisible(!dismissedAt || dismissedAt < cutoff);
+      } catch {
+        setProBannerVisible(true);
+      }
+    })();
+  }, [isSubscribed]);
+
+  const handleDismissProBanner = async () => {
+    setProBannerVisible(false);
+    try {
+      await AsyncStorage.setItem(PRO_BANNER_DISMISS_KEY, String(Date.now()));
+    } catch {}
+  };
+
+  const handleUpgradePro = () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    }
+    router.push("/intake");
+  };
 
   const mostRecentProfile = profiles.length > 0
     ? profiles.reduce((a, b) => (a.createdAt > b.createdAt ? a : b))
@@ -294,6 +329,33 @@ export default function LandingScreen() {
         </Pressable>
       </View>
 
+      {proBannerVisible && !isSubscribed && (
+        <Animated.View entering={FadeIn.duration(500)} style={styles.proBanner}>
+          <Pressable
+            style={({ pressed }) => [styles.proBannerInner, pressed && { opacity: 0.9 }]}
+            onPress={handleUpgradePro}
+            accessibilityLabel="Upgrade to Oracle Pro"
+            accessibilityRole="button"
+          >
+            <Feather name="star" size={16} color={Colors.bg} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.proBannerTitle}>Upgrade to Oracle Pro</Text>
+              <Text style={styles.proBannerSub}>Unlock full sessions + unlimited Oracle Chat</Text>
+            </View>
+            <Feather name="chevron-right" size={18} color={Colors.bg} />
+          </Pressable>
+          <Pressable
+            onPress={handleDismissProBanner}
+            style={styles.proBannerDismiss}
+            hitSlop={12}
+            accessibilityLabel="Dismiss Oracle Pro banner"
+            accessibilityRole="button"
+          >
+            <Feather name="x" size={14} color={Colors.bg} />
+          </Pressable>
+        </Animated.View>
+      )}
+
       <ScrollView
         contentContainerStyle={[styles.content]}
         showsVerticalScrollIndicator={false}
@@ -307,7 +369,7 @@ export default function LandingScreen() {
           <Text style={styles.appName}>ORACLE</Text>
           {!hasProfile && (
             <Text style={styles.tagline}>
-              Your Personal AI Life Advisor.{"\n"}Powered by your palm. Guided by AI.
+              Your Personal AI Life Advisor.{"\n"}Powered by AI. Refined by your biometrics.
             </Text>
           )}
         </Animated.View>
@@ -460,6 +522,50 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: 4,
     paddingBottom: 0,
+  },
+  proBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Colors.gold,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    minHeight: 56,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 14,
+    elevation: 4,
+  },
+  proBannerInner: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingRight: 8,
+  },
+  proBannerTitle: {
+    color: Colors.bg,
+    fontSize: 15,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
+  proBannerSub: {
+    color: Colors.bg,
+    fontSize: 12,
+    opacity: 0.8,
+    marginTop: 2,
+  },
+  proBannerDismiss: {
+    width: 28,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 14,
+    backgroundColor: "rgba(0,0,0,0.18)",
+    marginLeft: 6,
   },
   topBarBtn: {
     width: 44,

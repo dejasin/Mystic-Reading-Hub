@@ -40,6 +40,8 @@ const STARTER_QUESTIONS = [
   "Why do I keep repeating this pattern?",
   "How can I trust myself more?",
   "What should I focus on in the next 6 months?",
+  "How do I make the most of my strengths?",
+  "Where am I most likely to self-sabotage?",
 ];
 
 function MessageBubble({ msg }: { msg: Message }) {
@@ -309,7 +311,7 @@ export default function ChatScreen() {
           ListFooterComponent={
             showStarters ? (
               <View style={styles.startersContainer}>
-                <Text style={styles.startersTitle}>Ask Oracle anything about your life...</Text>
+                <Text style={styles.startersTitle}>Ask the Oracle about your behavioral profile, your patterns, or any decision you're navigating.</Text>
                 <View style={styles.starterChips}>
                   {STARTER_QUESTIONS.map((q, i) => (
                     <Pressable
