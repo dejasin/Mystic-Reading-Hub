@@ -1,0 +1,92 @@
+You are a senior software engineer and App Store strategist who has shipped dozens of React Native/Expo apps through Apple review, including apps that faced 4.3b saturation rejections and were successfully resubmitted. You know exactly what Apple looks for, what gets rejected, and what gets approved.
+This app is called Oracle: AI Life Advisor. It is not a palm reading app. It uses a palm photo as a biometric intake mechanism to build the user's behavioral profile — then becomes an ongoing AI life advisor powered by Anthropic Claude that the user can ask about any area of their life. The palm is the key. The conversation is the product.
+The app was recently rejected by Apple under Guideline 4.3b — market saturation — because it was positioned and presented as a palm reading app. It has been repositioned as an AI life advisor. The resubmission needs to be airtight.
+Your job:
+Do a complete, deep audit of this entire codebase. Read every file. Understand the full architecture, every screen, every API call, every context, every component, every piece of copy, every navigation flow, every third-party integration.
+Then give me a comprehensive report structured exactly as follows:
+
+PART 1 — CODEBASE UNDERSTANDING
+Describe what you found:
+
+Full architecture overview (Expo SDK version, navigation system, state management, API layer, third-party integrations)
+Every screen that exists and what it does
+How the palm capture → API call → reading → chat flow works technically
+How RevenueCat is integrated and where the paywall is triggered
+How OracleContext works and what state it manages
+Any existing behavioral profile or scoring system
+Any existing onboarding flow
+Current system prompt being sent to Anthropic
+Any areas of the code that are broken, incomplete, or have obvious bugs
+
+
+PART 2 — APP STORE APPROVAL RISK ASSESSMENT
+Review everything through Apple's eyes and identify:
+Critical risks (will cause rejection):
+
+Any remaining fortune-telling, prediction, or horoscope language anywhere in the app — in copy, in comments, in placeholder text, anywhere
+Any screens or flows that would cause Apple's reviewer to categorize this as a palm reading / fortune telling app
+Any missing or broken subscription flows that would cause Apple to flag it under 2.3 (subscription not found)
+Any placeholder assets (icons, images, splash screens) that are unfinished
+Any privacy policy or camera usage description language that doesn't match the actual app behavior
+Any screens that crash or don't load correctly
+Anything that violates App Store guidelines you can identify
+
+Moderate risks (could cause rejection):
+
+Any features that are referenced in metadata but not implemented or hard to find
+Any onboarding flows that don't clearly establish the AI advisor positioning before the palm scan
+Any chat or reading screens that lead with palm reading rather than AI advisory
+Any missing screens that would strengthen the AI advisor positioning
+
+Low risks (polish items):
+
+Any UI inconsistencies that make the app feel unfinished
+Any copy that is generic or weak
+Any missing animations or transitions
+Any performance issues
+
+
+PART 3 — FEATURE AND IMPROVEMENT RECOMMENDATIONS
+For each recommendation, tell me:
+
+What to build or change
+Why it matters for App Store approval specifically
+Why it matters for user retention and monetization
+How complex it is to implement (simple / medium / complex)
+Which files to touch
+
+Organize recommendations into these categories:
+A. Critical for App Store approval — do these before resubmitting:
+Things that will directly impact whether Apple approves or rejects the app. Be specific about what Apple's reviewer will see and why it will help.
+B. High impact for user retention and subscription conversion:
+Features and improvements that will make users stay, subscribe, and return. Focus on what makes Oracle feel like a $9.99/month product that people don't cancel.
+C. The proprietary system — what makes Oracle irreplaceable:
+Specific ideas for features, visualizations, or systems that no other app has — things that make Oracle feel like a category of one rather than another AI chat wrapper. Think about what would make a user say "I've never seen anything like this." Consider: the behavioral profile visualization, the relationship between the palm data and the AI responses, the way the profile evolves over time, the depth of the conversation experience.
+D. Monetization optimization:
+Specific changes to the paywall, pricing presentation, subscription flow, and value communication that will increase conversion from free to paid. What should the paywall say? When should it appear? What should the annual vs monthly framing look like?
+E. Technical debt and architecture improvements:
+Anything in the codebase that should be refactored, cleaned up, or rebuilt properly before scaling. Focus on things that will cause problems as the app grows.
+
+PART 4 — PRIORITIZED ACTION PLAN
+Give me a prioritized list of everything to do before resubmitting to Apple, ordered by impact and urgency. Format as a table:
+PriorityTaskImpactEffortDo before resubmit?1...CriticalLowYes
+Include every item from Parts 2 and 3 in this table.
+
+PART 5 — THE ONE THING
+If you could only recommend one change — one feature, one fix, one reframe — that would have the single biggest impact on getting this app approved and building a product people love and pay for every month, what would it be and why?
+
+HOW TO DO THIS AUDIT:
+Read every file in the codebase before forming any opinions. Do not make assumptions. Look at:
+
+Every .tsx and .ts file in artifacts/oracle/app/
+Every component in artifacts/oracle/components/
+Every file in artifacts/oracle/lib/ and artifacts/oracle/context/
+artifacts/oracle/app.json
+artifacts/oracle/eas.json
+artifacts/api-server/src/routes/oracle.ts and any other API routes
+The system prompt being sent to Anthropic
+The RevenueCat integration
+Any existing assets in artifacts/oracle/assets/
+
+Be specific. Reference actual file names, actual copy, actual code. Do not give me generic advice that could apply to any app — give me specific observations about THIS app and THIS codebase.
+This is a real product with real money on the line. Treat it that way.
