@@ -48,7 +48,7 @@ The previous submission was rejected for being a palmistry / palm-reading app wi
 - `assets/images/splash-icon.png` — Regenerated.
 - `assets/images/adaptive-icon.png` — New (432×432 RGBA, transparent bg).
 - `assets/images/notification-icon.png` — New (96×96 RGBA monochrome).
-- `app-store/screenshots/screenshot_{1..5}*.png` — New (5 × 1320×2868).
+- `assets/app-store/screenshot-[1-5].png` — New (5 × 1320×2868 PNGs at the flat spec path).
 - `APP-STORE-SUBMISSION.md` — New, complete submission package: App Store Connect metadata, reviewer notes, build steps, compliance checklist.
 
 ### Marketing & support website — `artifacts/oracle-website/`
@@ -96,7 +96,6 @@ Per user agreement (Option-C scope), the following are deferred:
 - 3 × 30s App Store preview videos. Pipeline lives at `artifacts/oracle-preview-ritual` and can be re-engaged for a follow-up submission.
 - Localizations beyond English.
 - iPad layout (`supportsTablet: false`).
-- Auto-paywall AsyncStorage per-session flag — current SSE-driven paywall trigger is correct on the server side and was left as-is.
 
 ---
 
@@ -149,10 +148,11 @@ plan. Each was addressed:
 - **`buildNumber` invariant restored.** Reverted from `2` back to `1` to honor
   the explicit spec rule "do not disturb slug, bundleIdentifier, version,
   buildNumber, projectId."
-- **Screenshot deliverables relocated.** All five 1320×2868 PNGs now live at
-  `artifacts/oracle/assets/app-store/screenshots/` (the spec path). The
-  obsolete `artifacts/oracle/app-store/` directory was removed. Submission
-  doc paths updated accordingly.
+- **Screenshot deliverables relocated.** All five 1320×2868 PNGs now live
+  flat at `artifacts/oracle/assets/app-store/screenshot-[1-5].png` (the
+  spec path). The obsolete `artifacts/oracle/app-store/` directory and the
+  intermediate `assets/app-store/screenshots/` subdirectory were removed.
+  Submission doc paths updated accordingly.
 - **Type cast removed.** The `return { points } as any;` in `RadarChart`'s
   `useAnimatedProps` callback has been replaced with a properly typed
   `useAnimatedProps<React.ComponentProps<typeof Polygon>>(...)` signature.
