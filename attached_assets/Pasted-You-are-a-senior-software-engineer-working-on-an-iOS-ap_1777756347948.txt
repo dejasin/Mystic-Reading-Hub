@@ -1,0 +1,253 @@
+You are a senior software engineer working on an iOS app called Oracle: AI Life Advisor — an AI life advisor app powered by Anthropic Claude that uses a palm photo as a biometric intake mechanism to build a behavioral profile, then becomes an ongoing AI advisor. The palm is the intake. The conversation is the product. This is not a palm reading app.
+The app recently received an Apple 4.3b rejection. A major resubmission task (Task #58) is planned but has not run yet. Your job right now is to handle everything that can be fixed quickly — changes that do not require touching the main oracle.ts server file, the questionnaire screen build, or the asset generation scripts. These are the quick wins that can be done safely in parallel.
+ABSOLUTE RULES:
+
+Never break existing functionality
+Work one section at a time — verify before moving forward
+Never commit broken code — run npx expo prebuild --platform ios --clean --no-install before every commit
+Never delete working code without a verified replacement in place
+Only touch files explicitly called out in each section
+Commit after each section with a descriptive message
+Do not stop until everything is complete and pushed to GitHub
+
+
+SECTION 1 — FIX THE SUPPORT WEBSITE
+Open artifacts/oracle-website/index.html. This is the live support and marketing website Apple's reviewer will visit. It must reflect the AI advisor positioning.
+Make these specific changes:
+1a. Hero section
+
+Change all H1/H2 headings from "The Oracle" to "Oracle: AI Life Advisor"
+Change hero description from anything referencing "palm reading app" to:
+"Oracle is your personal AI advisor. It analyzes the features of your hands alongside your self-assessment to build a behavioral profile — then becomes an AI advisor you can ask about any area of your life. Your hand is the intake. The conversation is the product."
+
+1b. Features section
+Replace the 3 existing feature descriptions with:
+Feature 1 — Icon: chat bubble
+Title: "Your Personal AI Advisor"
+Description: "Ask Oracle anything about your relationships, career, recurring patterns, and personal growth. Every answer is grounded in your unique behavioral profile — not generic advice."
+Feature 2 — Icon: radar/chart shape
+Title: "Your Behavioral Profile"
+Description: "Oracle analyzes your hands and self-assessment to map your behavioral patterns, emotional tendencies, and core strengths across 6 dimensions."
+Feature 3 — Icon: hand/palm
+Title: "Biometric Intake"
+Description: "Your hand photo is your profile anchor — the physical foundation Oracle uses to understand how you're wired. Processed by Anthropic AI. Never stored."
+1c. FAQ section
+Replace all existing FAQ items with these 6:
+Q: "How does Oracle work?"
+A: "Oracle combines analysis of your hand photos with your self-assessment responses to build a behavioral profile. From that foundation, you can have unlimited conversations with Oracle about any area of your life."
+Q: "Is this a fortune telling or palm reading app?"
+A: "No. Oracle does not predict your future and does not practice palmistry or chiromancy. It uses the physical features of your hands as a biometric intake to understand your behavioral patterns — similar to how voice or handwriting analysis reveals personality traits. Oracle describes who you are, not what will happen."
+Q: "What makes Oracle different from other apps?"
+A: "Oracle is the only app that uses your hand as a biometric intake for an ongoing AI advisory relationship. Other apps give you a report and stop. Oracle gives you a personal advisor that truly knows you — and gets more useful every time you use it."
+Q: "Is my hand photo stored or shared?"
+A: "Your hand photos are sent to Anthropic's Claude AI for real-time analysis and are not stored on our servers after your session completes."
+Q: "How do I cancel my subscription?"
+A: "Open Settings on your iPhone → tap your name → Subscriptions → Oracle. You can cancel or manage your subscription there at any time."
+Q: "The app isn't working — what do I do?"
+A: "Force close the app, restart your device, and contact us at support@theoracleapp.com if the issue continues. We respond within 24 hours."
+1d. Privacy policy
+Update the effective date to today's date: May 2, 2026
+Update the description of what data is collected:
+
+Change "palm photos" to "hand photos"
+Change "for your reading" to "for behavioral profile analysis"
+Add: "Oracle uses Anthropic Claude AI to process hand photos and self-assessment responses. This data is used solely to generate your behavioral profile and is not retained after session completion."
+
+1e. Footer
+Change "The Oracle" to "Oracle: AI Life Advisor" in the copyright line and any footer text.
+After all changes are made:
+
+Verify the site renders correctly
+Verify #support anchor scrolls to the support/FAQ section
+Verify #privacy anchor scrolls to the privacy policy section
+Commit and push changes to GitHub
+Confirm the live URL still works: https://mystic-reading-hub-djsinclair.replit.app/oracle-website/
+
+
+SECTION 2 — FIX THE SUBSCRIPTION PRICING
+The app is currently priced at $4.99/month with a single tier. This needs to be updated to $9.99/month and $49.99/year with a 3-day free trial on the annual plan.
+2a. RevenueCat configuration
+Open artifacts/oracle/lib/revenuecat.tsx. Review the current product configuration.
+If the annual product does not exist in RevenueCat yet:
+
+Add a note in the code as a TODO comment: // TODO: Add annual_49_99 product in RevenueCat dashboard and App Store Connect before building
+Add the product identifier constant: export const ANNUAL_PRODUCT_ID = 'oracle_annual_4999'
+Add the monthly product identifier constant: export const MONTHLY_PRODUCT_ID = 'oracle_monthly_999'
+
+Update any hardcoded price references from $4.99 to $9.99 throughout the codebase.
+2b. Paywall UI
+Find the paywall screen or component (likely in app/reading.tsx or a dedicated paywall component). Update the UI to show:
+
+Headline: "Your full behavioral profile is ready"
+Annual option (show first, visually highlighted with gold border):
+
+Price: $49.99/year
+Badge: "Save 58% · Best Value" in gold
+Sub-label: "3-day free trial"
+Pre-selected by default
+
+
+Monthly option (show second, less prominent):
+
+Price: $9.99/month
+
+
+3 benefit rows with gold checkmark icons:
+
+"Complete behavioral profile across all dimensions"
+"Unlimited AI advisor conversations"
+"Relationship dynamics, deep dives, and daily reflections"
+
+
+Primary CTA button: "Start Oracle Pro"
+Fine print below button: "3-day free trial on annual plan · Cancel anytime in Apple ID Settings"
+Restore purchases link: "Restore Purchases"
+
+2c. Update all price references
+Search the entire codebase for $4.99 and replace with $9.99 in all user-facing text. Do not change any RevenueCat product ID strings.
+
+SECTION 3 — ADD THE "ABOUT ORACLE" SCREEN
+Create artifacts/oracle/app/about.tsx. This is a legitimacy signal Apple specifically looks for in borderline 4.3b apps.
+3a. Screen content
+tsx// Screen: About Oracle
+// Accessible from Settings
+// Purpose: Explicitly states what Oracle is and is not — required legitimacy signal for Apple 4.3b
+Header: "What Oracle Is — and Isn't"
+Body content (render as formatted paragraphs with the existing app dark navy/gold design system):
+What Oracle Is:
+"Oracle is an AI life advisor powered by Anthropic Claude. It uses two inputs to build your behavioral profile: the physical features of your hands, and your answers to 8 self-assessment questions. From that foundation, Oracle becomes a personal advisor you can consult about any area of your life — relationships, career, recurring patterns, and personal growth."
+What Oracle Is NOT:
+Display as a list with a gold "—" prefix for each item:
+
+"A fortune telling app"
+"A palmistry or chiromancy app"
+"An astrology or numerology app"
+"A prediction engine of any kind"
+
+How the Hand Analysis Works:
+"Oracle does not practice palmistry. It uses the physical structure of your hand — the overall proportions, the depth and clarity of the major lines, the balance between different zones — as a stable biometric foundation for understanding your behavioral wiring. This is similar to how voice analysis or handwriting analysis can reveal personality patterns. It is a tool for self-understanding, not divination."
+A Note on Predictions:
+"Oracle does not predict future events, time windows, or outcomes. It describes your present — your patterns, tendencies, strengths, and blind spots — so you can make more conscious choices about what comes next. The future is yours to create."
+Powered By:
+"Oracle is powered by Anthropic Claude, one of the world's most advanced AI systems. All hand photo processing occurs in real time. Photos are not stored after your session completes."
+At the bottom, a small "Send Feedback" link that opens mailto:support@theoracleapp.com?subject=Oracle Feedback
+3b. Add to Settings
+Open artifacts/oracle/app/settings.tsx. Add two new rows in the appropriate section:
+Row 1:
+
+Label: "About Oracle"
+Chevron icon on right
+Navigates to about.tsx
+
+Row 2:
+
+Label: "Send Feedback"
+Mail icon on right
+Opens mailto:support@theoracleapp.com?subject=Oracle%20Feedback via Linking
+
+3c. Style requirements
+
+Dark navy background #0a0a0f matching existing app design
+Gold #f59e0b accent color for section headers and list markers
+White body text
+Consistent with existing Settings screen styling
+Back button in header navigating back to Settings
+
+
+SECTION 4 — ADD READING SCREEN DISCLAIMER
+Open artifacts/oracle/app/reading.tsx. At the very top of the reading reveal content — before any profile sections render — add this disclaimer text:
+*"Oracle's behavioral profile is for personal reflection and self-understanding. It is not medical, psychological, or professional advice, and does not predict future events."*
+Style: small font (11-12px), italic, white at 50% opacity, centered, with 8px padding top and bottom, visible immediately when the reading reveal screen loads.
+This disclaimer must appear BEFORE any profile content — it is the first thing a user or Apple reviewer reads when the reading reveals.
+
+SECTION 5 — ADD "TALK TO ORACLE" BRIDGE BUTTON
+Open artifacts/oracle/app/reading.tsx. At the very bottom of the reading reveal screen — after all profile content, before the paywall trigger — add a prominent full-width CTA button:
+
+Text: "Talk to Oracle About Your Profile →"
+Background: gold #f59e0b
+Text color: dark navy #0a0a0f
+Full width with 16px horizontal margin
+16px padding vertical
+12px border radius
+Bold text
+
+Behavior:
+
+For subscribers: navigates directly to chat.tsx
+For non-subscribers: opens the paywall modal first, then proceeds to chat after subscription
+
+This button is critical for Apple's reviewer to immediately understand that the conversation is the primary product — not the reading.
+
+SECTION 6 — FIX HOME SCREEN CARDS
+Open artifacts/oracle/app/index.tsx. Find the Daily Oracle and Weekly Forecast card components (lines ~48-186).
+6a. Rename the cards
+
+"Daily Oracle" → "Daily Reflection"
+"Weekly Forecast" → "This Week's Focus"
+
+6b. Remove DOB from API requests
+Find where these cards call the API. Remove the dateOfBirth or dob field from the request body for both card endpoints. If removing DOB would break the API call entirely, replace it with the user's session ID or a neutral placeholder — do not send birth date data to generate what are functionally horoscope cards.
+6c. Update card framing language
+If there is any visible text on these cards referencing "today's energy", "what today holds", "your stars", "this week's outlook" — replace with:
+
+Daily card: "A pattern worth reflecting on today"
+Weekly card: "A focus area for this week"
+
+
+SECTION 7 — FIX PROFILES SCREEN ZODIAC GLYPHS
+Open artifacts/oracle/app/profiles.tsx. Find lines ~41-59 and ~94 where zodiac sign glyphs (♈ Aries, ♓ Pisces, etc.) are computed from birth dates and rendered on profile cards.
+7a. Remove zodiac computation
+Delete the function or logic that computes a zodiac sign from the user's date of birth for display purposes.
+7b. Replace with behavioral label
+Replace the zodiac glyph with a simple behavioral indicator. Since the questionnaire may not exist yet for existing profiles, use a neutral fallback:
+typescript// If questionnaire answers exist for this profile, show behavioral label
+// If not, show a neutral Oracle symbol
+const getProfileIndicator = (profile: Profile) => {
+  if (profile.questionnaireAnswers?.coreMotivation) {
+    const labels: Record<string, { label: string; symbol: string }> = {
+      "Creating something meaningful": { label: "Creator", symbol: "✦" },
+      "Understanding how things work": { label: "Analyst", symbol: "◈" },
+      "Connecting deeply with others": { label: "Connector", symbol: "⊕" },
+      "Living freely on your own terms": { label: "Explorer", symbol: "◎" }
+    };
+    return labels[profile.questionnaireAnswers.coreMotivation] || { label: "Seeker", symbol: "✧" };
+  }
+  return { label: "", symbol: "✦" }; // neutral Oracle symbol, no label
+};
+Render the symbol and label (if exists) in place of the zodiac glyph. Style in gold #f59e0b.
+
+SECTION 8 — FINAL VERIFICATION
+Run the following and report results:
+cd /home/user/Mystic-Reading-Hub
+pnpm install --frozen-lockfile
+cd /home/user/Mystic-Reading-Hub/artifacts/oracle
+npx expo prebuild --platform ios --clean --no-install
+Both must pass. If either fails — fix it before committing.
+Then verify:
+Website:
+
+ Support URL resolves: https://mystic-reading-hub-djsinclair.replit.app/oracle-website/#support
+ Privacy URL resolves: https://mystic-reading-hub-djsinclair.replit.app/oracle-website/#privacy
+ No "palm reading app" language anywhere on the site
+ "Is this a fortune telling app?" FAQ item exists with clear No answer
+
+App:
+
+ about.tsx exists and is accessible from Settings
+ "Send Feedback" row exists in Settings
+ Reading screen disclaimer exists at top of reading reveal
+ "Talk to Oracle About Your Profile →" button exists at bottom of reading reveal
+ Paywall shows $9.99/month and $49.99/year with annual pre-selected
+ "Daily Reflection" and "This Week's Focus" on home screen — no "Daily Oracle" or "Weekly Forecast"
+ No zodiac glyphs on profile cards
+ Zero instances of "$4.99" in user-facing text
+ Zero instances of "Daily Oracle" in UI
+ Zero instances of "Weekly Forecast" in UI
+ Zero instances of zodiac glyphs (♈♉♊♋♌♍♎♏♐♑♒♓) in UI
+
+
+SECTION 9 — COMMIT AND PUSH
+Update CHANGES.md at repo root listing every file changed.
+Commit message: "Quick wins pass — support website, pricing, about screen, disclaimer, bridge button, home cards, zodiac removal"
+Push to GitHub master. Report final commit hash and every file changed.
+Do not stop until all checklist items pass and everything is pushed.
