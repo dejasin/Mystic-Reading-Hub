@@ -174,7 +174,7 @@ function RadarChart({ scores }: { scores: number[] }) {
 export default function BehavioralProfileScreen() {
   const insets = useSafeAreaInsets();
   const { state } = useOracle();
-  const { userData, freeReading, paidReading } = state;
+  const { userData, freeReading, paidReading, behavioralScores } = state;
 
   const seed = useMemo(() => {
     const base = `${userData.name ?? ""}|${userData.dob ?? ""}|${userData.dominantHand ?? ""}`;
@@ -183,8 +183,17 @@ export default function BehavioralProfileScreen() {
   }, [userData.name, userData.dob, userData.dominantHand, freeReading, paidReading]);
 
   const scores = useMemo(
-    () => DIMENSIONS.map((d) => scoreFor(seed, d.key)),
-    [seed]
+    () =>
+      DIMENSIONS.map((d) => {
+        if (behavioralScores) {
+          const v = behavioralScores[d.key as keyof typeof behavioralScores];
+          if (typeof v === "number" && Number.isFinite(v)) {
+            return Math.max(0, Math.min(1, v));
+          }
+        }
+        return scoreFor(seed, d.key);
+      }),
+    [seed, behavioralScores]
   );
 
   const hasReading = Boolean((freeReading && freeReading.length > 0) || (paidReading && paidReading.length > 0));

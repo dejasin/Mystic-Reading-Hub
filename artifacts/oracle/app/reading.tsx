@@ -750,7 +750,7 @@ type Phase = "loading" | "streaming_free" | "paywall" | "streaming_paid" | "comp
 
 export default function ReadingScreen() {
   const insets = useSafeAreaInsets();
-  const { state, updateUserData, appendFreeReading, appendPaidReading, appendArchetype, resetFreeReading, resetPaidReading, setReadingComplete, resetAll } = useOracle();
+  const { state, updateUserData, appendFreeReading, appendPaidReading, appendArchetype, resetFreeReading, resetPaidReading, setReadingComplete, setBehavioralScores, resetAll } = useOracle();
   const { profiles, updateProfile } = useProfiles();
   const { addEntry: addJournalEntry } = useJournal();
   const { customerInfo } = useSubscription();
@@ -859,6 +859,7 @@ export default function ReadingScreen() {
               trackEvent(AnalyticsEvent.READING_FREE_COMPLETED);
               trackFunnelStep("paywall");
               setPhase("paywall");
+              void fetchBehavioralScores();
               return;
             }
             if (parsed.chunk) {
@@ -878,12 +879,17 @@ export default function ReadingScreen() {
           try {
             const parsed = JSON.parse(trimmed.slice(6));
             if (parsed.chunk) appendFreeReading(parsed.chunk);
-            if (parsed.event === "paywall") { setPhase("paywall"); return; }
+            if (parsed.event === "paywall") {
+              setPhase("paywall");
+              void fetchBehavioralScores();
+              return;
+            }
           } catch (e) { console.warn("SSE flush parse error (free):", e); }
         }
       }
 
       setPhase("paywall");
+      void fetchBehavioralScores();
     } catch (err) {
       const isNetwork = err instanceof TypeError || String(err).includes("fetch");
       setErrorMsg(
@@ -893,6 +899,43 @@ export default function ReadingScreen() {
       );
       setErrorSource("free");
       setPhase("error");
+    }
+  };
+
+  const fetchBehavioralScores = async () => {
+    try {
+      const baseUrl = getApiUrl();
+      const response = await fetch(`${baseUrl}api/behavioral-profile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: state.sessionId,
+          userData: state.userData,
+        }),
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      const s = data?.scores;
+      if (
+        s &&
+        typeof s.intuition === "number" &&
+        typeof s.emotional_depth === "number" &&
+        typeof s.drive === "number" &&
+        typeof s.adaptability === "number" &&
+        typeof s.inner_knowing === "number" &&
+        typeof s.expression === "number"
+      ) {
+        setBehavioralScores({
+          intuition: s.intuition,
+          emotional_depth: s.emotional_depth,
+          drive: s.drive,
+          adaptability: s.adaptability,
+          inner_knowing: s.inner_knowing,
+          expression: s.expression,
+        });
+      }
+    } catch (e) {
+      console.warn("Behavioral profile fetch failed:", e);
     }
   };
 
@@ -940,6 +983,7 @@ export default function ReadingScreen() {
               trackEvent(AnalyticsEvent.READING_COMPLETED);
               setReadingComplete(true);
               setPhase("complete");
+              void fetchBehavioralScores();
               if (Platform.OS !== "web") {
                 await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
               }
@@ -978,6 +1022,7 @@ export default function ReadingScreen() {
 
       setReadingComplete(true);
       setPhase("complete");
+      void fetchBehavioralScores();
     } catch (err) {
       if (abortController.signal.aborted) {
         setErrorMsg("The session took too long. Please try again.");

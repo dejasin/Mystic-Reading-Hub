@@ -1464,6 +1464,129 @@ life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, 
   }
 });
 
+// POST /api/behavioral-profile - Compute 6 behavioral dimension scores from the palm session
+const BEHAVIORAL_DIMENSIONS = [
+  "intuition",
+  "emotional_depth",
+  "drive",
+  "adaptability",
+  "inner_knowing",
+  "expression",
+] as const;
+
+type BehavioralDimension = typeof BEHAVIORAL_DIMENSIONS[number];
+
+function clampScore(n: unknown): number | null {
+  if (typeof n !== "number" || !Number.isFinite(n)) return null;
+  if (n > 1.5) return Math.max(0, Math.min(1, n / 100));
+  return Math.max(0, Math.min(1, n));
+}
+
+router.post("/behavioral-profile", async (req: Request, res: Response) => {
+  try {
+    if (!anthropicApiKey) {
+      res.status(503).json({ error: "The Oracle is temporarily unavailable." });
+      return;
+    }
+
+    const { sessionId, userData } = req.body as {
+      sessionId?: string;
+      userData?: Record<string, string>;
+    };
+
+    if (!sessionId) {
+      res.status(400).json({ error: "sessionId is required." });
+      return;
+    }
+
+    const session = await getOrCreateSession(sessionId);
+    const reading = (session.reading ?? "").trim();
+    if (!reading) {
+      res.status(409).json({ error: "No Oracle session found yet for this seeker." });
+      return;
+    }
+
+    const ud = userData ?? {};
+    const name = ud.name ?? "Seeker";
+    const dob = ud.dob ?? "";
+    const dominantHand = ud.dominantHand ?? "unspecified";
+    const sunSign = dob ? computeSunSign(dob) : "Unknown";
+    const numerology = dob && name ? computeFullNumerology(dob, name) : null;
+    const numerologyBlock = numerology ? buildNumerologyBlock(numerology) : "";
+
+    const systemPrompt = `You are The Oracle, distilling a completed palm reading into six behavioral dimension scores.
+
+Return ONLY a single JSON object with these exact keys, each a number between 0.0 and 1.0:
+- intuition: how readily this person senses beneath the surface of a situation
+- emotional_depth: the range and intensity of feeling they hold and process
+- drive: the force with which they move toward what they want
+- adaptability: how fluidly they adjust when circumstances shift
+- inner_knowing: their access to clarity that does not need external proof
+- expression: how clearly they translate the inner world into outer form
+
+RULES:
+- Output ONLY the JSON object, no prose, no markdown, no code fence.
+- Each value must be a real number with at least two decimals (e.g. 0.62), in [0, 1].
+- Use the full range — do NOT cluster every score near 0.5 or 0.8. Differentiate the dimensions based on what the reading actually reveals.
+- Ground each score in the palm reading text and the seeker's profile data. If the reading describes a strong fate line, deep heart line, prominent Mount of Moon, etc., let those signals shape the scores.
+- Do not all-default to high. If a dimension is muted in the reading, score it lower.
+
+Seeker context:
+Name: ${name}
+Dominant Hand: ${dominantHand}
+Elemental/Seasonal Signature: ${sunSign}
+${numerologyBlock}`;
+
+    const userContent = `This is the Oracle reading already delivered to ${name}:
+
+"""
+${reading.substring(0, 6000)}
+"""
+
+Produce the JSON object now.`;
+
+    const result = await anthropic.messages.create({
+      model: MODEL,
+      max_tokens: 400,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userContent }],
+    });
+
+    const text = result.content[0]?.type === "text" ? result.content[0].text.trim() : "";
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) {
+      req.log.error({ text }, "Behavioral profile: no JSON in model response");
+      res.status(502).json({ error: "Could not parse Oracle response." });
+      return;
+    }
+
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(match[0]);
+    } catch (e) {
+      req.log.error({ err: e, text }, "Behavioral profile: JSON parse failed");
+      res.status(502).json({ error: "Could not parse Oracle response." });
+      return;
+    }
+
+    const scores: Partial<Record<BehavioralDimension, number>> = {};
+    for (const dim of BEHAVIORAL_DIMENSIONS) {
+      const v = clampScore(parsed[dim]);
+      if (v === null) {
+        req.log.error({ parsed }, `Behavioral profile: missing/invalid dimension ${dim}`);
+        res.status(502).json({ error: "Oracle response was incomplete." });
+        return;
+      }
+      scores[dim] = v;
+    }
+
+    res.status(200).json({ scores });
+  } catch (err) {
+    req.log.error({ err }, "Behavioral profile error");
+    res.status(500).json({ error: "The Oracle could not compute the behavioral profile." });
+  }
+});
+
 // POST /api/expand - Stream an expanded Oracle response for a selected paragraph
 router.post("/expand", sseHeaders, async (req: Request, res: Response) => {
   const sendEvent = (data: object) => {

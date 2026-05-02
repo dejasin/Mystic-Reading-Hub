@@ -23,6 +23,15 @@ export interface CapturedImage {
 
 export type DeepDiveCategory = "career" | "relationship" | "finances" | "fitness" | "family";
 
+export interface BehavioralScores {
+  intuition: number;
+  emotional_depth: number;
+  drive: number;
+  adaptability: number;
+  inner_knowing: number;
+  expression: number;
+}
+
 export interface OracleState {
   sessionId: string;
   userData: UserData;
@@ -36,6 +45,7 @@ export interface OracleState {
   readingComplete: boolean;
   isPaid: boolean;
   deepDives: Partial<Record<DeepDiveCategory, string>>;
+  behavioralScores: BehavioralScores | null;
 }
 
 interface OracleContextValue {
@@ -52,6 +62,7 @@ interface OracleContextValue {
   setPaid: (v: boolean) => void;
   appendDeepDive: (category: DeepDiveCategory, text: string) => void;
   clearDeepDive: (category: DeepDiveCategory) => void;
+  setBehavioralScores: (scores: BehavioralScores | null) => void;
   resetAll: () => void;
 }
 
@@ -80,6 +91,7 @@ const defaultState: OracleState = {
   readingComplete: false,
   isPaid: false,
   deepDives: {},
+  behavioralScores: null,
 };
 
 const OracleContext = createContext<OracleContextValue | null>(null);
@@ -98,6 +110,7 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
       readingComplete: false,
       isPaid: false,
       deepDives: {},
+      behavioralScores: null,
       sessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     }));
   };
@@ -159,6 +172,10 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
+  const setBehavioralScores = (scores: BehavioralScores | null) => {
+    setState(prev => ({ ...prev, behavioralScores: scores }));
+  };
+
   const resetAll = () => {
     setState({
       ...defaultState,
@@ -173,6 +190,7 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
       resetFreeReading, resetPaidReading,
       setReadingComplete, setPaid,
       appendDeepDive, clearDeepDive,
+      setBehavioralScores,
       resetAll,
     }}>
       {children}
