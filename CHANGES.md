@@ -163,3 +163,30 @@ The 3 × 30s App Store preview videos (Section 11) remain skipped per the
 user-approved Option-C scope. Apple will accept the resubmission with
 screenshots only; preview videos can be added in a follow-up build. Every
 other Section 16 verification item passes.
+
+---
+
+# Changes — Oracle 4.3b Quick Wins Pass (Task #59)
+
+**Date:** May 02, 2026
+
+Smaller compliance / positioning fixes layered on top of Task #58. None of these touch `artifacts/api-server/src/routes/oracle.ts`, the questionnaire build, or the asset-generation scripts.
+
+## Files touched
+
+- `artifacts/oracle/lib/revenuecat.tsx` — Added `MONTHLY_PRODUCT_ID = "oracle_monthly_999"` and `ANNUAL_PRODUCT_ID = "oracle_annual_4999"` exports plus a TODO note that the annual SKU must be created in the RevenueCat dashboard and App Store Connect before shipping. Existing `useSubscription` plumbing untouched.
+- `artifacts/oracle/app/about.tsx` — New "What Oracle Is — and Isn't" screen with five sections (What Oracle Is / What Oracle Is NOT / How the Hand Analysis Works / A Note on Predictions / Powered By), back button to Settings, and a "Send Feedback" mailto link at the bottom. Dark-navy + gold styling consistent with the rest of the app.
+- `artifacts/oracle/app/_layout.tsx` — Registered the new `about` screen in the `Stack`.
+- `artifacts/oracle/app/settings.tsx` — Added a new "About" section with two rows: "About Oracle" (chevron, navigates to `/about`) and "Send Feedback" (mail icon, opens `mailto:support@theoracleapp.com?subject=Oracle%20Feedback`).
+- `artifacts/oracle/app/reading.tsx` — Replaced the existing reveal-screen disclaimer text with the spec-mandated copy: *"Oracle's behavioral profile is for personal reflection and self-understanding. It is not medical, psychological, or professional advice, and does not predict future events."* Bridge button "Talk to Oracle About Your Profile →" was already wired in Task #58.
+- `artifacts/oracle/app/index.tsx` — Renamed the WeeklyForecastCard heading "✦ This Week's Reflection" → "✦ This Week's Focus". Removed `dob` from the request body of both the `/api/daily-oracle` and `/api/weekly-forecast` fetch calls (still sends `profileId` and `name`). Tightened both card components' prop type and `useCallback` dependency arrays to drop `profile.dob` since it's no longer read inside either card. The DailyOracleCard heading was already "✦ Daily Reflection" from Task #58.
+- `artifacts/oracle/app/reading.tsx` (paywall) — Added the three gold-checkmark benefit rows above the plan cards in `PaywallGate` ("Complete behavioral profile across all dimensions" / "Unlimited AI advisor conversations" / "Relationship dynamics, deep dives, and daily reflections") with matching `benefitList` / `benefitRow` / `benefitText` styles. Plan cards, "Save 58%" pill, and the $9.99 / $49.99 fallback prices were already in place from Task #58.
+- `artifacts/oracle/context/ProfileContext.tsx` — Added optional `coreMotivation?: string` field on the `OracleProfile` shape so the new behavioral indicator helper can read it without breaking profiles created before the questionnaire (Task #60) ships.
+- `artifacts/oracle/app/profiles.tsx` — Added `getProfileIndicator(profile)` helper that maps the questionnaire's `coreMotivation` answer to one of: Creator `✦` / Analyst `◈` / Connector `⊕` / Explorer `◎`, falling back to "Seeker" `✧` for unknown values and to a neutral `✦` symbol with no label when no questionnaire data exists. Rendered on the profile card in gold `#f59e0b`. The zodiac glyph computation was already removed in Task #58.
+
+## Out of scope (deliberately not touched)
+
+- `artifacts/api-server/src/routes/oracle.ts` and the questionnaire build — Task #60.
+- App Store preview videos — Task #57.
+- `artifacts/oracle/assets/app-store/APP-STORE-SUBMISSION.md` (metadata, intentionally retains historical $9.99 string).
+- Marketing site / paywall pricing copy / home-card titles / zodiac glyphs — already landed in Task #58 (verified via sweep: no `$4.99`, no zodiac glyphs `♈♉♊♋♌♍♎♏♐♑♒♓`, hero already says "Oracle: AI Life Advisor", FAQ already includes the explicit "Is this a fortune telling app? — No" entry, privacy effective date already May 02 2026).

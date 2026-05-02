@@ -30,6 +30,22 @@ const HAND_OPTIONS = ["Right", "Left", "Ambidextrous"];
 const EYE_OPTIONS = ["Brown", "Blue", "Green", "Hazel", "Gray", "Dark Brown", "Other"];
 
 
+// Behavioral indicator derived from the questionnaire's coreMotivation answer.
+// Falls back to "Seeker" for unknown values, and to a neutral symbol with no
+// label when the questionnaire hasn't been completed yet.
+type ProfileIndicator = { label: string; symbol: string };
+function getProfileIndicator(profile: OracleProfile): ProfileIndicator {
+  const motivation = (profile.coreMotivation ?? "").trim().toLowerCase();
+  if (!motivation) {
+    return { label: "", symbol: "✦" };
+  }
+  if (motivation.startsWith("creator")) return { label: "Creator", symbol: "✦" };
+  if (motivation.startsWith("analyst")) return { label: "Analyst", symbol: "◈" };
+  if (motivation.startsWith("connector")) return { label: "Connector", symbol: "⊕" };
+  if (motivation.startsWith("explorer")) return { label: "Explorer", symbol: "◎" };
+  return { label: "Seeker", symbol: "✧" };
+}
+
 const PHOTO_SLOTS: { key: keyof ProfilePhoto; label: string; icon: string }[] = [
   { key: "face", label: "Face", icon: "user" },
   { key: "right_palm", label: "Right Hand", icon: "hand" },
@@ -50,6 +66,7 @@ function ProfileCard({
 }) {
   const faceUri = profile.photos.face;
   const initials = profile.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  const indicator = getProfileIndicator(profile);
 
   return (
     <Animated.View entering={FadeIn.duration(300)} layout={Layout.springify()}>
@@ -70,6 +87,10 @@ function ProfileCard({
         )}
         <View style={styles.cardInfo}>
           <Text style={styles.cardName}>{profile.name}</Text>
+          <Text style={styles.cardIndicator}>
+            <Text style={styles.cardIndicatorSymbol}>{indicator.symbol}</Text>
+            {indicator.label ? ` ${indicator.label}` : ""}
+          </Text>
           <Text style={styles.cardDob}>{profile.dob}</Text>
           {profile.notes ? (
             <Text style={styles.cardNotes} numberOfLines={1}>{profile.notes}</Text>
@@ -496,6 +517,8 @@ const styles = StyleSheet.create({
   cardInfo: { flex: 1, gap: 2 },
   cardName: { fontFamily: "EBGaramond_500Medium", fontSize: 17, color: Colors.cream },
   cardDob: { fontFamily: "EBGaramond_400Regular", fontSize: 13, color: Colors.muted },
+  cardIndicator: { fontFamily: "EBGaramond_500Medium", fontSize: 12, color: "#f59e0b", marginTop: 1 },
+  cardIndicatorSymbol: { color: "#f59e0b" },
   cardNotes: { fontFamily: "EBGaramond_400Regular_Italic", fontSize: 12, color: Colors.muted, marginTop: 2 },
   photoCount: { alignItems: "center", gap: 1, marginRight: 4 },
   photoCountNum: { fontFamily: "CormorantGaramond_400Regular", fontSize: 14, color: Colors.gold },

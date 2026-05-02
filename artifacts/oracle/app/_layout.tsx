@@ -133,6 +133,7 @@ export default function RootLayout() {
                       <Stack.Screen name="journal-detail" />
                       <Stack.Screen name="daily-history" />
                       <Stack.Screen name="settings" />
+                      <Stack.Screen name="about" />
                       <Stack.Screen name="referral" />
                       <Stack.Screen name="notification-settings" />
                     </Stack>

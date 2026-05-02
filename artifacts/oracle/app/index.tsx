@@ -50,7 +50,7 @@ const ORACLE_HELP_LINES = [
 const PRO_BANNER_DISMISS_KEY = "oracle_pro_banner_dismissed_at";
 const PRO_BANNER_DISMISS_HOURS = 24;
 
-function DailyOracleCard({ profile }: { profile: { id: string; name: string; dob: string } }) {
+function DailyOracleCard({ profile }: { profile: { id: string; name: string } }) {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -63,7 +63,7 @@ function DailyOracleCard({ profile }: { profile: { id: string; name: string; dob
       const resp = await fetch(`${baseUrl}api/daily-oracle`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profileId: profile.id, name: profile.name, dob: profile.dob }),
+        body: JSON.stringify({ profileId: profile.id, name: profile.name }),
       });
       if (!resp.ok) throw new Error("Failed");
       const data = await resp.json();
@@ -73,7 +73,7 @@ function DailyOracleCard({ profile }: { profile: { id: string; name: string; dob
     } finally {
       setLoading(false);
     }
-  }, [profile.id, profile.name, profile.dob]);
+  }, [profile.id, profile.name]);
 
   useEffect(() => {
     fetchDaily();
@@ -119,7 +119,7 @@ function DailyOracleCard({ profile }: { profile: { id: string; name: string; dob
   );
 }
 
-function WeeklyForecastCard({ profile }: { profile: { id: string; name: string; dob: string } }) {
+function WeeklyForecastCard({ profile }: { profile: { id: string; name: string } }) {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -133,7 +133,7 @@ function WeeklyForecastCard({ profile }: { profile: { id: string; name: string; 
       const resp = await fetch(`${baseUrl}api/weekly-forecast`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profileId: profile.id, name: profile.name, dob: profile.dob }),
+        body: JSON.stringify({ profileId: profile.id, name: profile.name }),
       });
       if (!resp.ok) throw new Error("Failed");
       const data = await resp.json();
@@ -144,7 +144,7 @@ function WeeklyForecastCard({ profile }: { profile: { id: string; name: string; 
     } finally {
       setLoading(false);
     }
-  }, [profile.id, profile.name, profile.dob]);
+  }, [profile.id, profile.name]);
 
   const handlePress = async () => {
     if (content) {
@@ -161,7 +161,7 @@ function WeeklyForecastCard({ profile }: { profile: { id: string; name: string; 
         style={({ pressed }) => [styles.weeklyHeader, pressed && { opacity: 0.8 }]}
       >
         <View style={styles.weeklyTitleRow}>
-          <Text style={styles.weeklyTitle}>✦ This Week's Reflection</Text>
+          <Text style={styles.weeklyTitle}>✦ This Week's Focus</Text>
           {loading && <ActivityIndicator size="small" color={Colors.gold} style={{ marginLeft: 8 }} />}
         </View>
         <Feather
@@ -385,8 +385,8 @@ export default function LandingScreen() {
 
         {hasProfile && isLoaded && (
           <>
-            <DailyOracleCard profile={{ id: mostRecentProfile.id, name: mostRecentProfile.name, dob: mostRecentProfile.dob }} />
-            <WeeklyForecastCard profile={{ id: mostRecentProfile.id, name: mostRecentProfile.name, dob: mostRecentProfile.dob }} />
+            <DailyOracleCard profile={{ id: mostRecentProfile.id, name: mostRecentProfile.name }} />
+            <WeeklyForecastCard profile={{ id: mostRecentProfile.id, name: mostRecentProfile.name }} />
             <View style={styles.divider} />
           </>
         )}

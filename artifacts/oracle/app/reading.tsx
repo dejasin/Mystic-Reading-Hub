@@ -226,6 +226,18 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
       <Text style={paywallStyles.pitch}>
         Unlock your complete session — 4 remaining sections + your Archetype + Oracle Chat access.
       </Text>
+      <View style={paywallStyles.benefitList}>
+        {[
+          "Complete behavioral profile across all dimensions",
+          "Unlimited AI advisor conversations",
+          "Relationship dynamics, deep dives, and daily reflections",
+        ].map((benefit) => (
+          <View key={benefit} style={paywallStyles.benefitRow}>
+            <Feather name="check" size={14} color={Colors.gold} />
+            <Text style={paywallStyles.benefitText}>{benefit}</Text>
+          </View>
+        ))}
+      </View>
       <View style={paywallStyles.planList}>
         {isLoading ? (
           <ActivityIndicator color={Colors.gold} />
@@ -379,6 +391,25 @@ const paywallStyles = StyleSheet.create({
     lineHeight: 24,
     textAlign: "center",
     opacity: 0.8,
+  },
+  benefitList: {
+    gap: 8,
+    marginTop: 4,
+    marginBottom: 14,
+    paddingHorizontal: 4,
+  },
+  benefitRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  benefitText: {
+    flex: 1,
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 14,
+    lineHeight: 20,
+    color: Colors.cream,
+    opacity: 0.9,
   },
   planList: {
     gap: 10,
@@ -1329,7 +1360,7 @@ export default function ReadingScreen() {
             <>
               <Animated.View entering={FadeIn.duration(700)} style={styles.disclaimerWrap}>
                 <Text style={styles.disclaimer}>
-                  What follows is not a prediction. It is a map of the patterns The Oracle reads in your behavioral profile — to help you see yourself more clearly.
+                  Oracle's behavioral profile is for personal reflection and self-understanding. It is not medical, psychological, or professional advice, and does not predict future events.
                 </Text>
               </Animated.View>
               <ReadingSection

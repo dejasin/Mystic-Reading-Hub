@@ -30,6 +30,10 @@ export interface OracleProfile {
   eyeColor?: string;
   photos: ProfilePhoto;
   notes?: string;
+  // Optional behavioral indicator captured by the questionnaire (Task #60).
+  // Typed here so the profiles screen indicator helper can read it without
+  // breaking existing profiles that pre-date the questionnaire.
+  coreMotivation?: string;
   mainReading?: string;
   deepDives?: Partial<Record<DeepDiveCategory, string>>;
   createdAt: number;

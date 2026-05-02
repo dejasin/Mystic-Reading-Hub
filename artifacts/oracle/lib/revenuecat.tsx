@@ -10,6 +10,13 @@ const REVENUECAT_ANDROID_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_AP
 
 export const REVENUECAT_ENTITLEMENT_IDENTIFIER = "full_reading";
 
+// Product identifiers for RevenueCat / App Store Connect.
+// TODO: The annual SKU `oracle_annual_4999` ($49.99/year, 3-day free trial)
+// must be created in the RevenueCat dashboard and in App Store Connect
+// (offering: "annual_49_99") before shipping the new annual paywall.
+export const MONTHLY_PRODUCT_ID = "oracle_monthly_999";
+export const ANNUAL_PRODUCT_ID = "oracle_annual_4999";
+
 let revenueCatInitialized = false;
 
 function getRevenueCatApiKey(): string | null {

@@ -348,6 +348,22 @@ export default function SettingsScreen() {
     },
   ];
 
+  const aboutItems: SectionItem[] = [
+    {
+      label: "About Oracle",
+      icon: "info",
+      onPress: () => router.push("/about"),
+    },
+    {
+      label: "Send Feedback",
+      icon: "mail",
+      onPress: () =>
+        safeOpenURL(
+          "mailto:support@theoracleapp.com?subject=Oracle%20Feedback"
+        ),
+    },
+  ];
+
   return (
     <View
       style={[
@@ -382,6 +398,7 @@ export default function SettingsScreen() {
         <SettingsSection title="Notifications" items={notificationItems} />
         <SettingsSection title="Legal" items={legalItems} />
         <SettingsSection title="Support" items={supportItems} />
+        <SettingsSection title="About" items={aboutItems} />
 
         <Animated.View entering={FadeIn.duration(600)} style={styles.versionContainer}>
           <Text style={styles.versionText}>The Oracle v{APP_VERSION}</Text>
