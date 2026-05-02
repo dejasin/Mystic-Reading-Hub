@@ -2,7 +2,7 @@
 
 - icon.png            (1024x1024 RGB, App Store master)
 - splash-icon.png     (1024x1024 RGB, splash mirror)
-- adaptive-icon.png   (432x432 RGBA, transparent background, foreground sigil
+- adaptive-icon.png   (1024x1024 RGBA, transparent background, foreground sigil
                        inside ~66% safe zone — Android adaptive icon foreground)
 - notification-icon.png (96x96 RGBA, monochrome white silhouette — Android
                          notification icon)
@@ -263,13 +263,18 @@ def render_icon() -> Image.Image:
 
 
 def render_adaptive_foreground() -> Image.Image:
-    """Adaptive icon foreground: 432x432 RGBA, transparent background.
+    """Adaptive icon foreground: 1024x1024 RGBA, transparent background.
 
-    Android places this on a 432x432 canvas where the inner ~264x264 (~66%)
-    is the always-visible safe zone. Render the sigil at full SIZE then
-    downscale and composite it within that safe zone.
+    Android adaptive icons are composed of a foreground layer plus a
+    background color/layer. The system masks the result into circles,
+    squircles, etc. Only the inner ~66% is guaranteed to be visible
+    (the "safe zone"); the outer ~17% on every side may be cropped.
+
+    Render the full sigil and then downscale it into the inner safe zone
+    of a 1024x1024 transparent canvas so nothing important gets clipped
+    by any system mask.
     """
-    target = 432
+    target = 1024
     safe = int(target * 0.66)
 
     palm_mask = palm_silhouette_mask(SIZE)
@@ -366,8 +371,8 @@ def main() -> None:
 
     if ADAPTIVE_PATH.exists():
         with Image.open(ADAPTIVE_PATH) as v:
-            if v.size == (432, 432) and v.mode == "RGBA":
-                print(f"[PASS] adaptive 432x432 RGBA at {ADAPTIVE_PATH}")
+            if v.size == (1024, 1024) and v.mode == "RGBA":
+                print(f"[PASS] adaptive 1024x1024 RGBA at {ADAPTIVE_PATH}")
                 checks_passed += 1
             else:
                 print(f"[FAIL] adaptive size/mode: {v.size} / {v.mode}")
