@@ -209,7 +209,7 @@ export default function ExpandableParagraph({
       setErrorMsg("The Oracle must rest. Please try again.");
       setIsStreaming(false);
     }
-  }, [text, sessionId, userData]);
+  }, [text, sessionId, userData, questionnaireAnswers]);
 
   const closeSheet = useCallback(() => {
     abortControllerRef.current?.abort();
