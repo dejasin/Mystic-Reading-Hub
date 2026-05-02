@@ -50,7 +50,7 @@ const ORACLE_HELP_LINES = [
 const PRO_BANNER_DISMISS_KEY = "oracle_pro_banner_dismissed_at";
 const PRO_BANNER_DISMISS_HOURS = 24;
 
-function DailyOracleCard({ profile }: { profile: { id: string; name: string } }) {
+function DailyOracleCard({ profile }: { profile: { id: string; name: string; sessionId?: string } }) {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -63,7 +63,15 @@ function DailyOracleCard({ profile }: { profile: { id: string; name: string } })
       const resp = await fetch(`${baseUrl}api/daily-oracle`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profileId: profile.id, name: profile.name }),
+        // Task #64 — include sessionId so the server's themesBlock branch
+        // pulls this profile's most recent reading instead of the generic
+        // fallback. Field omitted when the profile has no completed
+        // session yet — server already handles the empty case.
+        body: JSON.stringify({
+          profileId: profile.id,
+          name: profile.name,
+          ...(profile.sessionId ? { sessionId: profile.sessionId } : {}),
+        }),
       });
       if (!resp.ok) throw new Error("Failed");
       const data = await resp.json();
@@ -73,7 +81,7 @@ function DailyOracleCard({ profile }: { profile: { id: string; name: string } })
     } finally {
       setLoading(false);
     }
-  }, [profile.id, profile.name]);
+  }, [profile.id, profile.name, profile.sessionId]);
 
   useEffect(() => {
     fetchDaily();
@@ -119,7 +127,7 @@ function DailyOracleCard({ profile }: { profile: { id: string; name: string } })
   );
 }
 
-function WeeklyForecastCard({ profile }: { profile: { id: string; name: string } }) {
+function WeeklyForecastCard({ profile }: { profile: { id: string; name: string; sessionId?: string } }) {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -133,7 +141,12 @@ function WeeklyForecastCard({ profile }: { profile: { id: string; name: string }
       const resp = await fetch(`${baseUrl}api/weekly-forecast`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profileId: profile.id, name: profile.name }),
+        // Task #64 — same sessionId plumbing as DailyOracleCard above.
+        body: JSON.stringify({
+          profileId: profile.id,
+          name: profile.name,
+          ...(profile.sessionId ? { sessionId: profile.sessionId } : {}),
+        }),
       });
       if (!resp.ok) throw new Error("Failed");
       const data = await resp.json();
@@ -144,7 +157,7 @@ function WeeklyForecastCard({ profile }: { profile: { id: string; name: string }
     } finally {
       setLoading(false);
     }
-  }, [profile.id, profile.name]);
+  }, [profile.id, profile.name, profile.sessionId]);
 
   const handlePress = async () => {
     if (content) {
@@ -385,8 +398,8 @@ export default function LandingScreen() {
 
         {hasProfile && isLoaded && (
           <>
-            <DailyOracleCard profile={{ id: mostRecentProfile.id, name: mostRecentProfile.name }} />
-            <WeeklyForecastCard profile={{ id: mostRecentProfile.id, name: mostRecentProfile.name }} />
+            <DailyOracleCard profile={{ id: mostRecentProfile.id, name: mostRecentProfile.name, sessionId: mostRecentProfile.sessionId }} />
+            <WeeklyForecastCard profile={{ id: mostRecentProfile.id, name: mostRecentProfile.name, sessionId: mostRecentProfile.sessionId }} />
             <View style={styles.divider} />
           </>
         )}

@@ -637,12 +637,15 @@ interface ReadingSectionProps {
   text: string;
   sessionId?: string;
   userData?: string;
+  // Task #64 — forwarded to ExpandableParagraph so /api/expand receives
+  // the same behavioral context as the rest of the reading flow.
+  questionnaireAnswers?: unknown;
   isSubscribed?: boolean;
   parentScrollRef?: React.RefObject<ScrollView | null>;
   parentScrollOffset?: React.MutableRefObject<number>;
 }
 
-function ReadingSection({ text, sessionId, userData, isSubscribed, parentScrollRef, parentScrollOffset }: ReadingSectionProps) {
+function ReadingSection({ text, sessionId, userData, questionnaireAnswers, isSubscribed, parentScrollRef, parentScrollOffset }: ReadingSectionProps) {
   if (!text) return null;
   const sections = text.split(/(?=✦\s)/);
   return (
@@ -666,6 +669,7 @@ function ReadingSection({ text, sessionId, userData, isSubscribed, parentScrollR
                   text={para}
                   sessionId={sessionId}
                   userData={userData}
+                  questionnaireAnswers={questionnaireAnswers}
                   isSubscribed={isSubscribed ?? false}
                   parentScrollRef={parentScrollRef}
                   parentScrollOffset={parentScrollOffset}
@@ -942,12 +946,22 @@ export default function ReadingScreen() {
       p => p.name.trim().toLowerCase() === name.trim().toLowerCase() && p.dob === dob
     );
     if (profile) {
-      await updateProfile(profile.id, { mainReading: fullReading });
+      // Task #64 — also persist the sessionId of this completed reading so
+      // the home cards can pull recent behavioral themes for daily/weekly.
+      await updateProfile(profile.id, { mainReading: fullReading, sessionId: state.sessionId });
     }
   };
 
   const buildJsonRequest = (extra: Record<string, string> = {}): { body: string; headers: Record<string, string> } => ({
-    body: JSON.stringify({ userData: JSON.stringify(state.userData), sessionId: state.sessionId, ...extra }),
+    body: JSON.stringify({
+      userData: JSON.stringify(state.userData),
+      sessionId: state.sessionId,
+      // Task #64 — server reads this to build behavioralContextBlock.
+      // parseQuestionnaire accepts both string and object; sending the
+      // object on JSON requests keeps the wire format clean.
+      questionnaireAnswers: state.questionnaireAnswers,
+      ...extra,
+    }),
     headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
   });
 
@@ -957,6 +971,12 @@ export default function ReadingScreen() {
     const fd = new FormData();
     fd.append("userData", JSON.stringify(state.userData));
     fd.append("sessionId", state.sessionId);
+    // Task #64 — same payload on the FormData path. Multer/multipart fields
+    // are always strings, so stringify here; server parseQuestionnaire
+    // handles JSON-string input.
+    if (state.questionnaireAnswers) {
+      fd.append("questionnaireAnswers", JSON.stringify(state.questionnaireAnswers));
+    }
     for (const [k, v] of Object.entries(extra)) fd.append(k, v);
     for (const [key, img] of Object.entries(state.images)) {
       if (img?.uri) {
@@ -1119,6 +1139,9 @@ export default function ReadingScreen() {
         body: JSON.stringify({
           sessionId: state.sessionId,
           userData: state.userData,
+          // Task #64 — behavioral-profile fallback path also receives the
+          // questionnaire so the regenerated scores reflect it.
+          questionnaireAnswers: state.questionnaireAnswers,
         }),
       });
       if (!response.ok) return;
@@ -1471,6 +1494,7 @@ export default function ReadingScreen() {
                 text={state.freeReading}
                 sessionId={state.sessionId}
                 userData={JSON.stringify(state.userData)}
+                questionnaireAnswers={state.questionnaireAnswers}
                 isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
                 parentScrollRef={scrollRef}
                 parentScrollOffset={scrollOffsetRef}
@@ -1500,6 +1524,7 @@ export default function ReadingScreen() {
                 text={state.paidReading}
                 sessionId={state.sessionId}
                 userData={JSON.stringify(state.userData)}
+                questionnaireAnswers={state.questionnaireAnswers}
                 isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
                 parentScrollRef={scrollRef}
                 parentScrollOffset={scrollOffsetRef}
@@ -1558,6 +1583,7 @@ export default function ReadingScreen() {
                   text={state.archetypeReading}
                   sessionId={state.sessionId}
                   userData={JSON.stringify(state.userData)}
+                  questionnaireAnswers={state.questionnaireAnswers}
                   isSubscribed={!!(customerInfo?.entitlements?.active?.["full_reading"])}
                   parentScrollRef={scrollRef}
                   parentScrollOffset={scrollOffsetRef}

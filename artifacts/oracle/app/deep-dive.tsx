@@ -387,6 +387,8 @@ export default function DeepDiveScreen() {
           category: selectedCategory,
           categoryData: formValues,
           userData: state.userData,
+          // Task #64 — deep dives share the reading's behavioral context.
+          questionnaireAnswers: state.questionnaireAnswers,
         }),
       });
 

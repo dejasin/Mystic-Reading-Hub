@@ -22,6 +22,11 @@ interface ExpandableParagraphProps {
   text: string;
   sessionId: string;
   userData: string;
+  // Task #64 — passed straight through to /api/expand so the deeper /
+  // expanded passages share the same behavioral context as the rest of
+  // the reading flow. Typed as unknown to avoid coupling this component
+  // to the questionnaire shape.
+  questionnaireAnswers?: unknown;
   isSubscribed: boolean;
   style?: object;
   parentScrollRef?: React.RefObject<ScrollView | null>;
@@ -39,6 +44,7 @@ export default function ExpandableParagraph({
   text,
   sessionId,
   userData,
+  questionnaireAnswers,
   isSubscribed,
   style,
   parentScrollRef,
@@ -129,6 +135,8 @@ export default function ExpandableParagraph({
           userData,
           selectedText: text,
           mode: chosenMode,
+          // Task #64 — same behavioral payload the reading flow sends.
+          questionnaireAnswers,
         }),
       });
 

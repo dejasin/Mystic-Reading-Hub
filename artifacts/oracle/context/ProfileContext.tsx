@@ -35,6 +35,11 @@ export interface OracleProfile {
   // breaking existing profiles that pre-date the questionnaire.
   coreMotivation?: string;
   mainReading?: string;
+  // Task #64 — sessionId of the most recent completed Oracle reading.
+  // Stored locally so the home screen's Daily Reflection / Weekly Focus
+  // cards can pass it back to the server, which uses it to pull recent
+  // behavioral themes into the personalized daily/weekly prompt.
+  sessionId?: string;
   deepDives?: Partial<Record<DeepDiveCategory, string>>;
   createdAt: number;
 }

@@ -133,7 +133,14 @@ export default function ChatScreen() {
       const res = await fetch(`${baseUrl}api/chat/followups`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lastResponse, conversationContext }),
+        // Task #64 — pass the questionnaire alongside the conversation so
+        // the followup endpoint can keep responses in step with the chat
+        // flow if/when it later consumes the behavioral context block.
+        body: JSON.stringify({
+          lastResponse,
+          conversationContext,
+          questionnaireAnswers: state.questionnaireAnswers,
+        }),
         signal: controller.signal,
       });
       if (controller.signal.aborted) return;
@@ -190,6 +197,10 @@ export default function ChatScreen() {
           messages: chatHistory,
           readingSummary,
           sessionId: state.sessionId,
+          // Task #64 — server uses this to build the behavioral context
+          // block in the chat system prompt; without it, every reply was
+          // being generated against an empty profile.
+          questionnaireAnswers: state.questionnaireAnswers,
         }),
       });
 
