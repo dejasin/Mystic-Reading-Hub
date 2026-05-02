@@ -7,11 +7,11 @@ recording into files that meet Apple's **6.9" iPhone 16 Pro Max** specs.
 
 | Asset       | Spec                                                                |
 | ----------- | ------------------------------------------------------------------- |
-| Screenshots | `1290 × 2796` PNG, 72 DPI, RGB, ≤ 500 KB each                       |
-| Preview     | `886 × 1920` H.264 MP4, 30 fps, ≤ 30 s, ≤ 500 MB, opens/ends still  |
+| Screenshots | `1320 × 2868` PNG, 72 DPI, RGB, ≤ 500 KB each                       |
+| Preview     | `1320 × 2868` H.264 MP4, 30 fps, ≤ 30 s, ≤ 500 MB, opens/ends still |
 
-Letterboxing uses the Oracle navy backdrop **`#0A0E1A`**. Optional
-captions are rendered along the bottom in Oracle gold **`#C9A84C`**.
+Letterboxing uses the near-black backdrop **`#0a0a0f`**. Optional
+captions are rendered along the bottom in **white**.
 
 ## Install
 

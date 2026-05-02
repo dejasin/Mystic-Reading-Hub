@@ -6,15 +6,15 @@ Processes raw screenshots and an optional simulator screen recording into
 files that meet Apple's 6.9" iPhone 16 Pro Max specs:
 
   Screenshots
-    - 1290 x 2796 px PNG, 72 DPI, RGB, ≤ 500 KB each
-    - Letterboxed onto a dark-navy backdrop (#0A0E1A) so non-matching
+    - 1320 x 2868 px PNG, 72 DPI, RGB, ≤ 500 KB each
+    - Letterboxed onto a near-black backdrop (#0a0a0f) so non-matching
       aspect ratios do not get stretched
-    - Optional gold (#C9A84C) caption rendered along the bottom
+    - Optional white caption rendered along the bottom
 
   Preview video
-    - 886 x 1920 px H.264 MP4, 30 fps, ≤ 30 s, ≤ 500 MB
-    - Trimmed and letterboxed onto the same navy backdrop
-    - First and last frames frozen as required still frames
+    - 1320 x 2868 px H.264 MP4, 30 fps, ≤ 30 s, ≤ 500 MB
+    - Trimmed and letterboxed onto the same backdrop
+    - First and last frames frozen ≥ 1s as required still frames
 
 Dependencies
     pip install Pillow
@@ -50,19 +50,25 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 # ── Apple 6.9" iPhone 16 Pro Max specs ───────────────────────────────────────
-SCREENSHOT_W, SCREENSHOT_H = 1290, 2796
+# Apple updated the canonical screenshot resolution from 1290x2796 to
+# 1320x2868 for the iPhone 16 Pro Max generation. Both are accepted, but
+# new submissions should use 1320x2868. CLI flags below let callers
+# override these defaults if Apple's spec changes again.
+SCREENSHOT_W, SCREENSHOT_H = 1320, 2868
 SCREENSHOT_MAX_BYTES = 500 * 1024
 SCREENSHOT_DPI = (72, 72)
 
-VIDEO_W, VIDEO_H = 886, 1920
+VIDEO_W, VIDEO_H = 1320, 2868
 VIDEO_MAX_SECONDS = 30
 VIDEO_FPS = 30
 VIDEO_MAX_BYTES = 500 * 1024 * 1024
-STILL_FRAME_SECONDS = 0.5  # opening + closing still
+STILL_FRAME_SECONDS = 1.0   # Apple requires ≥1s still hold at start + end
 
 # ── Oracle palette ───────────────────────────────────────────────────────────
-NAVY = (10, 14, 26)         # #0A0E1A
-GOLD = (201, 168, 76)       # #C9A84C
+NAVY = (10, 10, 15)         # #0a0a0f
+GOLD = (245, 158, 11)       # #f59e0b
+WHITE = (255, 255, 255)
+CAPTION_COLOR = WHITE       # New brief: white captions, not gold
 
 CAPTION_FONT_RATIO = 0.038      # caption height ≈ 3.8% of frame height
 CAPTION_BOTTOM_PAD = 120        # px from frame bottom
@@ -160,7 +166,7 @@ def _draw_caption(img: Image.Image, text: str) -> None:
         bbox = draw.textbbox((0, 0), line, font=font)
         w = bbox[2] - bbox[0]
         x = (img.width - w) // 2
-        draw.text((x, y), line, font=font, fill=GOLD)
+        draw.text((x, y), line, font=font, fill=CAPTION_COLOR)
         y += int(line_h * 1.25)
 
 
@@ -248,10 +254,10 @@ def process_video(src: Path, out_dir: Path) -> VideoResult:
     dst = out_dir / "preview_01.mp4"
 
     # The complex filter does, in order:
-    #   1. Scale to fit inside 886x1920 without stretching (force_original_aspect)
-    #   2. Pad the rest with the navy backdrop (#0A0E1A)
+    #   1. Scale to fit inside VIDEO_W x VIDEO_H without stretching
+    #   2. Pad the rest with the backdrop colour (NAVY)
     #   3. Force 30 fps and SAR=1
-    pad_color = "0x0A0E1A"
+    pad_color = "0x{:02X}{:02X}{:02X}".format(*NAVY)
     vf = (
         f"scale={VIDEO_W}:{VIDEO_H}:force_original_aspect_ratio=decrease,"
         f"pad={VIDEO_W}:{VIDEO_H}:(ow-iw)/2:(oh-ih)/2:color={pad_color},"

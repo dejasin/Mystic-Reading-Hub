@@ -76,28 +76,28 @@ title = "Mystic Oracle — Beyond the Reading (App Store ready, with silent audi
 id = "qqQJfKjGk-EnBC6zxwmZs"
 uri = "file://tools/appstore-assets/output/screenshot_01.png"
 type = "image"
-title = "screenshot_01 — Onboarding"
+title = "Screenshot 1 — Onboarding"
 
 [[outputs]]
 id = "DC1XifCIdk5b75t2iERqf"
 uri = "file://tools/appstore-assets/output/screenshot_02.png"
 type = "image"
-title = "screenshot_02 — Intake"
+title = "Screenshot 2 — Intake"
 
 [[outputs]]
 id = "ezAagnMcw8eIbwWf5x_CQ"
 uri = "file://tools/appstore-assets/output/screenshot_03.png"
 type = "image"
-title = "screenshot_03 — Questionnaire"
+title = "Screenshot 3 — Profile"
 
 [[outputs]]
 id = "7MQ-surMxNIjJHhLGaVQW"
 uri = "file://tools/appstore-assets/output/screenshot_04.png"
 type = "image"
-title = "screenshot_04 — Chat"
+title = "Screenshot 4 — Chat"
 
 [[outputs]]
 id = "NQNR1pG2bOIhVpIRSqmmw"
 uri = "file://tools/appstore-assets/output/screenshot_05.png"
 type = "image"
-title = "screenshot_05 — Behavioral profile"
+title = "Screenshot 5 — Paywall"
