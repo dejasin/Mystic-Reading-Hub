@@ -45,10 +45,12 @@ const ALL_SIZES = {
 };
 
 const ALL_PREVIEWS = [
-  { hash: 'ritual',  out: '01-ritual.mp4' },
-  { hash: 'reading', out: '02-reading.mp4' },
-  { hash: 'beyond',  out: '03-beyond.mp4' },
+  { hash: 'ritual',  out: '01-ritual.mp4',  audio: 'ritual-mix.wav'  },
+  { hash: 'reading', out: '02-reading.mp4', audio: 'reading-mix.wav' },
+  { hash: 'beyond',  out: '03-beyond.mp4',  audio: 'beyond-mix.wav'  },
 ];
+
+const AUDIO_DIR = resolve(PUBLIC_DIR, 'audio');
 
 const ONLY = process.env.PREVIEW_ONLY;
 const PREVIEWS = ONLY ? ALL_PREVIEWS.filter((p) => p.hash === ONLY) : ALL_PREVIEWS;
@@ -83,7 +85,7 @@ try {
 
     console.log(`\n=== Size ${sizeKey} (${size.width}×${size.height}) → ${outDir} ===`);
 
-    for (const { hash, out } of PREVIEWS) {
+    for (const { hash, out, audio } of PREVIEWS) {
       const url = `${BASE_URL}?capture=1&size=${encodeURIComponent(sizeKey)}#${hash}`;
       const outPath = resolve(outDir, out);
       console.log(`\n— rendering ${hash} @ ${sizeKey} → ${size.outDir ? `${size.outDir}/` : ''}${out}`);
@@ -170,9 +172,21 @@ try {
 
       const totalDur = frameLog[frameLog.length - 1].ts - baseTs;
 
-      // App Store Connect rejects previews with no audio track at all
-      // ("corrupt or missing audio"). Mux a silent stereo AAC track that
-      // matches Apple's preview spec (48 kHz, 256 kbps, stereo).
+      // Mux the per-preview pre-mixed audio bed (mystical drone + cue SFX,
+      // pre-normalized to ~ -16 LUFS by scripts/build-audio.mjs). Falls back to
+      // a silent stereo AAC track if the audio asset is missing — App Store
+      // Connect rejects previews with no audio stream at all.
+      const audioPath = audio ? resolve(AUDIO_DIR, audio) : null;
+      const hasAudio = audioPath && existsSync(audioPath);
+      if (audio && !hasAudio) {
+        console.warn(
+          `   ⚠ audio asset missing (${audioPath}). Run \`node scripts/build-audio.mjs\` ` +
+            `to generate it. Falling back to silent track for this render.`,
+        );
+      }
+      const audioInputArgs = hasAudio
+        ? ['-i', audioPath]
+        : ['-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=48000'];
       await new Promise((res, rej) => {
         const ff = spawn(
           'ffmpeg',
@@ -182,8 +196,7 @@ try {
             '-f', 'concat',
             '-safe', '0',
             '-i', listPath,
-            '-f', 'lavfi',
-            '-i', 'anullsrc=channel_layout=stereo:sample_rate=48000',
+            ...audioInputArgs,
             '-vf', `fps=${FPS},scale=${size.width}:${size.height}:flags=lanczos,format=yuv420p`,
             '-c:v', 'libx264',
             '-preset', 'medium',
