@@ -61,20 +61,6 @@ const DIMENSIONS = [
   },
 ] as const;
 
-function hashString(input: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < input.length; i++) {
-    h ^= input.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
-
-function scoreFor(seed: string, key: string): number {
-  const h = hashString(`${seed}::${key}`);
-  return 0.4 + ((h % 1000) / 1000) * 0.55;
-}
-
 function RadarChart({ scores, animate }: { scores: number[]; animate: boolean }) {
   const size = 280;
   const cx = size / 2;
@@ -108,7 +94,7 @@ function RadarChart({ scores, animate }: { scores: number[]; animate: boolean })
     }
   }, [animate, scores.join(",")]);
 
-  const animatedPolygonProps = useAnimatedProps(() => {
+  const animatedPolygonProps = useAnimatedProps<React.ComponentProps<typeof Polygon>>(() => {
     const t = progress.value;
     const points = scores
       .map((s, i) => {
@@ -118,7 +104,7 @@ function RadarChart({ scores, animate }: { scores: number[]; animate: boolean })
         return `${x.toFixed(2)},${y.toFixed(2)}`;
       })
       .join(" ");
-    return { points } as any;
+    return { points };
   });
 
   return (
@@ -218,20 +204,10 @@ export default function BehavioralProfileScreen() {
   const insets = useSafeAreaInsets();
   const { state } = useOracle();
   const { isSubscribed } = useSubscription();
-  const { userData, freeReading, paidReading, behavioralScores, behavioralScoresUpdatedAt } = state;
-
-  const seed = useMemo(() => {
-    const base = `${userData.name ?? ""}|${userData.dob ?? ""}|${userData.dominantHand ?? ""}`;
-    const readingHash = `${(freeReading ?? "").length}|${(paidReading ?? "").length}`;
-    return `${base}|${readingHash}`;
-  }, [userData.name, userData.dob, userData.dominantHand, freeReading, paidReading]);
+  const { userData, behavioralScores, behavioralScoresUpdatedAt } = state;
 
   const hasScores = !!behavioralScores;
-  const hasReading = Boolean(
-    (freeReading && freeReading.length > 0) ||
-    (paidReading && paidReading.length > 0)
-  );
-  const isLocked = !hasScores && !hasReading;
+  const isLocked = !hasScores;
 
   const scores = useMemo(
     () =>
@@ -242,9 +218,9 @@ export default function BehavioralProfileScreen() {
             return Math.max(0, Math.min(1, v));
           }
         }
-        return scoreFor(seed, d.key);
+        return 0.5;
       }),
-    [seed, behavioralScores]
+    [behavioralScores]
   );
 
   const formatScore = (s: number) => Math.round(s * 100);
@@ -254,7 +230,7 @@ export default function BehavioralProfileScreen() {
     if (isSubscribed) {
       router.push("/chat");
     } else {
-      router.push("/intake");
+      router.push("/reading");
     }
   };
 

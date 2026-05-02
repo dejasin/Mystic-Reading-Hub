@@ -24,6 +24,7 @@ import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { Feather } from "@expo/vector-icons";
 import { fetch } from "expo/fetch";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Colors from "@/constants/colors";
 import { safeOpenURL } from "@/lib/safeOpenURL";
 import StarField from "@/components/StarField";
@@ -197,9 +198,9 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
         </View>
       </Modal>
 
-      <Text style={paywallStyles.title}>The Oracle sees more.</Text>
+      <Text style={paywallStyles.title}>There is more to map.</Text>
       <Text style={paywallStyles.cliffhanger}>
-        You are approaching a phase where one decision will define the next 3–5 years of your life. The Oracle can already see the pattern forming.
+        Your behavioral profile points to a pattern worth examining. The full reading and ongoing chat help you turn that pattern into a clearer next step — without telling you what will happen.
       </Text>
       <Text style={paywallStyles.divider}>─── ✦ ───</Text>
       <Text style={paywallStyles.pitch}>
@@ -858,9 +859,29 @@ export default function ReadingScreen() {
             if (parsed.event === "paywall") {
               trackEvent(AnalyticsEvent.READING_FREE_COMPLETED);
               trackFunnelStep("paywall");
-              setPhase("paywall");
-              void fetchBehavioralScores();
+              await maybeShowPaywall();
               return;
+            }
+            if (parsed.event === "behavioral_scores" && parsed.scores) {
+              const s = parsed.scores;
+              if (
+                typeof s.intuition === "number" &&
+                typeof s.emotional_depth === "number" &&
+                typeof s.drive === "number" &&
+                typeof s.adaptability === "number" &&
+                typeof s.inner_knowing === "number" &&
+                typeof s.expression === "number"
+              ) {
+                setBehavioralScores({
+                  intuition: s.intuition,
+                  emotional_depth: s.emotional_depth,
+                  drive: s.drive,
+                  adaptability: s.adaptability,
+                  inner_knowing: s.inner_knowing,
+                  expression: s.expression,
+                });
+              }
+              continue;
             }
             if (parsed.chunk) {
               appendFreeReading(parsed.chunk);
@@ -880,16 +901,14 @@ export default function ReadingScreen() {
             const parsed = JSON.parse(trimmed.slice(6));
             if (parsed.chunk) appendFreeReading(parsed.chunk);
             if (parsed.event === "paywall") {
-              setPhase("paywall");
-              void fetchBehavioralScores();
+              await maybeShowPaywall();
               return;
             }
           } catch (e) { console.warn("SSE flush parse error (free):", e); }
         }
       }
 
-      setPhase("paywall");
-      void fetchBehavioralScores();
+      await maybeShowPaywall();
     } catch (err) {
       const isNetwork = err instanceof TypeError || String(err).includes("fetch");
       setErrorMsg(
@@ -902,7 +921,34 @@ export default function ReadingScreen() {
     }
   };
 
+  // Per-session paywall gate: at most once per sessionId, never for active subscribers.
+  // Spec: artifacts/oracle/app/reading.tsx — Section 10a.
+  const maybeShowPaywall = async () => {
+    const isSubscribed = !!customerInfo?.entitlements?.active?.["full_reading"];
+    if (isSubscribed) {
+      // Active subscriber — skip the paywall entirely; advance to paid stream.
+      void streamPaidReading();
+      return;
+    }
+    const flagKey = `oracle_paywall_shown_${state.sessionId}`;
+    try {
+      const alreadyShown = await AsyncStorage.getItem(flagKey);
+      if (alreadyShown === "1") {
+        // Already auto-shown once this session — don't show again automatically.
+        // Stay on the free reveal; user can tap the bridge button to re-open.
+        setPhase("complete");
+        return;
+      }
+      await AsyncStorage.setItem(flagKey, "1");
+    } catch (e) {
+      console.warn("Paywall session flag persistence failed:", e);
+    }
+    setPhase("paywall");
+  };
+
   const fetchBehavioralScores = async () => {
+    // Backup path: if the inline /api/generate scoring SSE event was missed,
+    // fall back to the standalone endpoint (which itself never returns non-200).
     try {
       const baseUrl = getApiUrl();
       const response = await fetch(`${baseUrl}api/behavioral-profile`, {
@@ -983,7 +1029,7 @@ export default function ReadingScreen() {
               trackEvent(AnalyticsEvent.READING_COMPLETED);
               setReadingComplete(true);
               setPhase("complete");
-              void fetchBehavioralScores();
+              if (!state.behavioralScores) void fetchBehavioralScores();
               if (Platform.OS !== "web") {
                 await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
               }
@@ -1372,7 +1418,13 @@ export default function ReadingScreen() {
               <View style={styles.bridgeCtaWrap}>
                 <Pressable
                   style={({ pressed }) => [styles.bridgeCta, pressed && { opacity: 0.85 }]}
-                  onPress={() => router.push("/behavioral-profile")}
+                  onPress={() => {
+                    if (customerInfo?.entitlements?.active?.["full_reading"]) {
+                      router.push("/chat");
+                    } else {
+                      setPhase("paywall");
+                    }
+                  }}
                   accessibilityLabel="Talk to Oracle About Your Profile"
                   accessibilityRole="button"
                 >

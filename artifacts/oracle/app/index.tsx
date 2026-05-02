@@ -40,7 +40,7 @@ const ONBOARDING_COMPLETE_KEY = "@oracle/onboarding_complete";
 const { width } = Dimensions.get("window");
 
 const TRUST_LINES = [
-  "Personal AI advisor — not generic horoscopes",
+  "Personal AI advisor — not generic advice",
   "Powered by AI. Refined by your biometrics.",
   "Honest guidance across love, career, health & purpose",
 ];

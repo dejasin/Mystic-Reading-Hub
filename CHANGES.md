@@ -5,7 +5,7 @@
 **Date:** May 02, 2026
 **Bundle ID:** `com.theoracle.app` (unchanged)
 **Version:** `1.0.0` (unchanged)
-**Build Number:** `1` → `2`
+**Build Number:** `1` (unchanged — per spec, identifier invariants preserved)
 
 ---
 
@@ -33,7 +33,7 @@ The previous submission was rejected for being a palmistry / palm-reading app wi
 ## Files modified
 
 ### Mobile app — `artifacts/oracle/`
-- `app.json` — `ITSAppUsesNonExemptEncryption: false`, behavioral-aware `NSCameraUsageDescription` / `NSPhotoLibraryUsageDescription`, Android `adaptiveIcon` + `expo-notifications` icon wired, `buildNumber` 1 → 2.
+- `app.json` — `ITSAppUsesNonExemptEncryption: false`, behavioral-aware `NSCameraUsageDescription` / `NSPhotoLibraryUsageDescription`, Android `adaptiveIcon` + `expo-notifications` icon wired. `buildNumber` left at `1` (no-op) per spec invariants.
 - `app/index.tsx` — Persistent gold "Upgrade to Oracle Pro" banner with 24h `oracle_pro_banner_dismissed_at` AsyncStorage flag; reframed taglines.
 - `app/onboarding.tsx` — Slide subtitle reframed to "Powered by AI. Refined by your biometrics."
 - `app/intake.tsx` — "Prepare for Your Behavioral Analysis" header; "Begin Behavioral Capture" CTA + accessibility label.
@@ -114,3 +114,52 @@ npx expo prebuild --platform ios --clean --no-install
 # 3. Visual sanity check the support website
 pnpm --filter @workspace/oracle-website run dev
 ```
+
+---
+
+## Post-validator remediation (final pass)
+
+Validator review surfaced spec deviations beyond the original Option-C session
+plan. Each was addressed:
+
+- **Behavioral scoring is now in-line with the reading flow.** A second
+  Anthropic call (`computeBehavioralScores`, max 200 tokens) runs inside
+  `/api/generate` immediately after the free reading completes, and emits the
+  scores via the SSE event `behavioral_scores` before the `paywall` event.
+  On any failure (network, parse, missing keys), the call returns the default
+  `{0.5, 0.5, 0.5, 0.5, 0.5, 0.5}` fallback so the reading flow can never be
+  blocked by scoring.
+- **`/api/behavioral-profile` never returns non-200.** The standalone endpoint
+  is now a wrapper around `computeBehavioralScores` and is kept only as a
+  backup path. On any failure it returns 200 with `{ scores: defaults,
+  fallback: true }` rather than 4xx/5xx.
+- **Profile screen no longer synthesizes scores.** The previous deterministic
+  `hashString`/`scoreFor` placeholder has been removed from
+  `app/behavioral-profile.tsx`. When `behavioralScores` is `null`, the screen
+  renders the locked state. When real scores arrive (via SSE or the backup
+  endpoint), they animate into the radar.
+- **Bridge-button gating restored to spec.** The "Talk to Oracle About Your
+  Profile" button on the reading reveal now routes subscribers to `/chat` and
+  re-opens the in-page paywall for non-subscribers (previously routed to
+  `/behavioral-profile` for everyone).
+- **Per-session paywall AsyncStorage flag.** A new `maybeShowPaywall()` helper
+  in `reading.tsx` writes `oracle_paywall_shown_${sessionId}` exactly once per
+  session and is skipped for users with the active `full_reading`
+  entitlement, who are advanced directly to `streamPaidReading()`.
+- **`buildNumber` invariant restored.** Reverted from `2` back to `1` to honor
+  the explicit spec rule "do not disturb slug, bundleIdentifier, version,
+  buildNumber, projectId."
+- **Screenshot deliverables relocated.** All five 1320×2868 PNGs now live at
+  `artifacts/oracle/assets/app-store/screenshots/` (the spec path). The
+  obsolete `artifacts/oracle/app-store/` directory was removed. Submission
+  doc paths updated accordingly.
+- **Type cast removed.** The `return { points } as any;` in `RadarChart`'s
+  `useAnimatedProps` callback has been replaced with a properly typed
+  `useAnimatedProps<React.ComponentProps<typeof Polygon>>(...)` signature.
+
+### Intentional deviation (user-approved)
+
+The 3 × 30s App Store preview videos (Section 11) remain skipped per the
+user-approved Option-C scope. Apple will accept the resubmission with
+screenshots only; preview videos can be added in a follow-up build. Every
+other Section 16 verification item passes.

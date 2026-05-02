@@ -1,7 +1,7 @@
 """Generate 5 App Store marketing screenshots for Oracle: AI Life Advisor.
 
 Apple 6.7"+ display (iPhone 16 Pro Max) screenshot size: 1320 x 2868.
-Output: artifacts/oracle/app-store/screenshots/screenshot_{1..5}.png
+Output: artifacts/oracle/assets/app-store/screenshots/screenshot_{1..5}.png
 
 Each screenshot is a self-contained marketing image with the Oracle visual
 language: deep cosmic background, gold accents, Cormorant/EB Garamond style
@@ -17,7 +17,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 W, H = 1320, 2868
-OUT_DIR = Path("artifacts/oracle/app-store/screenshots")
+OUT_DIR = Path("artifacts/oracle/assets/app-store/screenshots")
 
 GOLD = (201, 168, 76)
 GOLD_LIGHT = (235, 207, 132)

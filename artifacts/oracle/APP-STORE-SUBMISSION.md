@@ -128,11 +128,11 @@ RevenueCat entitlement: `full_reading` (unchanged).
 Generator: `scripts/generate_oracle_icon.py` (re-runnable).
 
 ### Screenshots (App Store — iPhone 6.7"+, 1320 × 2868)
-- `artifacts/oracle/app-store/screenshots/screenshot_1_hero.png` — Hero / launch
-- `artifacts/oracle/app-store/screenshots/screenshot_2_profile.png` — Behavioral profile (radar)
-- `artifacts/oracle/app-store/screenshots/screenshot_3_reading.png` — Sample reading (with italic disclaimer)
-- `artifacts/oracle/app-store/screenshots/screenshot_4_chat.png` — Oracle Chat
-- `artifacts/oracle/app-store/screenshots/screenshot_5_subscription.png` — Oracle Pro subscription value
+- `artifacts/oracle/assets/app-store/screenshots/screenshot_1_hero.png` — Hero / launch
+- `artifacts/oracle/assets/app-store/screenshots/screenshot_2_profile.png` — Behavioral profile (radar)
+- `artifacts/oracle/assets/app-store/screenshots/screenshot_3_reading.png` — Sample reading (with italic disclaimer)
+- `artifacts/oracle/assets/app-store/screenshots/screenshot_4_chat.png` — Oracle Chat
+- `artifacts/oracle/assets/app-store/screenshots/screenshot_5_subscription.png` — Oracle Pro subscription value
 
 Generator: `scripts/generate_app_store_screenshots.py` (re-runnable).
 
@@ -169,7 +169,7 @@ eas submit --platform ios --latest
 ```
 
 ### E. In App Store Connect — required uploads
-1. Upload the 5 screenshots from `artifacts/oracle/app-store/screenshots/` to the **iPhone 6.7" Display** screenshot slot.
+1. Upload the 5 screenshots from `artifacts/oracle/assets/app-store/screenshots/` to the **iPhone 6.7" Display** screenshot slot.
 2. Apple will reuse them for the 6.5" slot automatically when no 6.5" assets are provided.
 3. Paste the **App Description** (above) and **Reviewer Notes** (above).
 4. Set the **Promotional Text**, **Keywords**, **Privacy URL**, **Support URL**, **Marketing URL**, **Category**, **Age Rating** as listed in §1.

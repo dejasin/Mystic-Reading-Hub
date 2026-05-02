@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.theoracle.app",
-      "buildNumber": "2",
+      "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Oracle uses your camera to capture biometric reference images (your hand and face) used as the input signal for your behavioral analysis. Images are sent securely for analysis and never stored.",

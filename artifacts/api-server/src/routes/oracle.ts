@@ -518,7 +518,7 @@ router.post(
 ✦ IDENTITY BLUEPRINT — who this person is at their core (${wordCount} words)
 ✦ INNER WIRING — emotional and psychological patterns (${wordCount} words)
 
-End Section 2 with exactly this sentence: "You are approaching a phase where one decision will define the next 3–5 years of your life. The Oracle can already see the pattern forming."${questionsText}`
+End Section 2 with exactly this sentence: "Your behavioral profile points to a pattern worth examining more closely — the kind of pattern that, named clearly, helps you make a better next decision."${questionsText}`
         }
       ];
 
@@ -561,7 +561,7 @@ End Section 2 with exactly this sentence: "You are approaching a phase where one
             system: systemPrompt,
             messages: [{
               role: "user",
-              content: `Generate sections ✦ IDENTITY BLUEPRINT and ✦ INNER WIRING. End with: "You are approaching a phase where one decision will define the next 3–5 years of your life. The Oracle can already see the pattern forming."`
+              content: `Generate sections ✦ IDENTITY BLUEPRINT and ✦ INNER WIRING. End with: "Your behavioral profile points to a pattern worth examining more closely — the kind of pattern that, named clearly, helps you make a better next decision."`
             }]
           });
           const text = fallback.content[0].type === "text" ? fallback.content[0].text : "";
@@ -577,6 +577,12 @@ End Section 2 with exactly this sentence: "You are approaching a phase where one
       session.reading = fullReading;
       session.hadPalmImages = hasPalmImages;
       await saveSession(sessionId, session);
+
+      // Second Anthropic call: behavioral scores. Wrapped so a scoring failure
+      // can never break the reading flow — defaults to {0.5,...} on any error.
+      const behavioralScores = await computeBehavioralScores(fullReading, userData, req.log);
+      sendEvent({ event: "behavioral_scores", scores: behavioralScores });
+
       stopKeepAlive();
       sendEvent({ event: "paywall" });
       res.end();
@@ -664,7 +670,10 @@ router.post(
         }
       }
 
-      const paidSectionHeaders = ["✦ EXTERNAL EXPRESSION", "✦ TIMING & CYCLES", "✦ HIDDEN PATTERNS"];
+      // NOTE: "TIMING & CYCLES" retained as a backwards-compatible split marker
+      // for sessions persisted before the rename; current generations now use
+      // "RHYTHMS & PATTERNS" (non-predictive framing).
+      const paidSectionHeaders = ["✦ EXTERNAL EXPRESSION", "✦ RHYTHMS & PATTERNS", "✦ TIMING & CYCLES", "✦ HIDDEN PATTERNS"];
       const existingReading = session.reading ?? "";
       const hasPaidSections = paidSectionHeaders.some(header => existingReading.includes(header));
 
@@ -734,7 +743,7 @@ router.post(
           type: "text",
           text: `Generate ONLY these three sections:
 ✦ EXTERNAL EXPRESSION — how the world reads this person (${wordCount} words)
-✦ TIMING & CYCLES — phases, cycles, critical windows (${wordCount} words)
+✦ RHYTHMS & PATTERNS — recurring behavioral cycles already visible in this person's profile, framed as patterns to recognize, NOT as predictions about future events (${wordCount} words)
 ✦ HIDDEN PATTERNS — what repeats below their awareness (${wordCount} words)${questionsText}${freeReadingSummary}`
         }
       ];
@@ -1482,54 +1491,43 @@ function clampScore(n: unknown): number | null {
   return Math.max(0, Math.min(1, n));
 }
 
-router.post("/behavioral-profile", async (req: Request, res: Response) => {
+// Default fallback so the reading flow never fails if scoring fails.
+const DEFAULT_BEHAVIORAL_SCORES: Record<BehavioralDimension, number> = {
+  intuition: 0.5,
+  emotional_depth: 0.5,
+  drive: 0.5,
+  adaptability: 0.5,
+  inner_knowing: 0.5,
+  expression: 0.5,
+};
+
+async function computeBehavioralScores(
+  reading: string,
+  userData: Record<string, string> | undefined,
+  log: { error: (...args: unknown[]) => void },
+): Promise<Record<BehavioralDimension, number>> {
+  if (!anthropicApiKey || !reading.trim()) return { ...DEFAULT_BEHAVIORAL_SCORES };
+
   try {
-    if (!anthropicApiKey) {
-      res.status(503).json({ error: "The Oracle is temporarily unavailable." });
-      return;
-    }
-
-    const { sessionId, userData } = req.body as {
-      sessionId?: string;
-      userData?: Record<string, string>;
-    };
-
-    if (!sessionId) {
-      res.status(400).json({ error: "sessionId is required." });
-      return;
-    }
-
-    const session = await getOrCreateSession(sessionId);
-    const reading = (session.reading ?? "").trim();
-    if (!reading) {
-      res.status(409).json({ error: "No Oracle session found yet for this seeker." });
-      return;
-    }
-
     const ud = userData ?? {};
     const name = ud.name ?? "Seeker";
-    const dob = ud.dob ?? "";
     const dominantHand = ud.dominantHand ?? "unspecified";
-    const sunSign = dob ? computeSunSign(dob) : "Unknown";
-    const numerology = dob && name ? computeFullNumerology(dob, name) : null;
-    const numerologyBlock = numerology ? buildNumerologyBlock(numerology) : "";
 
     const systemPrompt = `You are The Oracle, distilling a completed behavioral reading into six behavioral dimension scores.
 
 Return ONLY a single JSON object with these exact keys, each a number between 0.0 and 1.0:
-- intuition: how readily this person senses beneath the surface of a situation
-- emotional_depth: the range and intensity of feeling they hold and process
-- drive: the force with which they move toward what they want
-- adaptability: how fluidly they adjust when circumstances shift
-- inner_knowing: their access to clarity that does not need external proof
-- expression: how clearly they translate the inner world into outer form
+- intuition
+- emotional_depth
+- drive
+- adaptability
+- inner_knowing
+- expression
 
 RULES:
 - Output ONLY the JSON object, no prose, no markdown, no code fence.
 - Each value must be a real number with at least two decimals (e.g. 0.62), in [0, 1].
-- Use the full range — do NOT cluster every score near 0.5 or 0.8. Differentiate the dimensions based on what the reading actually reveals.
-- Ground each score in the behavioral reading text and the seeker's profile data. Wherever the reading emphasises a particular trait or pattern, let that signal raise or lower the matching dimension.
-- Do not all-default to high. If a dimension is muted in the reading, score it lower.
+- Use the full range — do NOT cluster every score near 0.5 or 0.8.
+- Ground each score in the behavioral reading text and the seeker's profile data.
 
 Seeker context:
 Name: ${name}
@@ -1545,43 +1543,50 @@ Produce the JSON object now.`;
 
     const result = await anthropic.messages.create({
       model: MODEL,
-      max_tokens: 400,
+      max_tokens: 200,
       system: systemPrompt,
       messages: [{ role: "user", content: userContent }],
     });
 
     const text = result.content[0]?.type === "text" ? result.content[0].text.trim() : "";
     const match = text.match(/\{[\s\S]*\}/);
-    if (!match) {
-      req.log.error({ text }, "Behavioral profile: no JSON in model response");
-      res.status(502).json({ error: "Could not parse Oracle response." });
-      return;
-    }
+    if (!match) return { ...DEFAULT_BEHAVIORAL_SCORES };
 
-    let parsed: Record<string, unknown>;
-    try {
-      parsed = JSON.parse(match[0]);
-    } catch (e) {
-      req.log.error({ err: e, text }, "Behavioral profile: JSON parse failed");
-      res.status(502).json({ error: "Could not parse Oracle response." });
-      return;
-    }
-
-    const scores: Partial<Record<BehavioralDimension, number>> = {};
+    const parsed = JSON.parse(match[0]) as Record<string, unknown>;
+    const out: Partial<Record<BehavioralDimension, number>> = {};
     for (const dim of BEHAVIORAL_DIMENSIONS) {
       const v = clampScore(parsed[dim]);
-      if (v === null) {
-        req.log.error({ parsed }, `Behavioral profile: missing/invalid dimension ${dim}`);
-        res.status(502).json({ error: "Oracle response was incomplete." });
-        return;
-      }
-      scores[dim] = v;
+      if (v === null) return { ...DEFAULT_BEHAVIORAL_SCORES };
+      out[dim] = v;
+    }
+    return out as Record<BehavioralDimension, number>;
+  } catch (err) {
+    log.error({ err }, "Behavioral scoring failed; returning defaults");
+    return { ...DEFAULT_BEHAVIORAL_SCORES };
+  }
+}
+
+router.post("/behavioral-profile", async (req: Request, res: Response) => {
+  // This endpoint NEVER returns a non-200 response; on any failure it returns
+  // the default {0.5,...} fallback so the reading flow can never be blocked.
+  try {
+    const { sessionId, userData } = req.body as {
+      sessionId?: string;
+      userData?: Record<string, string>;
+    };
+
+    if (!sessionId) {
+      res.status(200).json({ scores: { ...DEFAULT_BEHAVIORAL_SCORES }, fallback: true });
+      return;
     }
 
+    const session = await getOrCreateSession(sessionId);
+    const reading = (session.reading ?? "").trim();
+    const scores = await computeBehavioralScores(reading, userData, req.log);
     res.status(200).json({ scores });
   } catch (err) {
-    req.log.error({ err }, "Behavioral profile error");
-    res.status(500).json({ error: "The Oracle could not compute the behavioral profile." });
+    req.log.error({ err }, "Behavioral profile error (returning defaults)");
+    res.status(200).json({ scores: { ...DEFAULT_BEHAVIORAL_SCORES }, fallback: true });
   }
 });
 
@@ -1644,7 +1649,7 @@ router.post("/expand", sseHeaders, async (req: Request, res: Response) => {
 
     const modeInstruction = mode === "go_deeper"
       ? `Go significantly deeper into the layers beneath this passage. Excavate the hidden psychological roots, the archetypal forces at work, the symbolic resonance of what was said. Do not repeat what was already written. Go further inward — more specific, more confronting, more precise. Reveal what the original passage only hinted at.`
-      : `Expand upon this passage with additional breadth and context. Explore adjacent dimensions — how this pattern manifests in relationships, career, body, and time. Trace its origins and its future trajectory. Connect it to the broader tapestry of this person's life. Do not repeat what was already written. Build outward from this insight with new territory.`;
+      : `Expand upon this passage with additional breadth and context. Explore adjacent dimensions — how this pattern manifests in relationships, career, body, and daily life. Trace its origins and the situations where it tends to recur. Connect it to the broader tapestry of this person's life. Do not predict the future. Do not repeat what was already written. Build outward from this insight with new territory.`;
 
     const systemPrompt = `You are The Oracle — the same timeless intelligence that delivered the original reading. You are now responding to a seeker who has asked you to illuminate a specific passage of their reading further.
 

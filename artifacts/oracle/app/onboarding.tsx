@@ -51,7 +51,7 @@ const SLIDES: SlideData[] = [
     title: "PERSONAL INSIGHT",
     subtitle: "Powered by AI. Refined by your biometrics.",
     bodyLines: [
-      "Real understanding, not generic horoscopes",
+      "Real understanding, not generic advice",
       "Insight rooted in who you actually are",
       "Patterns, blind spots, and what to do next",
     ],
