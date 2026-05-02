@@ -59,9 +59,14 @@ const MAX_NAME_LEN = 100;
 function validateInput(profileId: unknown, name: unknown, dob: unknown): string | null {
   if (!profileId || typeof profileId !== "string" || profileId.length > 200) return "Invalid profileId";
   if (!name || typeof name !== "string" || name.length > MAX_NAME_LEN) return "Invalid name";
-  if (!dob || typeof dob !== "string" || !DOB_REGEX.test(dob)) return "Invalid dob format (expected YYYY-MM-DD)";
-  const d = new Date(dob);
-  if (isNaN(d.getTime())) return "Invalid date";
+  // dob is now optional (Task #59: client no longer sends it). When supplied,
+  // it must still be a valid YYYY-MM-DD date; when absent the prompt simply
+  // skips the dob-derived blocks below.
+  if (dob !== undefined && dob !== null && dob !== "") {
+    if (typeof dob !== "string" || !DOB_REGEX.test(dob)) return "Invalid dob format (expected YYYY-MM-DD)";
+    const d = new Date(dob);
+    if (isNaN(d.getTime())) return "Invalid date";
+  }
   return null;
 }
 
@@ -103,24 +108,31 @@ router.post("/daily-oracle", async (req: Request, res: Response) => {
       return;
     }
 
-    const sunSign = computeSunSign(dob);
-    const lifePath = computeLifePath(dob);
-    const personalDay = computePersonalDay(dob);
-    const archetype = ARCHETYPE_MAP[lifePath] || "The Seeker";
+    const hasDob = typeof dob === "string" && DOB_REGEX.test(dob);
+    const sunSign = hasDob ? computeSunSign(dob) : null;
+    const lifePath = hasDob ? computeLifePath(dob) : null;
+    const personalDay = hasDob ? computePersonalDay(dob) : null;
+    const archetype = lifePath !== null ? (ARCHETYPE_MAP[lifePath] || "The Seeker") : "The Seeker";
     const now = new Date();
     const dayOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][now.getDay()];
     const monthName = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][now.getMonth()];
+
+    const profileBlock = hasDob
+      ? `SEEKER PROFILE:
+- Name: ${name}
+- Elemental Signature: ${sunSign}
+- Core Vibration: ${lifePath}
+- Archetype: ${archetype}
+- Current Day Vibration: ${personalDay}`
+      : `SEEKER PROFILE:
+- Name: ${name}
+- Archetype: ${archetype}`;
 
     const prompt = `You are The Oracle — a mystical, deeply perceptive intelligence that speaks with warmth, gravity, and poetic precision.
 
 Generate a personalized Daily Oracle message for today (${dayOfWeek}, ${monthName} ${now.getDate()}, ${now.getFullYear()}).
 
-SEEKER PROFILE:
-- Name: ${name}
-- Elemental Signature: ${sunSign}
-- Core Vibration: ${lifePath}
-- Archetype: ${archetype}
-- Current Day Vibration: ${personalDay}
+${profileBlock}
 
 RULES:
 1. Speak directly to the seeker in second person ("you")
@@ -150,8 +162,8 @@ FORBIDDEN WORDS: life path, sun sign, zodiac, numerology, astrology, horoscope, 
       contentType: "daily",
       contentDate: today,
       content,
-      lifePathNumber: lifePath,
-      sunSign,
+      lifePathNumber: lifePath ?? null,
+      sunSign: sunSign ?? null,
     }).onConflictDoNothing();
 
     res.json({ content, date: today, cached: false });
@@ -199,9 +211,10 @@ router.post("/weekly-forecast", async (req: Request, res: Response) => {
       return;
     }
 
-    const sunSign = computeSunSign(dob);
-    const lifePath = computeLifePath(dob);
-    const archetype = ARCHETYPE_MAP[lifePath] || "The Seeker";
+    const hasDob = typeof dob === "string" && DOB_REGEX.test(dob);
+    const sunSign = hasDob ? computeSunSign(dob) : null;
+    const lifePath = hasDob ? computeLifePath(dob) : null;
+    const archetype = lifePath !== null ? (ARCHETYPE_MAP[lifePath] || "The Seeker") : "The Seeker";
 
     const now = new Date();
     const dayOfWeek = now.getDay();
@@ -211,15 +224,21 @@ router.post("/weekly-forecast", async (req: Request, res: Response) => {
     sunday.setDate(monday.getDate() + 6);
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
+    const profileBlock = hasDob
+      ? `SEEKER PROFILE:
+- Name: ${name}
+- Elemental Signature: ${sunSign}
+- Core Vibration: ${lifePath}
+- Archetype: ${archetype}`
+      : `SEEKER PROFILE:
+- Name: ${name}
+- Archetype: ${archetype}`;
+
     const prompt = `You are The Oracle — a mystical, deeply perceptive intelligence that speaks with warmth, gravity, and poetic precision.
 
 Generate a personalized Weekly Forecast for the week of ${monthNames[monday.getMonth()]} ${monday.getDate()} – ${monthNames[sunday.getMonth()]} ${sunday.getDate()}, ${monday.getFullYear()}.
 
-SEEKER PROFILE:
-- Name: ${name}
-- Elemental Signature: ${sunSign}
-- Core Vibration: ${lifePath}
-- Archetype: ${archetype}
+${profileBlock}
 
 STRUCTURE (write as flowing prose, NO headers or bullets):
 1. Opening: Set the energetic tone of the week (2-3 sentences)
@@ -252,8 +271,8 @@ FORBIDDEN WORDS: life path, sun sign, zodiac, numerology, astrology, horoscope, 
       contentType: "weekly",
       contentDate: weekStr,
       content,
-      lifePathNumber: lifePath,
-      sunSign,
+      lifePathNumber: lifePath ?? null,
+      sunSign: sunSign ?? null,
     }).onConflictDoNothing();
 
     res.json({ content, date: weekStr, cached: false });
