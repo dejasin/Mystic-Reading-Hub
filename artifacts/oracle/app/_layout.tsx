@@ -120,6 +120,7 @@ export default function RootLayout() {
                       <Stack.Screen name="index" />
                       <Stack.Screen name="onboarding" options={{ animation: "fade", gestureEnabled: false }} />
                       <Stack.Screen name="intake" />
+                      <Stack.Screen name="questionnaire" />
                       <Stack.Screen name="ritual" />
                       <Stack.Screen name="reading" />
                       <Stack.Screen name="chat" />

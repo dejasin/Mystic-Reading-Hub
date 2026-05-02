@@ -1,8 +1,7 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import Anthropic from "@anthropic-ai/sdk";
-import { eq, and, desc, sql } from "drizzle-orm";
-import { db, dailyContentTable } from "@workspace/db";
-import { computeSunSign, reduceDigits, computeLifePath } from "../lib/astro.js";
+import { eq, and, desc } from "drizzle-orm";
+import { db, dailyContentTable, sessionsTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
@@ -15,15 +14,6 @@ const anthropic = new Anthropic({
 });
 
 const DAILY_MODEL = "claude-opus-4-5";
-
-function computePersonalDay(dob: string): number {
-  const now = new Date();
-  const d = new Date(dob);
-  const digits = `${d.getUTCMonth() + 1}${d.getUTCDate()}${now.getFullYear()}${now.getMonth() + 1}${now.getDate()}`
-    .split("")
-    .map(Number);
-  return reduceDigits(digits.reduce((a, b) => a + b, 0));
-}
 
 function getTodayStr(): string {
   const now = new Date();
@@ -38,43 +28,38 @@ function getWeekStr(): string {
   return `week-${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, "0")}-${String(monday.getDate()).padStart(2, "0")}`;
 }
 
-const ARCHETYPE_MAP: Record<number, string> = {
-  1: "The Pioneer",
-  2: "The Diplomat",
-  3: "The Creator",
-  4: "The Builder",
-  5: "The Adventurer",
-  6: "The Nurturer",
-  7: "The Seeker",
-  8: "The Sovereign",
-  9: "The Sage",
-  11: "The Visionary",
-  22: "The Master Builder",
-  33: "The Master Teacher",
-};
-
-const DOB_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_NAME_LEN = 100;
 
-function validateInput(profileId: unknown, name: unknown, dob: unknown): string | null {
+function validateInput(profileId: unknown, name: unknown): string | null {
   if (!profileId || typeof profileId !== "string" || profileId.length > 200) return "Invalid profileId";
   if (!name || typeof name !== "string" || name.length > MAX_NAME_LEN) return "Invalid name";
-  // dob is now optional (Task #59: client no longer sends it). When supplied,
-  // it must still be a valid YYYY-MM-DD date; when absent the prompt simply
-  // skips the dob-derived blocks below.
-  if (dob !== undefined && dob !== null && dob !== "") {
-    if (typeof dob !== "string" || !DOB_REGEX.test(dob)) return "Invalid dob format (expected YYYY-MM-DD)";
-    const d = new Date(dob);
-    if (isNaN(d.getTime())) return "Invalid date";
-  }
   return null;
+}
+
+// Pull the most recent themes from this profile's most recent completed
+// session reading, if any. Used as the input signal for daily/weekly
+// reflections — replaces the deleted DOB-derived blocks (Task #60).
+async function fetchSessionThemes(sessionId?: string | null): Promise<string> {
+  if (!sessionId || typeof sessionId !== "string") return "";
+  try {
+    const rows = await db
+      .select()
+      .from(sessionsTable)
+      .where(eq(sessionsTable.sessionId, sessionId))
+      .limit(1);
+    const r = rows[0];
+    if (r?.reading) return r.reading.substring(0, 1200);
+  } catch (e) {
+    console.error("Failed to load session themes for daily/weekly:", e);
+  }
+  return "";
 }
 
 router.post("/daily-oracle", async (req: Request, res: Response) => {
   try {
-    const { profileId, name, dob } = req.body;
+    const { profileId, name, sessionId } = req.body as { profileId?: string; name?: string; sessionId?: string };
 
-    const validationError = validateInput(profileId, name, dob);
+    const validationError = validateInput(profileId, name);
     if (validationError) {
       res.status(400).json({ error: validationError });
       return;
@@ -87,7 +72,7 @@ router.post("/daily-oracle", async (req: Request, res: Response) => {
       .from(dailyContentTable)
       .where(
         and(
-          eq(dailyContentTable.profileId, profileId),
+          eq(dailyContentTable.profileId, profileId!),
           eq(dailyContentTable.contentType, "daily"),
           eq(dailyContentTable.contentDate, today)
         )
@@ -99,6 +84,7 @@ router.post("/daily-oracle", async (req: Request, res: Response) => {
         content: existing[0].content,
         date: existing[0].contentDate,
         cached: true,
+        label: "Daily Reflection",
       });
       return;
     }
@@ -108,46 +94,33 @@ router.post("/daily-oracle", async (req: Request, res: Response) => {
       return;
     }
 
-    const hasDob = typeof dob === "string" && DOB_REGEX.test(dob);
-    const sunSign = hasDob ? computeSunSign(dob) : null;
-    const lifePath = hasDob ? computeLifePath(dob) : null;
-    const personalDay = hasDob ? computePersonalDay(dob) : null;
-    const archetype = lifePath !== null ? (ARCHETYPE_MAP[lifePath] || "The Seeker") : "The Seeker";
+    const themes = await fetchSessionThemes(sessionId);
     const now = new Date();
     const dayOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][now.getDay()];
     const monthName = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][now.getMonth()];
 
-    const profileBlock = hasDob
-      ? `SEEKER PROFILE:
-- Name: ${name}
-- Elemental Signature: ${sunSign}
-- Core Vibration: ${lifePath}
-- Archetype: ${archetype}
-- Current Day Vibration: ${personalDay}`
-      : `SEEKER PROFILE:
-- Name: ${name}
-- Archetype: ${archetype}`;
+    const themesBlock = themes
+      ? `RECENT BEHAVIORAL READING THEMES (use these as the input signal — never quote back verbatim):\n${themes}`
+      : `No prior Oracle reading is available for ${name}. Speak generally to the seeker's invitation to reflect today.`;
 
-    const prompt = `You are The Oracle — a mystical, deeply perceptive intelligence that speaks with warmth, gravity, and poetic precision.
+    const prompt = `You are The Oracle — a personal AI life advisor that produces a behavioral profile from the seeker's questionnaire and hand photographs. You are not a fortune teller.
 
-Generate a personalized Daily Oracle message for today (${dayOfWeek}, ${monthName} ${now.getDate()}, ${now.getFullYear()}).
+Generate a personalized Daily Reflection for ${name} for today (${dayOfWeek}, ${monthName} ${now.getDate()}, ${now.getFullYear()}).
 
-${profileBlock}
+${themesBlock}
 
 RULES:
-1. Speak directly to the seeker in second person ("you")
-2. The message should feel deeply personal, not generic horoscope filler
-3. Reference their archetype energy and current vibration naturally — never name the systems
-4. Include one specific, actionable insight for the day
-5. Include one subtle warning or thing to be mindful of
-6. The tone should be warm but authoritative — like a wise mentor who sees clearly
-7. Keep it between 80-120 words
-8. Do NOT use any markdown, headers, or bullet points
-9. Do NOT mention numerology, astrology, life path, sun sign, or any system names
-10. Begin directly with the message — no greetings or titles
-11. End with a single evocative closing line that lingers
-
-FORBIDDEN WORDS: life path, sun sign, zodiac, numerology, astrology, horoscope, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces`;
+1. Speak directly to the seeker in second person ("you").
+2. The reflection must feel deeply personal, not generic horoscope filler.
+3. Reference patterns from their reading themes when available — never name the system that produced them.
+4. Include one specific, actionable thing to try today.
+5. Include one quietly confronting line — something to be mindful of.
+6. The tone is warm but authoritative — like a perceptive mentor who sees clearly.
+7. 80–120 words.
+8. No markdown, no headers, no bullet points.
+9. Do NOT mention numerology, astrology, life path, sun sign, zodiac, tarot, or any divination system.
+10. Begin directly with the reflection — no greetings, no titles.
+11. End with a single evocative closing line that lingers.`;
 
     const response = await anthropic.messages.create({
       model: DAILY_MODEL,
@@ -158,26 +131,26 @@ FORBIDDEN WORDS: life path, sun sign, zodiac, numerology, astrology, horoscope, 
     const content = response.content[0].type === "text" ? response.content[0].text : "";
 
     await db.insert(dailyContentTable).values({
-      profileId,
+      profileId: profileId!,
       contentType: "daily",
       contentDate: today,
       content,
-      lifePathNumber: lifePath ?? null,
-      sunSign: sunSign ?? null,
+      lifePathNumber: null,
+      sunSign: null,
     }).onConflictDoNothing();
 
-    res.json({ content, date: today, cached: false });
+    res.json({ content, date: today, cached: false, label: "Daily Reflection" });
   } catch (e) {
     console.error("Daily oracle error:", e);
-    res.status(500).json({ error: "Failed to generate daily oracle message." });
+    res.status(500).json({ error: "Failed to generate today's reflection." });
   }
 });
 
 router.post("/weekly-forecast", async (req: Request, res: Response) => {
   try {
-    const { profileId, name, dob } = req.body;
+    const { profileId, name, sessionId } = req.body as { profileId?: string; name?: string; sessionId?: string };
 
-    const validationError = validateInput(profileId, name, dob);
+    const validationError = validateInput(profileId, name);
     if (validationError) {
       res.status(400).json({ error: validationError });
       return;
@@ -190,7 +163,7 @@ router.post("/weekly-forecast", async (req: Request, res: Response) => {
       .from(dailyContentTable)
       .where(
         and(
-          eq(dailyContentTable.profileId, profileId),
+          eq(dailyContentTable.profileId, profileId!),
           eq(dailyContentTable.contentType, "weekly"),
           eq(dailyContentTable.contentDate, weekStr)
         )
@@ -202,6 +175,7 @@ router.post("/weekly-forecast", async (req: Request, res: Response) => {
         content: existing[0].content,
         date: existing[0].contentDate,
         cached: true,
+        label: "This Week's Focus",
       });
       return;
     }
@@ -211,10 +185,7 @@ router.post("/weekly-forecast", async (req: Request, res: Response) => {
       return;
     }
 
-    const hasDob = typeof dob === "string" && DOB_REGEX.test(dob);
-    const sunSign = hasDob ? computeSunSign(dob) : null;
-    const lifePath = hasDob ? computeLifePath(dob) : null;
-    const archetype = lifePath !== null ? (ARCHETYPE_MAP[lifePath] || "The Seeker") : "The Seeker";
+    const themes = await fetchSessionThemes(sessionId);
 
     const now = new Date();
     const dayOfWeek = now.getDay();
@@ -224,39 +195,32 @@ router.post("/weekly-forecast", async (req: Request, res: Response) => {
     sunday.setDate(monday.getDate() + 6);
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-    const profileBlock = hasDob
-      ? `SEEKER PROFILE:
-- Name: ${name}
-- Elemental Signature: ${sunSign}
-- Core Vibration: ${lifePath}
-- Archetype: ${archetype}`
-      : `SEEKER PROFILE:
-- Name: ${name}
-- Archetype: ${archetype}`;
+    const themesBlock = themes
+      ? `RECENT BEHAVIORAL READING THEMES (use these as the input signal — never quote back verbatim):\n${themes}`
+      : `No prior Oracle reading is available for ${name}. Speak generally to a seeker stepping into a new week of self-reflection.`;
 
-    const prompt = `You are The Oracle — a mystical, deeply perceptive intelligence that speaks with warmth, gravity, and poetic precision.
+    const prompt = `You are The Oracle — a personal AI life advisor that produces a behavioral profile from the seeker's questionnaire and hand photographs. You are not a fortune teller.
 
-Generate a personalized Weekly Forecast for the week of ${monthNames[monday.getMonth()]} ${monday.getDate()} – ${monthNames[sunday.getMonth()]} ${sunday.getDate()}, ${monday.getFullYear()}.
+Generate a personalized "This Week's Focus" reflection for ${name} for the week of ${monthNames[monday.getMonth()]} ${monday.getDate()} – ${monthNames[sunday.getMonth()]} ${sunday.getDate()}, ${monday.getFullYear()}.
 
-${profileBlock}
+${themesBlock}
 
 STRUCTURE (write as flowing prose, NO headers or bullets):
-1. Opening: Set the energetic tone of the week (2-3 sentences)
-2. Early Week (Mon-Wed): What energies are building, what to focus on
-3. Mid-Week Shift (Thu): A turning point or insight to watch for
-4. Late Week (Fri-Sun): How the week resolves, what to carry forward
-5. Closing: One sentence of oracle wisdom for the week
+1. Opening: name the behavioral focus of this week for them (2–3 sentences).
+2. Early Week (Mon–Wed): the pattern most likely to show up and what to do with it.
+3. Mid-Week (Thu): a turning point or insight to watch for.
+4. Late Week (Fri–Sun): what tends to need to land for the week to settle.
+5. Closing: one sentence of grounded wisdom for the week.
 
 RULES:
-1. Speak directly in second person ("you")
-2. Feel deeply personal, referencing their archetype energy naturally
-3. Include specific actionable guidance woven into the narrative
-4. Between 200-280 words
-5. No markdown, headers, or bullet points — pure flowing prose
-6. Do NOT mention numerology, astrology, life path, sun sign, or system names
-7. Begin directly — no greetings
-
-FORBIDDEN WORDS: life path, sun sign, zodiac, numerology, astrology, horoscope, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces`;
+1. Second person ("you").
+2. Reference themes from their reading naturally — never name the system that produced them.
+3. Specific, actionable guidance woven into the narrative.
+4. 200–280 words.
+5. No markdown, no headers, no bullets — pure flowing prose.
+6. Do NOT mention numerology, astrology, life path, sun sign, zodiac, tarot, or any divination system.
+7. No specific predictions of events. Speak in patterns and tendencies.
+8. Begin directly — no greetings.`;
 
     const response = await anthropic.messages.create({
       model: DAILY_MODEL,
@@ -267,18 +231,18 @@ FORBIDDEN WORDS: life path, sun sign, zodiac, numerology, astrology, horoscope, 
     const content = response.content[0].type === "text" ? response.content[0].text : "";
 
     await db.insert(dailyContentTable).values({
-      profileId,
+      profileId: profileId!,
       contentType: "weekly",
       contentDate: weekStr,
       content,
-      lifePathNumber: lifePath ?? null,
-      sunSign: sunSign ?? null,
+      lifePathNumber: null,
+      sunSign: null,
     }).onConflictDoNothing();
 
-    res.json({ content, date: weekStr, cached: false });
+    res.json({ content, date: weekStr, cached: false, label: "This Week's Focus" });
   } catch (e) {
     console.error("Weekly forecast error:", e);
-    res.status(500).json({ error: "Failed to generate weekly forecast." });
+    res.status(500).json({ error: "Failed to generate this week's focus." });
   }
 });
 
@@ -300,7 +264,7 @@ router.get("/daily-history/:profileId", async (req: Request, res: Response) => {
       .limit(limit);
 
     res.json({
-      entries: entries.map((e) => ({
+      entries: entries.map((e: typeof entries[number]) => ({
         content: e.content,
         date: e.contentDate,
       })),

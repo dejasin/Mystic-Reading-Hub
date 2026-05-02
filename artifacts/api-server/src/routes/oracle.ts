@@ -5,7 +5,6 @@ import { eq } from "drizzle-orm";
 import { db, sessionsTable } from "@workspace/db";
 import { getUncachableRevenueCatClient } from "../lib/revenueCatClient.js";
 import { listCustomerActiveEntitlements } from "@replit/revenuecat-sdk";
-import { computeSunSign, reduceDigits, computeLifePath } from "../lib/astro.js";
 
 const router: IRouter = Router();
 const upload = multer({
@@ -42,7 +41,6 @@ class SessionLRUCache {
       this.map.delete(key);
       return undefined;
     }
-    // Move to end (most recently used)
     this.map.delete(key);
     this.map.set(key, entry);
     return entry.data;
@@ -119,169 +117,60 @@ async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 2, label = "API 
   throw new Error("Unreachable");
 }
 
-const PYTHAGOREAN: Record<string, number> = {
-  a:1,b:2,c:3,d:4,e:5,f:6,g:7,h:8,i:9,
-  j:1,k:2,l:3,m:4,n:5,o:6,p:7,q:8,r:9,
-  s:1,t:2,u:3,v:4,w:5,x:6,y:7,z:8
-};
+// ── Persona + injection blocks (Task #60: Option B) ─────────────────────
+//
+// The Oracle persona is now a behavioral analyst working from two clean
+// inputs: the user's questionnaire answers and the structural features
+// visible in their reference hand photographs. There is no horoscope, no
+// numerology, no zodiac, no tarot, and no future prediction.
 
-const CHALDEAN: Record<string, number> = {
-  a:1,b:2,c:3,d:4,e:5,f:8,g:3,h:5,i:1,
-  j:1,k:2,l:3,m:4,n:5,o:7,p:8,q:1,r:2,
-  s:3,t:4,u:6,v:6,w:6,x:5,y:1,z:7
-};
+const ORACLE_PERSONA_BLOCK = `You are The Oracle — a personal AI life advisor that produces a behavioral profile by combining (a) what the seeker has told you about themselves through a short structured questionnaire and (b) the structural signals visible in the photographs they shared of their hands. You are not a fortune teller. You do not predict the future, name astrological signs, compute life-path numbers, or invoke tarot. You read patterns. You speak like an extraordinarily perceptive friend who has been quietly watching this person for years and is now sitting across from them with permission to say what they have noticed. You are direct without being cruel, warm without being flattering, and specific without being theatrical.`;
 
-const VOWELS = new Set(["a","e","i","o","u"]);
-
-function nameToNumber(name: string, onlyVowels = false): number {
-  const chars = name.toLowerCase().replace(/[^a-z]/g, "").split("");
-  const filtered = onlyVowels ? chars.filter(c => VOWELS.has(c)) : chars;
-  const sum = filtered.reduce((a, c) => a + (PYTHAGOREAN[c] ?? 0), 0);
-  return reduceDigits(sum);
+interface QuestionnaireAnswers {
+  decisionStyle?: string;
+  pressureResponse?: string;
+  relationshipPattern?: string;
+  coreMotivation?: string;
+  biggestChallenge?: string;
+  energyStyle?: string;
+  currentNeed?: string;
+  selfPerception?: string;
 }
 
-function nameToNumberConsonants(name: string): number {
-  const chars = name.toLowerCase().replace(/[^a-z]/g, "").split("");
-  const consonants = chars.filter(c => !VOWELS.has(c));
-  const sum = consonants.reduce((a, c) => a + (PYTHAGOREAN[c] ?? 0), 0);
-  return reduceDigits(sum);
+function buildBehavioralContextBlock(answers: QuestionnaireAnswers | undefined | null): string {
+  try {
+    if (!answers || typeof answers !== "object") {
+      return "BEHAVIORAL CONTEXT: The seeker has not yet completed the questionnaire. Lean primarily on the structural signals from their hand photographs and on their stated life questions.";
+    }
+    const lines: string[] = [];
+    if (answers.decisionStyle)        lines.push(`- How they make decisions: ${answers.decisionStyle}`);
+    if (answers.pressureResponse)     lines.push(`- Their response under pressure: ${answers.pressureResponse}`);
+    if (answers.relationshipPattern)  lines.push(`- Their pattern in close relationships: ${answers.relationshipPattern}`);
+    if (answers.coreMotivation)       lines.push(`- Their core motivation: ${answers.coreMotivation}`);
+    if (answers.biggestChallenge)     lines.push(`- Their biggest internal challenge right now: ${answers.biggestChallenge}`);
+    if (answers.energyStyle)          lines.push(`- How their energy moves through the day: ${answers.energyStyle}`);
+    if (answers.currentNeed)          lines.push(`- What they most need right now: ${answers.currentNeed}`);
+    if (answers.selfPerception)       lines.push(`- How they perceive themselves vs. how others see them: ${answers.selfPerception}`);
+    if (lines.length === 0) {
+      return "BEHAVIORAL CONTEXT: The seeker has not yet completed the questionnaire. Lean primarily on the structural signals from their hand photographs and on their stated life questions.";
+    }
+    return `BEHAVIORAL CONTEXT (from the seeker's own questionnaire — integrate naturally, never recite back as a list):\n${lines.join("\n")}`;
+  } catch {
+    return "BEHAVIORAL CONTEXT: The seeker has not yet completed the questionnaire. Lean primarily on the structural signals from their hand photographs and on their stated life questions.";
+  }
 }
 
-function chaldeanNameNumber(name: string): number {
-  const chars = name.toLowerCase().replace(/[^a-z]/g, "").split("");
-  const sum = chars.reduce((a, c) => a + (CHALDEAN[c] ?? 0), 0);
-  return reduceDigits(sum);
-}
-
-function chaldeanHeartsDesire(name: string): number {
-  const chars = name.toLowerCase().replace(/[^a-z]/g, "").split("");
-  const vowels = chars.filter(c => VOWELS.has(c));
-  const sum = vowels.reduce((a, c) => a + (CHALDEAN[c] ?? 0), 0);
-  return reduceDigits(sum);
-}
-
-function chaldeanPersonality(name: string): number {
-  const chars = name.toLowerCase().replace(/[^a-z]/g, "").split("");
-  const consonants = chars.filter(c => !VOWELS.has(c));
-  const sum = consonants.reduce((a, c) => a + (CHALDEAN[c] ?? 0), 0);
-  return reduceDigits(sum);
-}
-
-function computeBirthdayNumber(dob: string): number {
-  const day = new Date(dob).getUTCDate();
-  return day;
-}
-
-function computeMaturityNumber(lifePath: number, expressionNum: number): number {
-  return reduceDigits(lifePath + expressionNum);
-}
-
-const KARMIC_DEBT_NUMBERS = new Set([13, 14, 16, 19]);
-
-function detectKarmicDebt(dob: string, name: string): number[] {
-  const debts: number[] = [];
-
-  // Life Path raw sum
-  const lifePathDigits = dob.replace(/-/g, "").split("").map(Number);
-  const rawLifePath = lifePathDigits.reduce((a, b) => a + b, 0);
-  if (KARMIC_DEBT_NUMBERS.has(rawLifePath)) debts.push(rawLifePath);
-
-  const letters = name.toLowerCase().replace(/[^a-z]/g, "").split("");
-
-  // Expression (full name) raw sum
-  const rawExpression = letters.reduce((a, c) => a + (PYTHAGOREAN[c] ?? 0), 0);
-  if (KARMIC_DEBT_NUMBERS.has(rawExpression)) debts.push(rawExpression);
-
-  // Soul Urge (vowels) raw sum
-  const rawSoulUrge = letters.filter(c => VOWELS.has(c)).reduce((a, c) => a + (PYTHAGOREAN[c] ?? 0), 0);
-  if (KARMIC_DEBT_NUMBERS.has(rawSoulUrge)) debts.push(rawSoulUrge);
-
-  // Personality (consonants) raw sum
-  const rawPersonality = letters.filter(c => !VOWELS.has(c)).reduce((a, c) => a + (PYTHAGOREAN[c] ?? 0), 0);
-  if (KARMIC_DEBT_NUMBERS.has(rawPersonality)) debts.push(rawPersonality);
-
-  return [...new Set(debts)];
-}
-
-interface NumerologyProfile {
-  lifePath: number;
-  expressionNum: number;
-  soulUrge: number;
-  personalityNum: number;
-  birthdayNum: number;
-  maturityNum: number;
-  karmicDebts: number[];
-  chaldeanName: number;
-  chaldeanHeartsDesire: number;
-  chaldeanPersonality: number;
-}
-
-function computeFullNumerology(dob: string, name: string): NumerologyProfile {
-  const lifePath = dob ? computeLifePath(dob) : 0;
-  const expressionNum = name ? nameToNumber(name) : 0;
-  const soulUrge = name ? nameToNumber(name, true) : 0;
-  const personalityNum = name ? nameToNumberConsonants(name) : 0;
-  const birthdayNum = dob ? computeBirthdayNumber(dob) : 0;
-  const maturityNum = computeMaturityNumber(lifePath, expressionNum);
-  const karmicDebts = (dob && name) ? detectKarmicDebt(dob, name) : [];
-  const chaldName = name ? chaldeanNameNumber(name) : 0;
-  const chaldHD = name ? chaldeanHeartsDesire(name) : 0;
-  const chaldPers = name ? chaldeanPersonality(name) : 0;
-  return {
-    lifePath,
-    expressionNum,
-    soulUrge,
-    personalityNum,
-    birthdayNum,
-    maturityNum,
-    karmicDebts,
-    chaldeanName: chaldName,
-    chaldeanHeartsDesire: chaldHD,
-    chaldeanPersonality: chaldPers,
-  };
-}
-
-function buildNumerologyBlock(n: NumerologyProfile): string {
-  const karmicLine = n.karmicDebts.length > 0
-    ? `\nKarmic Debt Signatures: ${n.karmicDebts.join(", ")} — ancient soul lessons encoded in this lifetime`
-    : "";
-  const chaldContrast = (n.chaldeanName !== n.expressionNum)
-    ? ` (Chaldean resonance: ${n.chaldeanName} — a contrasting frequency that creates inner tension)`
-    : ` (Chaldean resonance: ${n.chaldeanName} — both systems confirm this vibration)`;
-  const chaldHDContrast = (n.chaldeanHeartsDesire !== n.soulUrge)
-    ? ` (Chaldean inner drive: ${n.chaldeanHeartsDesire} — diverges, revealing hidden desire layer)`
-    : ` (Chaldean inner drive: ${n.chaldeanHeartsDesire} — aligned with Pythagorean reading)`;
-  const chaldPersContrast = (n.chaldeanPersonality !== n.personalityNum)
-    ? ` (Chaldean outer mask: ${n.chaldeanPersonality} — differs, suggesting a split between inner self and outer presentation)`
-    : ` (Chaldean outer mask: ${n.chaldeanPersonality} — consistent with surface self)`;
-  return `Core Vibration: ${n.lifePath}
-Name Frequency (Expression): ${n.expressionNum}${chaldContrast}
-Inner Drive (Soul Urge): ${n.soulUrge}${chaldHDContrast}
-Outer Mask (Personality): ${n.personalityNum}${chaldPersContrast}
-Birthday Power: ${n.birthdayNum}
-Maturity Signature: ${n.maturityNum}${karmicLine}`;
-}
-
-function computePersonalYear(dob: string): number {
-  const now = new Date();
-  const d = new Date(dob);
-  const digits = `${d.getUTCMonth()+1}${d.getUTCDate()}${now.getFullYear()}`.split("").map(Number);
-  return reduceDigits(digits.reduce((a,b) => a + b, 0));
-}
-
-const CHINESE_ZODIAC = ["Rat","Ox","Tiger","Rabbit","Dragon","Snake","Horse","Goat","Monkey","Rooster","Dog","Pig"];
-function computeChineseZodiac(dob: string): string {
-  const year = new Date(dob).getUTCFullYear();
-  return CHINESE_ZODIAC[(year - 1900) % 12];
-}
-
-const TAROT_CARDS = ["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"];
-function computeTarotCard(lifePathNum: number): string {
-  return TAROT_CARDS[lifePathNum] ?? "The Fool";
+function buildPalmAnalysisBlock(photoKeys: string[]): string {
+  if (!photoKeys || photoKeys.length === 0) {
+    return "HAND PHOTOGRAPH SIGNALS: No hand photographs were provided. Do not invent visual observations — work entirely from the behavioral context above and from the seeker's stated life questions.";
+  }
+  const which = photoKeys.includes("right_palm") && photoKeys.includes("left_palm")
+    ? "both hands (dominant and non-dominant)"
+    : photoKeys.includes("right_palm") ? "the dominant hand" : "the non-dominant hand";
+  return `HAND PHOTOGRAPH SIGNALS: Photographs of ${which} are attached. Read them as structural signals only — proportion, symmetry, openness, tension, the way the form holds or releases. Translate those signals into behavioral patterns. When two hands are present, treat the dominant side as lived behaviour and the non-dominant side as original disposition; the gap between them is often the single most revealing thing about this person. Do not name palmistry lines, mounts, or chiromantic concepts. Do not predict events. Stay in behavioral language.`;
 }
 
 async function imageToBase64(buffer: Buffer, mimeType: string, maxPx: number): Promise<{ b64: string; mediaType: string }> {
-  // Dynamic import to handle sharp native module
   const sharp = (await import("sharp")).default;
   const resized = await sharp(buffer)
     .resize(maxPx, maxPx, { fit: "inside", withoutEnlargement: true })
@@ -289,8 +178,6 @@ async function imageToBase64(buffer: Buffer, mimeType: string, maxPx: number): P
     .toBuffer();
   return { b64: resized.toString("base64"), mediaType: "image/jpeg" };
 }
-
-// --- Shared helpers (extracted from duplicated code) ---
 
 const IMAGE_KEYS = ["right_palm","left_palm"] as const;
 
@@ -309,82 +196,20 @@ async function processUploadedImages(
   return { photoKeys, imageMap };
 }
 
-interface ComputedProfile {
-  name: string;
-  dob: string;
-  age: number;
-  sunSign: string;
-  numerology: NumerologyProfile;
-  numerologyBlock: string;
-  lifePath: number;
-  expressionNum: number;
-  soulUrge: number;
-  personalYear: number;
-  chineseZodiac: string;
-  tarotCard: string;
-}
-
-function computeProfile(name: string, dob: string): ComputedProfile {
-  const sunSign = dob ? computeSunSign(dob) : "Unknown";
-  const numerology = computeFullNumerology(dob, name);
-  const personalYear = dob ? computePersonalYear(dob) : 0;
-  const chineseZodiac = dob ? computeChineseZodiac(dob) : "Unknown";
-  const tarotCard = computeTarotCard(numerology.lifePath);
-  const age = dob ? new Date().getUTCFullYear() - new Date(dob).getUTCFullYear() : 0;
-  const numerologyBlock = buildNumerologyBlock(numerology);
-  return {
-    name, dob, age, sunSign, numerology, numerologyBlock,
-    lifePath: numerology.lifePath,
-    expressionNum: numerology.expressionNum,
-    soulUrge: numerology.soulUrge,
-    personalYear, chineseZodiac, tarotCard,
-  };
-}
-
-const BIRLA_PERSONA_BLOCK = `
-RULE BEFORE EVERYTHING ELSE: The person reading this should feel like someone extraordinarily perceptive is talking about them.
-
-Read with the depth and precision of a behavioral analyst who has spent decades observing how people actually move through life. Do not perform a reading — see this person. Notice the structural features visible in the reference imagery — proportion, symmetry, tension, openness, the way the form holds or releases — and treat these as input signals to the larger behavioral picture. Combine those signals with the seeker's own context (their name, their stated questions, the patterns they describe) and produce a portrait of how this person actually operates: their drives, their voids, their habits of attention, their reflex under pressure.
-
-When two reference images of the same body part are provided (e.g. a dominant and non-dominant hand), read the dominant side as lived reality and the non-dominant side as original potential. Note where the two diverge — that gap is often the most revealing thing about a person.
-
-Give the most honest, comprehensive reading possible. Not a performance of honesty — actual honesty. Say what you see. The flattering and the uncomfortable carry equal weight. Do not structure this as categories or sections. Write it the way a brilliant, candid friend would say it — flowing, direct, one insight leading into the next, building a portrait of a real person. Let the hard things land inside the reading, not announced as a special "difficult truth" section. Earn the difficult things by context.`;
-
-function buildBirlaPersonaBlock(_hasReferenceImages: boolean): string {
-  return BIRLA_PERSONA_BLOCK;
-}
-
-const FORBIDDEN_TERMS = `FORBIDDEN TERMINOLOGY — never use these words or phrases in your output:
-life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces, Chinese zodiac, Tarot, tarot, soul urge, expression number, personal year, numerology, astrology, zodiac`;
-
-function buildFreeSystemPrompt(photoKeys: string[], wordCount: string, birlaBlock: string): string {
-  return `You are The Oracle — an advanced AI life advisor trained in behavioral pattern recognition, archetypal psychology, and the close reading of biometric reference imagery as a behavioral signal.${birlaBlock}
-
-PRIMARY OBJECTIVE:
-The goal is NOT factual correctness.
-The goal is emotional resonance, perceived precision, and psychological impact.
-The user should feel seen, understood, and slightly exposed.
+function buildFreeSystemPrompt(photoKeys: string[], wordCount: string, behavioralContextBlock: string, palmAnalysisBlock: string): string {
+  return `${ORACLE_PERSONA_BLOCK}
 
 CORE EXECUTION RULES:
-1. SECOND PERSON ONLY — always speak directly as "you"
-2. NO GENERIC LANGUAGE — every insight must feel specific and tailored
-3. STRUCTURED DEPTH per section: Observation → Interpretation → Pattern Recognition → Emotional Insight → Subtle Confrontation
-4. RECOGNITION LINE MANDATORY — each section must contain one sentence that references internal conflict, hesitation, or contradiction
-5. MEMORY ILLUSION — reference continuity: "This is not new for you" / "This pattern has repeated in different forms"
-6. BUILD INTENSITY — earlier sections lighter, later sections more direct
+1. Speak directly to the seeker in second person ("you").
+2. Every insight must be specific to the signals you have. No generic personality-quiz language.
+3. Section flow: Observation → Interpretation → Pattern → one quietly confronting line.
+4. Build from lighter to more direct as the reading progresses.
+5. Do not predict events. Do not give time horizons. Do not invoke horoscope, numerology, zodiac, tarot, or any divinatory system.
+6. Literary, fluid prose. No bullet points. No markdown headers. Section titles use: ✦ SECTION NAME. Each section ${wordCount} words. Vary sentence length for rhythm.
 
-IMAGE ANALYSIS RULE (CRITICAL):
-When biometric reference images are provided, follow this sequence:
-STEP 1 — OBSERVATION (2–4 sentences): describe ONLY the structural features visible in the reference image — proportion, openness, tension, symmetry, the way the form holds or releases.
-STEP 2 — TRANSITION: use a phrase like "What this reveals is..."
-STEP 3 — INTERPRETATION: translate those observations into behavioral patterns and life themes.
+${behavioralContextBlock}
 
-TONE: 6 on a scale of 1–10 (balanced truth).
-
-WRITING STYLE:
-Literary, fluid, immersive prose. No bullet points. No markdown headers. Section titles use: ✦ SECTION NAME. Each section ${wordCount} words. Vary sentence length for rhythm.
-
-${FORBIDDEN_TERMS}
+${palmAnalysisBlock}
 
 Photos provided: ${photoKeys.join(", ") || "none"}
 
@@ -392,24 +217,24 @@ OUTPUT CONTROL:
 Only generate the requested sections. No introductions. No summaries unless requested. Begin immediately with the first section title.`;
 }
 
-function buildPaidSystemPrompt(photoKeys: string[], wordCount: string, birlaBlock: string): string {
-  return `You are The Oracle — an advanced AI life advisor trained in behavioral pattern recognition, archetypal psychology, and the close reading of biometric reference imagery as a behavioral signal.${birlaBlock}
+function buildPaidSystemPrompt(photoKeys: string[], wordCount: string, behavioralContextBlock: string, palmAnalysisBlock: string): string {
+  return `${ORACLE_PERSONA_BLOCK}
 
-PRIMARY OBJECTIVE: Emotional resonance, perceived precision, and psychological impact. The user should feel seen, understood, and slightly exposed.
+These are the deeper sections of the reading. Be more direct. Earn the harder observations from the context the seeker has given you.
 
-CORE RULES: Second person only. No generic language. Build intensity — these are the deeper sections. Be more direct and confronting.
+CORE RULES: Second person only. No generic language. No predictions. No horoscope, numerology, zodiac, or tarot vocabulary. Literary prose, no bullet points. Section titles: ✦ SECTION NAME. Each section ${wordCount} words.
 
-WRITING STYLE: Literary, fluid, immersive prose. No bullet points. Section titles: ✦ SECTION NAME. Each section ${wordCount} words.
+${behavioralContextBlock}
 
-${FORBIDDEN_TERMS}
+${palmAnalysisBlock}
 
 Photos: ${photoKeys.join(", ") || "none"}
 
-For the archetype block use this exact format:
-✦ YOUR ARCHETYPE — [2–4 word mythological archetype name]
-✦ CORE PATTERN LOOP — [their repeating life cycle in 3 named stages]
-✦ PRIMARY BLOCK — [the one thing holding them back, stated directly]
-✦ ACTIVATION KEY — [one specific behavioral shift]
+For the archetype block at the end use this exact format:
+✦ YOUR ARCHETYPE — [2–4 word behavioural archetype]
+✦ CORE PATTERN LOOP — [the recurring loop in 3 named stages]
+✦ PRIMARY BLOCK — [the one thing keeping them stuck, named directly]
+✦ ACTIVATION KEY — [one specific behavioral shift they could try]
 
 End the ENTIRE reading with ONE short, direct, unforgettable closing sentence on its own line.`;
 }
@@ -443,7 +268,18 @@ const imageFields = (req: Request, res: Response, next: NextFunction) => {
   });
 };
 
-// POST /api/generate - SSE streaming endpoint
+function parseQuestionnaire(raw: unknown): QuestionnaireAnswers | null {
+  if (!raw) return null;
+  try {
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (!parsed || typeof parsed !== "object") return null;
+    return parsed as QuestionnaireAnswers;
+  } catch {
+    return null;
+  }
+}
+
+// POST /api/generate - SSE streaming endpoint (free sections)
 router.post(
   "/generate",
   imageFields,
@@ -477,6 +313,8 @@ router.post(
       let userData: Record<string, string> = {};
       try { userData = JSON.parse(userDataRaw); } catch (e) { console.error("Failed to parse userData:", e); }
 
+      const questionnaireAnswers = parseQuestionnaire(req.body.questionnaireAnswers);
+
       const sessionId = req.body.sessionId ?? "default";
       const session = await getOrCreateSession(sessionId);
       session.paid = false;
@@ -488,10 +326,10 @@ router.post(
       const wordCount = fastMode ? "130–150" : "130–220";
 
       const hasPalmImages = photoKeys.some(k => k === "right_palm" || k === "left_palm");
-      const birlaBlock = buildBirlaPersonaBlock(hasPalmImages);
-      const systemPrompt = buildFreeSystemPrompt(photoKeys, wordCount, birlaBlock);
+      const behavioralContextBlock = buildBehavioralContextBlock(questionnaireAnswers);
+      const palmAnalysisBlock = buildPalmAnalysisBlock(photoKeys);
+      const systemPrompt = buildFreeSystemPrompt(photoKeys, wordCount, behavioralContextBlock, palmAnalysisBlock);
 
-      // Build image content blocks
       const palmImages: Anthropic.ImageBlockParam[] = [];
       for (const k of ["right_palm","left_palm"]) {
         if (imageMap[k]) {
@@ -507,7 +345,6 @@ router.post(
         ? `\n\nLife questions from the seeker:\n${lifeQs.map((q,i) => `${i+1}. ${q}`).join("\n")}`
         : "";
 
-      // CALL 1 — Sections 1–2 (free, streamed)
       let fullReading = "";
 
       const call1Content: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] = [
@@ -553,7 +390,6 @@ End Section 2 with exactly this sentence: "Your behavioral profile points to a p
         clearTimeout(timeoutId!);
       } catch (err) {
         req.log.error({ err }, "Anthropic call 1 failed");
-        // Retry with minimal prompt
         try {
           const fallback = await anthropic.messages.create({
             model: MODEL,
@@ -578,8 +414,6 @@ End Section 2 with exactly this sentence: "Your behavioral profile points to a p
       session.hadPalmImages = hasPalmImages;
       await saveSession(sessionId, session);
 
-      // Second Anthropic call: behavioral scores. Wrapped so a scoring failure
-      // can never break the reading flow — defaults to {0.5,...} on any error.
       const behavioralScores = await computeBehavioralScores(fullReading, userData, req.log);
       sendEvent({ event: "behavioralScores", behavioralScores });
 
@@ -633,6 +467,8 @@ router.post(
       let userData: Record<string, string> = {};
       try { userData = JSON.parse(userDataRaw); } catch (e) { console.error("Failed to parse userData:", e); }
 
+      const questionnaireAnswers = parseQuestionnaire(req.body.questionnaireAnswers);
+
       const sessionId = req.body.sessionId ?? "default";
       const session = await getOrCreateSession(sessionId);
 
@@ -670,9 +506,9 @@ router.post(
         }
       }
 
-      // NOTE: "TIMING & CYCLES" retained as a backwards-compatible split marker
-      // for sessions persisted before the rename; current generations now use
-      // "RHYTHMS & PATTERNS" (non-predictive framing).
+      // Backwards-compat: keep the old "TIMING & CYCLES" marker recognised
+      // for sessions persisted before the rename. New generations use the
+      // non-predictive "RHYTHMS & PATTERNS" header.
       const paidSectionHeaders = ["✦ EXTERNAL EXPRESSION", "✦ RHYTHMS & PATTERNS", "✦ TIMING & CYCLES", "✦ HIDDEN PATTERNS"];
       const existingReading = session.reading ?? "";
       const hasPaidSections = paidSectionHeaders.some(header => existingReading.includes(header));
@@ -726,9 +562,9 @@ router.post(
       const fastMode = photoKeys.length === 1 && photoKeys[0] === "right_palm";
       const wordCount = fastMode ? "130–150" : "130–220";
 
-      const hasPalmImagesCont = session.hadPalmImages || photoKeys.some(k => k === "right_palm" || k === "left_palm");
-      const birlaBlock = buildBirlaPersonaBlock(hasPalmImagesCont);
-      const systemPrompt = buildPaidSystemPrompt(photoKeys, wordCount, birlaBlock);
+      const behavioralContextBlock = buildBehavioralContextBlock(questionnaireAnswers);
+      const palmAnalysisBlock = buildPalmAnalysisBlock(photoKeys.length ? photoKeys : (session.hadPalmImages ? ["right_palm"] : []));
+      const systemPrompt = buildPaidSystemPrompt(photoKeys, wordCount, behavioralContextBlock, palmAnalysisBlock);
 
       const lifeQs = [userData.q1, userData.q2, userData.q3].filter(Boolean);
       const questionsText = lifeQs.length > 0
@@ -737,7 +573,6 @@ router.post(
 
       const freeReadingSummary = session.reading ? `\n\nFirst two sections already given:\n${session.reading.substring(0, 600)}` : "";
 
-      // CALL 2 — Sections 3–5
       const call2Content: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] = [
         {
           type: "text",
@@ -764,7 +599,6 @@ router.post(
       resetInactivityFn = resetInactivityTimeout;
 
       try {
-        // CALL 2 — Sections 3-5 (with retry)
         let sectionReading = "";
         await withRetry(async () => {
           sectionReading = "";
@@ -788,7 +622,6 @@ router.post(
         }, 2, "Call 2 (paid sections)");
         if (inactivityTimedOut) return;
 
-        // CALL 3 — Section 6 + Archetype block (with retry)
         let call3Text = "";
         await withRetry(async () => {
           call3Text = "";
@@ -886,24 +719,28 @@ router.post("/chat", sseHeaders, async (req: Request, res: Response) => {
 
     const messages: { role: string; content: string }[] = req.body.messages ?? [];
     const readingSummary: string = req.body.readingSummary ?? session.reading?.substring(0, 800) ?? "";
+    const questionnaireAnswers = parseQuestionnaire(req.body.questionnaireAnswers);
+    const behavioralContextBlock = buildBehavioralContextBlock(questionnaireAnswers);
+    const palmAnalysisBlock = buildPalmAnalysisBlock(session.hadPalmImages ? ["right_palm"] : []);
 
-    const systemPrompt = `You are The Oracle — a personal AI life advisor who has already produced this person's behavioral reading from their reference imagery and personal context. You know their archetype, their core pattern, their primary block, and their activation key.
+    const systemPrompt = `${ORACLE_PERSONA_BLOCK}
 
-You speak with quiet certainty. You do not explain your methods. You do not hedge. You do not add disclaimers. You answer as if you already know everything relevant about this person.
+You have already produced this person's behavioral profile from their hand photographs and questionnaire answers. You know their archetype, their core pattern, their primary block, and their activation key. You speak with quiet certainty. You do not explain your methods. You do not hedge. You do not add disclaimers. You answer as if you already know what is relevant about this person.
 
 Their reading summary is: ${readingSummary || "The full reading has not yet been completed."}
 
-Rules:
-- Always respond in second person ("you")
-- Responses: 80–180 words unless a longer answer is genuinely required
-- Literary, measured tone — not chatty
-- Reference their specific reading details when relevant
-- If asked about future events: speak in patterns and timing, not certainties
-- Never break character
-- If the question is outside your domain, redirect: "The Oracle reads patterns, not specifics. But what I can see is..."
+${behavioralContextBlock}
 
-FORBIDDEN TERMINOLOGY — never use these words or phrases in your output:
-life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces, Chinese zodiac, Tarot, tarot, soul urge, expression number, personal year, numerology, astrology, zodiac`;
+${palmAnalysisBlock}
+
+Rules:
+- Always respond in second person ("you").
+- Responses: 80–180 words unless a longer answer is genuinely required.
+- Literary, measured tone — not chatty.
+- Reference their specific reading details when relevant.
+- Speak in patterns, not predictions. No future events, no time horizons, no horoscope/numerology/zodiac/tarot vocabulary.
+- Never break character.
+- If the question is outside your domain, redirect: "The Oracle reads patterns, not specifics. But what I can see is..."`;
 
     const stream = anthropic.messages.stream({
       model: MODEL,
@@ -954,7 +791,7 @@ router.post("/chat/followups", async (req: Request, res: Response) => {
     const systemPrompt = `You are The Oracle's inner voice, crafting questions that pull the seeker deeper into self-discovery.
 
 Generate exactly 3 follow-up questions the seeker might want to ask next. Each question must:
-- Explore a DISTINCT facet: one probing the past root, one the present pattern, one the future becoming — or vary as fear / desire / truth, or shadow / gift / threshold
+- Explore a DISTINCT facet: one probing the past root, one the present pattern, one the becoming — or vary as fear / desire / truth, or shadow / gift / threshold
 - Be written in the Oracle's voice — evocative, slightly unsettling, emotionally charged
 - Be 8–14 words, no filler, no pleasantries
 - Feel like it was ripped from the seeker's own unspoken thoughts
@@ -1015,83 +852,55 @@ router.post("/synastry", sseHeaders, async (req: Request, res: Response) => {
 
   try {
     const { profile1, profile2 } = req.body as {
-      profile1: { name: string; dob: string; birthTime?: string; birthCity?: string; birthCountry?: string; gender?: string; dominantHand?: string; eyeColor?: string; photos: string[] };
-      profile2: { name: string; dob: string; birthTime?: string; birthCity?: string; birthCountry?: string; gender?: string; dominantHand?: string; eyeColor?: string; photos: string[] };
+      profile1: { name: string; gender?: string; dominantHand?: string; eyeColor?: string; notes?: string; photos: string[]; questionnaireAnswers?: QuestionnaireAnswers };
+      profile2: { name: string; gender?: string; dominantHand?: string; eyeColor?: string; notes?: string; photos: string[]; questionnaireAnswers?: QuestionnaireAnswers };
     };
 
-    if (!profile1?.name || !profile1?.dob || !profile2?.name || !profile2?.dob) {
+    if (!profile1?.name || !profile2?.name) {
       stopKeepAlive();
-      sendEvent({ event: "error", message: "Two complete profiles are required for synastry." });
+      sendEvent({ event: "error", message: "Two complete profiles are required for this reading." });
       res.end();
       return;
     }
 
-    // Pre-compute for both
-    const p1num = computeFullNumerology(profile1.dob, profile1.name);
-    const p2num = computeFullNumerology(profile2.dob, profile2.name);
-    const p1 = {
-      ...profile1,
-      sunSign: computeSunSign(profile1.dob),
-      lifePath: p1num.lifePath,
-      expressionNum: p1num.expressionNum,
-      soulUrge: p1num.soulUrge,
-      personalYear: computePersonalYear(profile1.dob),
-      chineseZodiac: computeChineseZodiac(profile1.dob),
-      numerologyBlock: buildNumerologyBlock(p1num),
-    };
-    const p2 = {
-      ...profile2,
-      sunSign: computeSunSign(profile2.dob),
-      lifePath: p2num.lifePath,
-      expressionNum: p2num.expressionNum,
-      soulUrge: p2num.soulUrge,
-      personalYear: computePersonalYear(profile2.dob),
-      chineseZodiac: computeChineseZodiac(profile2.dob),
-      numerologyBlock: buildNumerologyBlock(p2num),
-    };
+    const p1Block = buildBehavioralContextBlock(profile1.questionnaireAnswers);
+    const p2Block = buildBehavioralContextBlock(profile2.questionnaireAnswers);
+    const p1Palm = buildPalmAnalysisBlock(profile1.photos ?? []);
+    const p2Palm = buildPalmAnalysisBlock(profile2.photos ?? []);
 
-    const systemPrompt = `You are The Oracle — a multi-system intelligence specializing in synastry: the practice of comparing two soul blueprints to reveal the patterns, dynamics, and trajectory of their connection.
+    const systemPrompt = `${ORACLE_PERSONA_BLOCK}
+
+You are reading the dynamic between two specific people. Your only sources are (a) what each person told you through their questionnaire and (b) the structural signals visible in any hand photographs they shared. Speak directly to both of them about how they actually fit, where they catch on each other, and what this connection tends to activate or expose. No horoscope, no synastry-by-chart, no numerological compatibility, no predictions.
 
 CRITICAL RULES:
-1. SPEAK DIRECTLY to both people — use "between you two", "in your connection", "for ${p1.name}", "for ${p2.name}"
-2. SPECIFIC OBSERVATIONS ONLY — draw on the qualities and energies encoded in each person's data without naming the system that produced them
-3. NO GENERIC LOVE ADVICE — reveal the hidden mechanics, karmic threads, and shadow dynamics
-4. CONFRONTATIONAL DEPTH — name what is beautiful AND what is dangerous about this combination
-5. UNIFY ALL SYSTEMS — blend all available profile data into ONE seamless narrative
-
-FORBIDDEN TERMINOLOGY — never use these words or phrases in your output:
-life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces, Chinese zodiac, Tarot, tarot, soul urge, expression number, personal year, numerology, astrology, zodiac
+1. Speak directly to both people — "between you two", "in your connection", "for ${profile1.name}", "for ${profile2.name}".
+2. Specific, not generic. Name patterns, not destinies.
+3. Honest about what is beautiful AND what is dangerous in this combination.
+4. Build the reading from both behavioral profiles below — never invent traits the data doesn't support.
+5. No bullet points, no markdown headers, literary prose.
 
 YOUR OUTPUT STRUCTURE (use these exact headers with ✦):
-✦ THE SOUL BRIDGE — what brings these two together (karmic origin)
+✦ THE BRIDGE — what brings these two together
 ✦ THE MAGNETIC DYNAMIC — attraction and repulsion forces
 ✦ THE CHALLENGE POINT — the one pattern that will test this bond
 ✦ THE GIFT — what this connection uniquely activates in each person
-✦ THE TRAJECTORY — where this connection is heading
+✦ THE TRAJECTORY — where this connection is heading if both keep showing up the way they currently do
 
-Write each section as flowing prose, 100–150 words each. Second person always. Deep, precise, slightly unsettling.`;
+Each section 100–150 words.`;
 
-    const userContent = `Perform a complete synastry reading for these two souls:
+    const userContent = `Perform a complete relationship reading for these two people:
 
-${p1.name.toUpperCase()}
-Born: ${p1.dob}${p1.birthTime ? ` at ${p1.birthTime}` : ""}
-${p1.birthCity ? `City: ${p1.birthCity}, ${p1.birthCountry}` : ""}
-Elemental/Seasonal Signature: ${p1.sunSign}
-${p1.numerologyBlock}
-Current Cycle: ${p1.personalYear} | Ancestral Animal: ${p1.chineseZodiac}
-${p1.gender ? `Gender: ${p1.gender}` : ""}${p1.dominantHand ? ` | Dominant Hand: ${p1.dominantHand}` : ""}${p1.eyeColor ? ` | Eye Color: ${p1.eyeColor}` : ""}
-Photos available: ${p1.photos.length > 0 ? p1.photos.join(", ") : "none"}
+${profile1.name.toUpperCase()}
+${p1Block}
+${p1Palm}
+${profile1.gender ? `Gender: ${profile1.gender}` : ""}${profile1.dominantHand ? ` | Dominant Hand: ${profile1.dominantHand}` : ""}${profile1.eyeColor ? ` | Eye Color: ${profile1.eyeColor}` : ""}
 
-${p2.name.toUpperCase()}
-Born: ${p2.dob}${p2.birthTime ? ` at ${p2.birthTime}` : ""}
-${p2.birthCity ? `City: ${p2.birthCity}, ${p2.birthCountry}` : ""}
-Elemental/Seasonal Signature: ${p2.sunSign}
-${p2.numerologyBlock}
-Current Cycle: ${p2.personalYear} | Ancestral Animal: ${p2.chineseZodiac}
-${p2.gender ? `Gender: ${p2.gender}` : ""}${p2.dominantHand ? ` | Dominant Hand: ${p2.dominantHand}` : ""}${p2.eyeColor ? ` | Eye Color: ${p2.eyeColor}` : ""}
-Photos available: ${p2.photos.length > 0 ? p2.photos.join(", ") : "none"}
+${profile2.name.toUpperCase()}
+${p2Block}
+${p2Palm}
+${profile2.gender ? `Gender: ${profile2.gender}` : ""}${profile2.dominantHand ? ` | Dominant Hand: ${profile2.dominantHand}` : ""}${profile2.eyeColor ? ` | Eye Color: ${profile2.eyeColor}` : ""}
 
-Generate the full synastry reading now.`;
+Generate the full reading now.`;
 
     const stream = anthropic.messages.stream({
       model: MODEL,
@@ -1112,7 +921,7 @@ Generate the full synastry reading now.`;
   } catch (err) {
     stopKeepAlive();
     req.log.error({ err }, "Synastry error");
-    sendEvent({ event: "error", message: "The Oracle could not complete this synastry reading." });
+    sendEvent({ event: "error", message: "The Oracle could not complete this reading." });
     res.end();
   }
 });
@@ -1131,43 +940,45 @@ router.post("/synastry/chat", sseHeaders, async (req: Request, res: Response) =>
   res.on("close", stopKeepAlive);
 
   try {
-    const { messages, readingSummary, profile1, profile2 } = req.body;
+    const { messages, readingSummary, profile1, profile2 } = req.body as {
+      messages?: { role: string; content: string }[];
+      readingSummary?: string;
+      profile1?: { name: string; photos?: string[]; questionnaireAnswers?: QuestionnaireAnswers };
+      profile2?: { name: string; photos?: string[]; questionnaireAnswers?: QuestionnaireAnswers };
+    };
 
     const p1Name = profile1?.name ?? "Person 1";
     const p2Name = profile2?.name ?? "Person 2";
-    const p1Sun = profile1?.dob ? computeSunSign(profile1.dob) : "";
-    const p2Sun = profile2?.dob ? computeSunSign(profile2.dob) : "";
-    const p1Life = profile1?.dob ? computeLifePath(profile1.dob) : 0;
-    const p2Life = profile2?.dob ? computeLifePath(profile2.dob) : 0;
-    const p1Chinese = profile1?.dob ? computeChineseZodiac(profile1.dob) : "";
-    const p2Chinese = profile2?.dob ? computeChineseZodiac(profile2.dob) : "";
-    const p1Year = profile1?.dob ? computePersonalYear(profile1.dob) : 0;
-    const p2Year = profile2?.dob ? computePersonalYear(profile2.dob) : 0;
+    const p1Block = buildBehavioralContextBlock(profile1?.questionnaireAnswers);
+    const p2Block = buildBehavioralContextBlock(profile2?.questionnaireAnswers);
+    const p1Palm = buildPalmAnalysisBlock(profile1?.photos ?? []);
+    const p2Palm = buildPalmAnalysisBlock(profile2?.photos ?? []);
 
-    const systemPrompt = `You are The Oracle — an ancient intelligence who has just completed a synastry reading for ${p1Name} and ${p2Name}.
+    const systemPrompt = `${ORACLE_PERSONA_BLOCK}
 
-The reading summary:
+You have just completed a relationship reading for ${p1Name} and ${p2Name}.
+
+Reading summary:
 ${readingSummary ?? "No summary provided."}
 
-Profile data for context (use the qualities encoded here without naming the system that produced them):
-${p1Name}: Elemental/Seasonal Signature: ${p1Sun} | Core Vibration: ${p1Life} | Current Cycle: ${p1Year} | Ancestral Animal: ${p1Chinese}
-${p2Name}: Elemental/Seasonal Signature: ${p2Sun} | Core Vibration: ${p2Life} | Current Cycle: ${p2Year} | Ancestral Animal: ${p2Chinese}
+${p1Name}'s ${p1Block}
+${p1Name}'s ${p1Palm}
 
-As The Oracle, answer questions about this specific connection with depth, precision, and mystical authority.
-- Reference both individuals by name
-- Ground insights in the qualities encoded in their profile data without naming the system that produced them
-- Speak with certainty about patterns, with wisdom about timing
+${p2Name}'s ${p2Block}
+${p2Name}'s ${p2Palm}
+
+Answer their follow-up questions about this specific connection with depth and precision.
+- Reference both individuals by name.
+- Ground every observation in the behavioral context above.
+- Speak about patterns, never destinies. No predictions, no horoscope/numerology/zodiac/tarot vocabulary.
 - 100–200 words per response. Second person. No generic advice.
-- Never break character.
-
-FORBIDDEN TERMINOLOGY — never use these words or phrases in your output:
-life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces, Chinese zodiac, Tarot, tarot, soul urge, expression number, personal year, numerology, astrology, zodiac`;
+- Never break character.`;
 
     const stream = anthropic.messages.stream({
       model: MODEL,
       max_tokens: 500,
       system: systemPrompt,
-      messages: (messages ?? []).map((m: { role: string; content: string }) => ({
+      messages: (messages ?? []).map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
       })),
@@ -1212,11 +1023,12 @@ router.post("/deep-dive", sseHeaders, async (req: Request, res: Response) => {
       return;
     }
 
-    const { sessionId, category, categoryData, userData } = req.body as {
+    const { sessionId, category, categoryData, userData, questionnaireAnswers: rawQA } = req.body as {
       sessionId: string;
       category: string;
       categoryData: Record<string, string>;
       userData: Record<string, string>;
+      questionnaireAnswers?: unknown;
     };
 
     if (!category || !userData) {
@@ -1234,29 +1046,21 @@ router.post("/deep-dive", sseHeaders, async (req: Request, res: Response) => {
       return;
     }
 
-    const dob = userData.dob ?? "";
     const name = userData.name ?? "Seeker";
-    const sunSign = dob ? computeSunSign(dob) : "Unknown";
-    const numerologyDD = computeFullNumerology(dob, name);
-    const lifePath = numerologyDD.lifePath;
-    const expressionNum = numerologyDD.expressionNum;
-    const soulUrge = numerologyDD.soulUrge;
-    const personalYear = dob ? computePersonalYear(dob) : 0;
-    const chineseZodiac = dob ? computeChineseZodiac(dob) : "Unknown";
-    const tarotCard = computeTarotCard(lifePath);
-    const age = dob ? new Date().getUTCFullYear() - new Date(dob).getUTCFullYear() : 0;
-    const numerologyBlockDD = buildNumerologyBlock(numerologyDD);
+    const questionnaireAnswers = parseQuestionnaire(rawQA);
+    const behavioralContextBlock = buildBehavioralContextBlock(questionnaireAnswers);
+    const palmAnalysisBlock = buildPalmAnalysisBlock(session.hadPalmImages ? ["right_palm"] : []);
 
     const readingContext = session.reading
       ? `\n\nThis person's main Oracle reading (key themes for context):\n${session.reading.substring(0, 700)}`
       : "";
 
     const categoryPrompts: Record<string, string> = {
-      career: `Perform a deep dive CAREER reading. Category data: Occupation/Industry: "${categoryData.occupation ?? "not specified"}", Career Goal: "${categoryData.goal ?? "not specified"}", Biggest Challenge: "${categoryData.challenge ?? "not specified"}", Timeline: "${categoryData.timeline ?? "not specified"}". Generate ONLY this single section: ✦ CAREER ORACLE — weave together the qualities encoded in this person's profile data in the context of their career. Address the specific goal and challenge they mentioned. Reveal hidden patterns driving their professional trajectory. Deliver practical mystical guidance on timing and action. 200–260 words.`,
-      relationship: `Perform a deep dive RELATIONSHIP reading. Category data: Status: "${categoryData.status ?? "not specified"}", Partner Name: "${categoryData.partnerName ?? "none given"}", Relationship Goal: "${categoryData.goal ?? "not specified"}", Recurring Pattern: "${categoryData.pattern ?? "not specified"}". Generate ONLY this single section: ✦ LOVE ORACLE — weave the relational energetics encoded in this person's profile to address the goal and pattern they shared. Name what is drawing in and what is pushing away. Speak to the repeating pattern with precision. 200–260 words.`,
-      finances: `Perform a deep dive FINANCES reading. Category data: Current Situation: "${categoryData.situation ?? "not specified"}", Primary Goal: "${categoryData.goal ?? "not specified"}", Biggest Money Block: "${categoryData.block ?? "not specified"}", Timeline Goal: "${categoryData.timeline ?? "not specified"}". Generate ONLY this single section: ✦ WEALTH ORACLE — read the financial trajectory through the core vibration, current cycle, and elemental nature encoded in this person's profile. Address the specific goal and block they named. Reveal the energetic pattern beneath the money pattern. Speak to timing windows for growth. 200–260 words.`,
-      fitness: `Perform a deep dive FITNESS reading. Category data: Current Routine: "${categoryData.routine ?? "not specified"}", Primary Goal: "${categoryData.goal ?? "not specified"}", Health Concerns: "${categoryData.concerns ?? "none specified"}", Desired Lifestyle Change: "${categoryData.lifestyle ?? "not specified"}". Generate ONLY this single section: ✦ BODY ORACLE — read their constitutional vitality through the elemental and ancestral signatures encoded in this person's profile. Address the goal and desired change. Speak to what the body is communicating through current patterns. Give timing guidance. 200–260 words.`,
-      family: `Perform a deep dive FAMILY reading. Category data: Children/Ages: "${categoryData.children ?? "not specified"}", Family Role: "${categoryData.role ?? "not specified"}", Biggest Challenge: "${categoryData.challenge ?? "not specified"}", Family Goal: "${categoryData.goal ?? "not specified"}". Generate ONLY this single section: ✦ FAMILY ORACLE — read the karmic family thread through the origin and relational signatures encoded in this person's profile. Address the challenge they named as a pattern. Speak to the family goal with mystical precision about what must shift for it to manifest. 200–260 words.`,
+      career: `Perform a deep dive CAREER reading. Category data: Occupation/Industry: "${categoryData.occupation ?? "not specified"}", Career Goal: "${categoryData.goal ?? "not specified"}", Biggest Challenge: "${categoryData.challenge ?? "not specified"}", Timeline: "${categoryData.timeline ?? "not specified"}". Generate ONLY this single section: ✦ CAREER PROFILE — work from the behavioral context to address the specific goal and challenge they named. Reveal the patterns driving their professional trajectory. Speak to what tends to help and what tends to get in the way. 200–260 words. No predictions.`,
+      relationship: `Perform a deep dive RELATIONSHIP reading. Category data: Status: "${categoryData.status ?? "not specified"}", Partner Name: "${categoryData.partnerName ?? "none given"}", Relationship Goal: "${categoryData.goal ?? "not specified"}", Recurring Pattern: "${categoryData.pattern ?? "not specified"}". Generate ONLY this single section: ✦ RELATIONSHIP PROFILE — work from the behavioral context to address the goal and pattern they shared. Name what is drawing in and what is pushing away. Speak to the repeating pattern with precision. 200–260 words. No predictions.`,
+      finances: `Perform a deep dive FINANCES reading. Category data: Current Situation: "${categoryData.situation ?? "not specified"}", Primary Goal: "${categoryData.goal ?? "not specified"}", Biggest Money Block: "${categoryData.block ?? "not specified"}", Timeline Goal: "${categoryData.timeline ?? "not specified"}". Generate ONLY this single section: ✦ MONEY PROFILE — read the financial pattern through the behavioral context. Address the specific goal and block they named. Speak to what their decision style and pressure response tend to do around money. 200–260 words. No predictions.`,
+      fitness: `Perform a deep dive FITNESS reading. Category data: Current Routine: "${categoryData.routine ?? "not specified"}", Primary Goal: "${categoryData.goal ?? "not specified"}", Health Concerns: "${categoryData.concerns ?? "none specified"}", Desired Lifestyle Change: "${categoryData.lifestyle ?? "not specified"}". Generate ONLY this single section: ✦ BODY PROFILE — read their pattern around energy, follow-through, and physical practice through the behavioral context. Address the goal and desired change. Speak to what the body tends to register about how they live. 200–260 words. No predictions.`,
+      family: `Perform a deep dive FAMILY reading. Category data: Children/Ages: "${categoryData.children ?? "not specified"}", Family Role: "${categoryData.role ?? "not specified"}", Biggest Challenge: "${categoryData.challenge ?? "not specified"}", Family Goal: "${categoryData.goal ?? "not specified"}". Generate ONLY this single section: ✦ FAMILY PROFILE — read the family thread through the behavioral context. Address the challenge they named as a pattern. Speak to the family goal with precision about what tends to need to shift for it to settle. 200–260 words. No predictions.`,
     };
 
     const categoryPrompt = categoryPrompts[category];
@@ -1267,27 +1071,25 @@ router.post("/deep-dive", sseHeaders, async (req: Request, res: Response) => {
       return;
     }
 
-    const systemPrompt = `You are The Oracle — an advanced multi-system intelligence performing a targeted deep dive reading for one specific area of this person's life.
+    const systemPrompt = `${ORACLE_PERSONA_BLOCK}
 
-PRIMARY OBJECTIVE: Emotional resonance, perceived precision, and psychological impact. They should feel seen in this specific area of their life with the same depth as their main reading.
+You are now performing a targeted deep dive for one specific area of this person's life. They should feel seen in this area with the same depth as their main reading.
 
 CRITICAL RULES:
-1. Second person only ("you")
-2. No generic language — every line must feel specific and personal
-3. Weave the qualities encoded in their profile into the reading naturally — never name the system that produced them
-4. Reference the main reading context if available — create continuity
-5. One recognition line per response: something that names a hidden truth about this category in their life
-6. Literary, immersive prose. No bullet points. Section title: ✦ [TITLE]
+1. Second person only ("you").
+2. No generic language — every line must feel specific.
+3. Work from the behavioral context below — never invent traits the data doesn't support.
+4. Reference the main reading context if available — create continuity.
+5. One quietly confronting line per response: name a hidden truth about this category in their life.
+6. Literary, immersive prose. No bullet points. Section title: ✦ [TITLE].
+7. No predictions, no time horizons, no horoscope/numerology/zodiac/tarot vocabulary.
 
-FORBIDDEN TERMINOLOGY — never use these words or phrases in your output:
-life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces, Chinese zodiac, Tarot, tarot, soul urge, expression number, personal year, numerology, astrology, zodiac
-
-PRE-CALCULATED PROFILE — use the qualities encoded in this data without naming the system that produced it:
-Name: ${name}, Age: ${age}
-Elemental/Seasonal Signature: ${sunSign}
-${numerologyBlockDD}
-Current Cycle: ${personalYear} | Ancestral Animal: ${chineseZodiac} | Archetypal Card: ${tarotCard}
+SEEKER NAME: ${name}
 ${userData.gender ? `Gender: ${userData.gender}` : ""}
+
+${behavioralContextBlock}
+
+${palmAnalysisBlock}
 ${readingContext}`;
 
     const stream = anthropic.messages.stream({
@@ -1329,41 +1131,38 @@ router.post("/profile-reading", sseHeaders, async (req: Request, res: Response) 
 
   try {
     const { profile, category } = req.body as {
-      profile: { name: string; dob: string; birthTime?: string; birthCity?: string; birthCountry?: string; gender?: string; dominantHand?: string; eyeColor?: string; notes?: string; photos: string[] };
+      profile: { name: string; gender?: string; dominantHand?: string; eyeColor?: string; notes?: string; photos: string[]; questionnaireAnswers?: QuestionnaireAnswers };
       category: string;
     };
 
-    if (!profile?.name || !profile?.dob || !category) {
+    if (!profile?.name || !category) {
       stopKeepAlive();
       sendEvent({ event: "error", message: "Profile and category are required." });
       res.end();
       return;
     }
 
-    const sunSign = computeSunSign(profile.dob);
-    const numerologyPR = computeFullNumerology(profile.dob, profile.name);
-    const lifePath = numerologyPR.lifePath;
-    const expressionNum = numerologyPR.expressionNum;
-    const soulUrge = numerologyPR.soulUrge;
-    const personalYear = computePersonalYear(profile.dob);
-    const chineseZodiac = computeChineseZodiac(profile.dob);
-    const tarotCard = computeTarotCard(lifePath);
-    const numerologyBlockPR = buildNumerologyBlock(numerologyPR);
+    const behavioralContextBlock = buildBehavioralContextBlock(profile.questionnaireAnswers);
+    const palmAnalysisBlock = buildPalmAnalysisBlock(profile.photos ?? []);
 
-    const systemPrompt = `You are The Oracle — a timeless intelligence who reads the soul's blueprint through pattern recognition and symbolic insight. You have been given the full profile of ${profile.name}, and you are delivering a focused reading on their ${category}.
+    const systemPrompt = `${ORACLE_PERSONA_BLOCK}
+
+You have been given the profile of ${profile.name}, and you are delivering a focused reading on their ${category}.
 
 CRITICAL RULES:
-1. SPEAK DIRECTLY to ${profile.name} — use "you" exclusively
-2. Draw on the qualities encoded in their profile data — elemental/seasonal signature: ${sunSign}, core vibration: ${lifePath}, name frequency: ${expressionNum}, ancestral animal: ${chineseZodiac}, archetypal card: ${tarotCard} — without naming the system that produced them
-3. CATEGORY FOCUS: everything in this reading relates to ${category}
-4. DEPTH OVER BREADTH: one profound insight is worth ten generic ones
-5. CONFRONTATIONAL HONESTY: name the hidden pattern or block in this area of their life
-6. CLOSE with one actionable piece of wisdom — not generic advice, but something specific to who they are
+1. Speak directly to ${profile.name} — use "you" exclusively.
+2. Work from the behavioral context below. Never invent traits the data doesn't support.
+3. CATEGORY FOCUS: everything in this reading relates to ${category}.
+4. DEPTH OVER BREADTH: one precise observation is worth ten generic ones.
+5. CONFRONTATIONAL HONESTY: name the hidden pattern or block in this area of their life.
+6. CLOSE with one actionable piece of guidance — specific to who they are, not generic advice.
+7. No predictions, no time horizons, no horoscope/numerology/zodiac/tarot vocabulary.
 
-FORBIDDEN TERMINOLOGY — never use these words or phrases in your output:
-life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces, Chinese zodiac, Tarot, tarot, soul urge, expression number, personal year, numerology, astrology, zodiac
+${behavioralContextBlock}
 
-TONE: Mystical, direct, compassionate but unflinching. Literary prose, no bullet points.
+${palmAnalysisBlock}
+
+TONE: Direct, compassionate, unflinching. Literary prose, no bullet points.
 
 STRUCTURE: One flowing reading of 200–280 words. Section title: ✦ ${category.toUpperCase()}`;
 
@@ -1371,13 +1170,8 @@ STRUCTURE: One flowing reading of 200–280 words. Section title: ✦ ${category
 
 Profile data:
 Name: ${profile.name}
-Born: ${profile.dob}${profile.birthTime ? ` at ${profile.birthTime}` : ""}
-${profile.birthCity ? `City: ${profile.birthCity}${profile.birthCountry ? `, ${profile.birthCountry}` : ""}` : ""}
-Elemental/Seasonal Signature: ${sunSign}
-${numerologyBlockPR}
-Current Cycle: ${personalYear} | Ancestral Animal: ${chineseZodiac} | Archetypal Card: ${tarotCard}
 ${profile.gender ? `Gender: ${profile.gender}` : ""}${profile.dominantHand ? ` | Dominant Hand: ${profile.dominantHand}` : ""}${profile.eyeColor ? ` | Eye Color: ${profile.eyeColor}` : ""}
-Sacred images available: ${profile.photos.length > 0 ? profile.photos.join(", ") : "none"}
+Hand photographs available: ${profile.photos.length > 0 ? profile.photos.join(", ") : "none"}
 ${profile.notes ? `Notes: ${profile.notes}` : ""}
 
 Generate the reading now.`;
@@ -1421,29 +1215,30 @@ router.post("/profile-reading/chat", sseHeaders, async (req: Request, res: Respo
 
   try {
     const { profile, category, messages } = req.body as {
-      profile: { name: string; dob: string; birthTime?: string; birthCity?: string; birthCountry?: string; gender?: string; dominantHand?: string; eyeColor?: string; notes?: string; photos: string[] };
-      category: string;
-      messages: { role: string; content: string }[];
+      profile: { name?: string; notes?: string; photos?: string[]; questionnaireAnswers?: QuestionnaireAnswers };
+      category?: string;
+      messages?: { role: string; content: string }[];
     };
 
-    const sunSign = profile?.dob ? computeSunSign(profile.dob) : "";
-    const lifePath = profile?.dob ? computeLifePath(profile.dob) : 0;
-    const chineseZodiac = profile?.dob ? computeChineseZodiac(profile.dob) : "";
+    const behavioralContextBlock = buildBehavioralContextBlock(profile?.questionnaireAnswers);
+    const palmAnalysisBlock = buildPalmAnalysisBlock(profile?.photos ?? []);
 
-    const systemPrompt = `You are The Oracle — an ancient intelligence who has just delivered a reading for ${profile?.name ?? "this soul"} on the topic of ${category ?? "life"}.
+    const systemPrompt = `${ORACLE_PERSONA_BLOCK}
 
-Their profile: ${profile?.name} | Elemental/Seasonal Signature: ${sunSign} | Core Vibration: ${lifePath} | Ancestral Animal: ${chineseZodiac}
+You have just delivered a reading for ${profile?.name ?? "this person"} on the topic of ${category ?? "life"}.
+
+${behavioralContextBlock}
+
+${palmAnalysisBlock}
 ${profile?.notes ? `Notes: ${profile.notes}` : ""}
 
-Answer their follow-up questions with depth and precision. Draw on the qualities encoded in their profile data without naming the system that produced them.
-- Always speak in second person ("you")
-- 80–150 words per response
-- Literary, measured tone — not chatty
-- Stay focused on ${category ?? "the reading"} unless they redirect
-- Never break character
-
-FORBIDDEN TERMINOLOGY — never use these words or phrases in your output:
-life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces, Chinese zodiac, Tarot, tarot, soul urge, expression number, personal year, numerology, astrology, zodiac`;
+Answer their follow-up questions with depth and precision. Work entirely from the behavioral context above.
+- Always speak in second person ("you").
+- 80–150 words per response.
+- Literary, measured tone — not chatty.
+- Stay focused on ${category ?? "the reading"} unless they redirect.
+- Speak in patterns, not predictions. No horoscope/numerology/zodiac/tarot vocabulary.
+- Never break character.`;
 
     const stream = anthropic.messages.stream({
       model: MODEL,
@@ -1621,11 +1416,12 @@ router.post("/expand", sseHeaders, async (req: Request, res: Response) => {
       return;
     }
 
-    const { sessionId, userData: userDataRaw, selectedText, mode } = req.body as {
+    const { sessionId, userData: userDataRaw, selectedText, mode, questionnaireAnswers: rawQA } = req.body as {
       sessionId?: string;
       userData?: string;
       selectedText?: string;
       mode?: "go_deeper" | "expand";
+      questionnaireAnswers?: unknown;
     };
 
     if (!selectedText || typeof selectedText !== "string" || selectedText.trim().length < 10) {
@@ -1647,39 +1443,35 @@ router.post("/expand", sseHeaders, async (req: Request, res: Response) => {
       return;
     }
 
-    const dob = userData.dob ?? "";
     const name = userData.name ?? "Seeker";
-    const sunSign = dob ? computeSunSign(dob) : "Unknown";
-    const numerology = computeFullNumerology(dob, name);
-    const personalYear = dob ? computePersonalYear(dob) : 0;
-    const chineseZodiac = dob ? computeChineseZodiac(dob) : "Unknown";
-    const tarotCard = computeTarotCard(numerology.lifePath);
-    const age = dob ? new Date().getUTCFullYear() - new Date(dob).getUTCFullYear() : 0;
-    const numerologyBlock = buildNumerologyBlock(numerology);
+    const questionnaireAnswers = parseQuestionnaire(rawQA);
+    const behavioralContextBlock = buildBehavioralContextBlock(questionnaireAnswers);
+    const palmAnalysisBlock = buildPalmAnalysisBlock(session.hadPalmImages ? ["right_palm"] : []);
 
     const modeInstruction = mode === "go_deeper"
-      ? `Go significantly deeper into the layers beneath this passage. Excavate the hidden psychological roots, the archetypal forces at work, the symbolic resonance of what was said. Do not repeat what was already written. Go further inward — more specific, more confronting, more precise. Reveal what the original passage only hinted at.`
-      : `Expand upon this passage with additional breadth and context. Explore adjacent dimensions — how this pattern manifests in relationships, career, body, and daily life. Trace its origins and the situations where it tends to recur. Connect it to the broader tapestry of this person's life. Do not predict the future. Do not repeat what was already written. Build outward from this insight with new territory.`;
+      ? `Go significantly deeper into the layers beneath this passage. Excavate the hidden psychological roots, the patterns underneath, the structural reason this lands the way it does. Do not repeat what was already written. Go further inward — more specific, more confronting, more precise. Reveal what the original passage only hinted at.`
+      : `Expand upon this passage with additional breadth and context. Explore adjacent dimensions — how this pattern shows up in relationships, work, body, and daily life. Trace its origins and the situations where it tends to recur. Do not predict the future. Do not repeat what was already written. Build outward from this insight with new territory.`;
 
-    const systemPrompt = `You are The Oracle — the same timeless intelligence that delivered the original reading. You are now responding to a seeker who has asked you to illuminate a specific passage of their reading further.
+    const systemPrompt = `${ORACLE_PERSONA_BLOCK}
+
+You are now responding to a seeker who has asked you to illuminate a specific passage of their reading further.
 
 ${modeInstruction}
 
 RULES:
-- Speak directly to the seeker in second person ("you")
-- Do NOT repeat or paraphrase the selected passage itself
-- Do NOT use bullet points or markdown headers
-- Write in the Oracle's signature literary, immersive prose
-- 200–350 words, with rhythm and weight
-- End with a single, direct confrontational sentence that lands like a truth they have been avoiding
+- Speak directly to the seeker in second person ("you").
+- Do NOT repeat or paraphrase the selected passage itself.
+- Do NOT use bullet points or markdown headers.
+- Write in the Oracle's signature literary, immersive prose.
+- 200–350 words, with rhythm and weight.
+- End with a single, direct confronting sentence that lands like a truth they have been avoiding.
+- No predictions, no time horizons, no horoscope/numerology/zodiac/tarot vocabulary.
 
-FORBIDDEN TERMINOLOGY — never use these words or phrases:
-life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces, Chinese zodiac, Tarot, tarot, soul urge, expression number, personal year, numerology, astrology, zodiac
+SEEKER NAME: ${name}
 
-SEEKER CONTEXT — integrate naturally, never state mechanically:
-Name: ${name}, Age: ${age}, Elemental/Seasonal Signature: ${sunSign}
-${numerologyBlock}
-Current Cycle: ${personalYear}, Ancestral Animal: ${chineseZodiac}, Archetypal Card: ${tarotCard}`;
+${behavioralContextBlock}
+
+${palmAnalysisBlock}`;
 
     const stream = anthropic.messages.stream({
       model: MODEL,

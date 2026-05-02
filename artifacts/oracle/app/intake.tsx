@@ -178,7 +178,7 @@ const inputStyles = StyleSheet.create({
 
 export default function IntakeScreen() {
   const insets = useSafeAreaInsets();
-  const { setUserData } = useOracle();
+  const { setUserData, state: oracleState } = useOracle();
   const { pendingReferralCode, redeemReferralCode, clearPendingReferralCode } = useReferral();
 
   const [referralCode, setReferralCode] = useState(pendingReferralCode ?? "");
@@ -232,7 +232,14 @@ export default function IntakeScreen() {
       has_birth_location: !!birthCity || !!birthCountry,
       questions_answered: [q1, q2, q3].filter(q => q.trim()).length,
     });
-    router.push("/ritual");
+    // Task #60 — first-time users go through the 8-question questionnaire
+    // before the ritual. Returning users (questionnaireAnswers already
+    // stored) skip straight to the ritual.
+    if (oracleState.questionnaireAnswers) {
+      router.push("/ritual");
+    } else {
+      router.push("/questionnaire");
+    }
   };
 
   return (

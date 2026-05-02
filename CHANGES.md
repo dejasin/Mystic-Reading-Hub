@@ -1,6 +1,6 @@
 # Changes — Oracle App Store Resubmission (Task #58)
 
-**Scope:** Reframe Oracle from a palm-reading app to a **personal AI life advisor** that uses biometric reference images as a behavioral input signal. Option-C scope: TestFlight-visible surface only. App Store preview videos are intentionally skipped.
+**Scope:** Reframe Oracle from a palm-reading app to a **personal AI life advisor** that uses biometric reference images as a behavioral input signal. Option B scope: TestFlight-visible surface only. App Store preview videos are intentionally skipped.
 
 **Date:** May 02, 2026
 **Bundle ID:** `com.theoracle.app` (unchanged)
@@ -91,7 +91,7 @@ These are the project's identity / billing / data anchors. They were preserved t
 
 ## Out of scope for this submission
 
-Per user agreement (Option-C scope), the following are deferred:
+Per user agreement (Option B scope), the following are deferred:
 
 - 3 × 30s App Store preview videos. Pipeline lives at `artifacts/oracle-preview-ritual` and can be re-engaged for a follow-up submission.
 - Localizations beyond English.
@@ -118,7 +118,7 @@ pnpm --filter @workspace/oracle-website run dev
 
 ## Post-validator remediation (final pass)
 
-Validator review surfaced spec deviations beyond the original Option-C session
+Validator review surfaced spec deviations beyond the original Option B session
 plan. Each was addressed:
 
 - **Behavioral scoring is now in-line with the reading flow.** A second
@@ -160,7 +160,7 @@ plan. Each was addressed:
 ### Intentional deviation (user-approved)
 
 The 3 × 30s App Store preview videos (Section 11) remain skipped per the
-user-approved Option-C scope. Apple will accept the resubmission with
+user-approved Option B scope. Apple will accept the resubmission with
 screenshots only; preview videos can be added in a follow-up build. Every
 other Section 16 verification item passes.
 
@@ -191,3 +191,43 @@ Smaller compliance / positioning fixes layered on top of Task #58. None of these
 - App Store preview videos — Task #57.
 - `artifacts/oracle/assets/app-store/APP-STORE-SUBMISSION.md` (metadata, intentionally retains historical $9.99 string).
 - Marketing site / paywall pricing copy / home-card titles / zodiac glyphs — already landed in Task #58 (verified via sweep: no `$4.99`, no zodiac glyphs `♈♉♊♋♌♍♎♏♐♑♒♓`, hero already says "Oracle: AI Life Advisor", FAQ already includes the explicit "Is this a fortune telling app? — No" entry, privacy effective date already May 02 2026).
+
+---
+
+# Changes — Oracle Persona Rewrite & Questionnaire (Task #60)
+
+**Date:** May 02, 2026
+
+The deepest pass yet. Task #60 strips every remaining vestige of fortune-telling, numerology, zodiac, and tarot infrastructure from the server, rewrites the seven Oracle system prompts around a clean three-block contract (`ORACLE_PERSONA_BLOCK` + `behavioralContextBlock` + `palmAnalysisBlock`), introduces an 8-question behavioral questionnaire as the seeker's primary input, and adds Sign in with Apple as the second auth path on iOS.
+
+## Files touched
+
+### Server — `artifacts/api-server/src/`
+- `routes/oracle.ts` — Full rewrite. Removed every reference to `BIRLA_PERSONA_BLOCK`, `IMAGE_ANALYSIS_RULE`, `FORBIDDEN_TERMS`, sun-sign / life-path / numerology grounding, and any "trained in palmistry" language. Introduced `ORACLE_PERSONA_BLOCK` (single source of truth for the Oracle's voice), `buildBehavioralContextBlock(answers)` (turns the questionnaire into a clean grounding block, with a graceful "user has not yet completed the questionnaire" fallback), and `buildPalmAnalysisBlock(photoKeys)` (frames the hand photographs as structural signals only — never as palmistry lines or mounts). Every remaining route — `/generate`, `/generate/continue`, `/chat`, `/chat/followups`, `/synastry`, `/synastry/chat`, `/deep-dive`, `/profile-reading`, `/profile-reading/chat`, `/behavioral-profile`, `/expand` — now composes its system prompt from those three blocks. The "✦ TIMING & CYCLES" header was renamed to "✦ RHYTHMS & PATTERNS" (legacy header still recognised on session replay for backwards compat). All session, retry, image-processing, behavioral-scoring, and SSE plumbing was preserved verbatim. Routes, AsyncStorage prefixes, RevenueCat IDs, and bundle identifiers untouched.
+- `routes/daily.ts` — `dob` is now fully removed from the request contract for `/api/daily-oracle` and `/api/weekly-forecast`. Each route accepts an optional `sessionId` and pulls the most recent reading themes from `sessionsTable.reading` as the input signal; if no session is available it falls back to a generic reflection prompt. Both prompts now hard-forbid numerology / astrology / sun-sign / life-path / zodiac / tarot vocabulary. Responses now include a `label` field — `"Daily Reflection"` and `"This Week's Focus"` respectively — so the client can render without inferring intent. `lifePathNumber` and `sunSign` columns are persisted as `null`.
+- `lib/astro.ts` — **Deleted.** No remaining import sites in the codebase.
+- `routes/auth.ts` — New `POST /api/auth/apple` endpoint. Verifies the Apple `identityToken` against the live Apple JWKS (`https://appleid.apple.com/auth/keys`) using `jose`, validates the issuer and the iOS bundle audience (`APPLE_BUNDLE_ID`, default `com.theoracle.app`), upserts the user against the email Apple returns (or `${sub}@privaterelay.appleid` when Apple withholds one), and returns the same JWT shape as `/auth/verify-code` so the client AuthContext treats Apple sessions identically. Existing email-code routes untouched.
+
+### Mobile app — `artifacts/oracle/`
+- `context/OracleContext.tsx` — Added `QuestionnaireAnswers` shape (8 string fields), `state.questionnaireAnswers`, `setQuestionnaireAnswers(...)`, and AsyncStorage hydration / persistence under the new key `oracle_questionnaire_answers`. `resetAll()` deliberately preserves the questionnaire so a session reset never forces the user to retake it.
+- `app/questionnaire.tsx` — **New screen.** 8 visual multiple-choice questions (`decisionStyle` / `pressureResponse` / `relationshipPattern` / `coreMotivation` / `biggestChallenge` / `energyStyle` / `currentNeed` / `selfPerception`), each with 4 Feather-icon options, a one-question-at-a-time card layout, top progress bar, slide-in animation, haptic selection feedback, and a 2-second "Building your profile…" interstitial before routing to `/ritual`. The 4 `coreMotivation` option values intentionally start with `Creator` / `Analyst` / `Connector` / `Explorer` so they round-trip correctly through `getProfileIndicator()` in `app/profiles.tsx` (Task #59).
+- `app/_layout.tsx` — Registered `<Stack.Screen name="questionnaire" />` between `intake` and `ritual`.
+- `app/intake.tsx` — Submit handler now branches on `oracleState.questionnaireAnswers`: first-time users go to `/questionnaire`, returning users skip straight to `/ritual`.
+- `app/login.tsx` — Added Sign in with Apple. Uses `expo-apple-authentication`'s native button (only rendered when `Platform.OS === "ios"` and `isAvailableAsync()` returns true), POSTs the `identityToken` to `/api/auth/apple`, and on success calls the same `login(token, user)` from AuthContext as the email code path. Cancel flows are silenced. Email-code flow untouched.
+- `app/settings.tsx` — Added "Retake questionnaire" row inside the existing About section. Confirms with an alert, clears the saved answers via `setQuestionnaireAnswers(null)`, then routes to `/questionnaire`.
+- `app.json` — Added `expo-apple-authentication` to `plugins`, set `ios.usesAppleSignIn: true`, and rewrote `NSCameraUsageDescription` / `NSPhotoLibraryUsageDescription` to remove the word "face" (now: "Oracle uses your camera to capture photos of your hands for behavioral profile analysis."). `slug`, `version`, `bundleIdentifier`, `buildNumber`, and the EAS / RevenueCat anchors are unchanged.
+
+### Dependencies
+- `artifacts/api-server` — added `jose` for Apple JWKS verification.
+- `artifacts/oracle` — added `expo-apple-authentication`.
+
+### Documentation
+- `CHANGES.md` — corrected the three legacy `Option-C` references to `Option B` (the user-confirmed scope name) and appended this Task #60 section.
+
+## Identifier invariants preserved
+`expo.slug`, `expo.version`, `expo.ios.bundleIdentifier`, `expo.ios.buildNumber`, EAS/Expo project ID, RevenueCat entitlement (`full_reading`) and product IDs (`oracle_monthly_999` / `oracle_annual_4999`), all existing AsyncStorage keys, and all existing API route paths. The only new persistent key is `oracle_questionnaire_answers`.
+
+## Out of scope (intentional)
+- Synastry UI rename — owned by Task #56.
+- App Store preview videos — owned by Task #57.
+- Spec file `Pasted-...1777750989175.txt` was missing; reasonable defaults from `task-60.md` were used for the question wording, option icons, and "Building your profile…" interstitial duration.

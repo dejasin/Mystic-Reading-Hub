@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
+import * as AppleAuthentication from "expo-apple-authentication";
 import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import { useAuth } from "@/context/AuthContext";
@@ -29,6 +30,53 @@ export default function LoginScreen() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const codeInputRef = useRef<TextInput>(null);
+  const [appleAvailable, setAppleAvailable] = useState(false);
+
+  useEffect(() => {
+    if (Platform.OS !== "ios") return;
+    AppleAuthentication.isAvailableAsync()
+      .then(setAppleAvailable)
+      .catch(() => setAppleAvailable(false));
+  }, []);
+
+  const handleAppleSignIn = async () => {
+    setLoading(true);
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      if (!credential.identityToken) {
+        throw new Error("Apple did not return an identity token.");
+      }
+      const result = await customFetch<{
+        success: boolean;
+        token: string;
+        user: { id: string; email: string };
+      }>("/api/auth/apple", {
+        method: "POST",
+        body: JSON.stringify({
+          identityToken: credential.identityToken,
+          email: credential.email,
+          fullName: credential.fullName,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+      await login(result.token, result.user);
+      router.back();
+    } catch (e: any) {
+      if (e?.code === "ERR_REQUEST_CANCELED") {
+        // user dismissed — silent
+      } else {
+        const message = e instanceof Error ? e.message : "Apple sign-in failed.";
+        Alert.alert("Sign In Failed", message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSendCode = async () => {
     const trimmed = email.trim().toLowerCase();
@@ -156,6 +204,23 @@ export default function LoginScreen() {
                   <Text style={styles.primaryBtnText}>Send Code</Text>
                 )}
               </Pressable>
+
+              {Platform.OS === "ios" && appleAvailable ? (
+                <>
+                  <View style={styles.dividerRow}>
+                    <View style={styles.dividerLine} />
+                    <Text style={styles.dividerLabel}>or</Text>
+                    <View style={styles.dividerLine} />
+                  </View>
+                  <AppleAuthentication.AppleAuthenticationButton
+                    buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+                    buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+                    cornerRadius={12}
+                    style={styles.appleBtn}
+                    onPress={handleAppleSignIn}
+                  />
+                </>
+              ) : null}
             </>
           ) : (
             <>
@@ -319,5 +384,30 @@ const styles = StyleSheet.create({
   dotSep: {
     color: Colors.muted,
     fontSize: 14,
+  },
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    maxWidth: 340,
+    marginVertical: 18,
+    gap: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: Colors.inputBorder,
+  },
+  dividerLabel: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 13,
+    color: Colors.muted,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  appleBtn: {
+    width: "100%",
+    maxWidth: 340,
+    height: 52,
   },
 });

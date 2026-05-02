@@ -32,6 +32,19 @@ export interface BehavioralScores {
   expression: number;
 }
 
+// Task #60 — eight-question behavioral intake. Each field stores the
+// human-readable label of the option the seeker tapped.
+export interface QuestionnaireAnswers {
+  decisionStyle: string;
+  pressureResponse: string;
+  relationshipPattern: string;
+  coreMotivation: string;
+  biggestChallenge: string;
+  energyStyle: string;
+  currentNeed: string;
+  selfPerception: string;
+}
+
 export interface OracleState {
   sessionId: string;
   userData: UserData;
@@ -47,6 +60,7 @@ export interface OracleState {
   deepDives: Partial<Record<DeepDiveCategory, string>>;
   behavioralScores: BehavioralScores | null;
   behavioralScoresUpdatedAt: number | null;
+  questionnaireAnswers: QuestionnaireAnswers | null;
 }
 
 interface OracleContextValue {
@@ -64,6 +78,7 @@ interface OracleContextValue {
   appendDeepDive: (category: DeepDiveCategory, text: string) => void;
   clearDeepDive: (category: DeepDiveCategory) => void;
   setBehavioralScores: (scores: BehavioralScores | null) => void;
+  setQuestionnaireAnswers: (answers: QuestionnaireAnswers | null) => void;
   resetAll: () => void;
 }
 
@@ -94,9 +109,11 @@ const defaultState: OracleState = {
   deepDives: {},
   behavioralScores: null,
   behavioralScoresUpdatedAt: null,
+  questionnaireAnswers: null,
 };
 
 const BEHAVIORAL_SCORES_KEY = "oracle_behavioral_scores";
+const QUESTIONNAIRE_KEY = "oracle_questionnaire_answers";
 
 const OracleContext = createContext<OracleContextValue | null>(null);
 
@@ -107,19 +124,46 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const raw = await AsyncStorage.getItem(BEHAVIORAL_SCORES_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed && parsed.scores && typeof parsed.scores.intuition === "number") {
-            setState(prev => ({
-              ...prev,
-              behavioralScores: parsed.scores,
-              behavioralScoresUpdatedAt: parsed.updatedAt ?? null,
-            }));
-          }
+        const [scoresRaw, qaRaw] = await Promise.all([
+          AsyncStorage.getItem(BEHAVIORAL_SCORES_KEY),
+          AsyncStorage.getItem(QUESTIONNAIRE_KEY),
+        ]);
+
+        let nextScores: BehavioralScores | null = null;
+        let nextScoresUpdatedAt: number | null = null;
+        if (scoresRaw) {
+          try {
+            const parsed = JSON.parse(scoresRaw);
+            if (parsed && parsed.scores && typeof parsed.scores.intuition === "number") {
+              nextScores = parsed.scores;
+              nextScoresUpdatedAt = parsed.updatedAt ?? null;
+            }
+          } catch {}
         }
+
+        let nextQA: QuestionnaireAnswers | null = null;
+        if (qaRaw) {
+          try {
+            const parsed = JSON.parse(qaRaw);
+            if (
+              parsed &&
+              typeof parsed === "object" &&
+              typeof parsed.coreMotivation === "string" &&
+              parsed.coreMotivation.length > 0
+            ) {
+              nextQA = parsed as QuestionnaireAnswers;
+            }
+          } catch {}
+        }
+
+        setState(prev => ({
+          ...prev,
+          behavioralScores: nextScores,
+          behavioralScoresUpdatedAt: nextScoresUpdatedAt,
+          questionnaireAnswers: nextQA,
+        }));
       } catch (e) {
-        console.warn("Failed to hydrate behavioral scores:", e);
+        console.warn("Failed to hydrate Oracle context:", e);
       } finally {
         hydratedRef.current = true;
       }
@@ -221,10 +265,26 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
     })();
   };
 
+  const setQuestionnaireAnswers = (answers: QuestionnaireAnswers | null) => {
+    setState(prev => ({ ...prev, questionnaireAnswers: answers }));
+    (async () => {
+      try {
+        if (answers) {
+          await AsyncStorage.setItem(QUESTIONNAIRE_KEY, JSON.stringify(answers));
+        } else {
+          await AsyncStorage.removeItem(QUESTIONNAIRE_KEY);
+        }
+      } catch (e) {
+        console.warn("Failed to persist questionnaire answers:", e);
+      }
+    })();
+  };
+
   const resetAll = () => {
     setState({
       ...defaultState,
       sessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      questionnaireAnswers: state.questionnaireAnswers,
     });
   };
 
@@ -236,6 +296,7 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
       setReadingComplete, setPaid,
       appendDeepDive, clearDeepDive,
       setBehavioralScores,
+      setQuestionnaireAnswers,
       resetAll,
     }}>
       {children}

@@ -1,6 +1,7 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import jwt from "jsonwebtoken";
 import { eq, and, gt } from "drizzle-orm";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 import { db, usersTable, verificationCodesTable } from "@workspace/db";
 import { logger } from "../lib/logger.js";
 
@@ -157,6 +158,77 @@ router.post("/auth/verify-code", async (req: Request, res: Response) => {
   } catch (error) {
     logger.error(error, "Failed to verify code");
     res.status(500).json({ error: "Failed to verify code" });
+  }
+});
+
+// ── Sign in with Apple (Task #60) ───────────────────────────────────────
+//
+// The Expo client calls expo-apple-authentication, receives an `identityToken`
+// signed by Apple, and POSTs it here. We verify the token against Apple's
+// JWKS, confirm the audience (our iOS bundle ID), then upsert the user
+// against `apple_sub@privaterelay.appleid` (or the real email when Apple
+// gives us one on first sign-in) and return the same JWT we mint for the
+// email-code flow so the client treats the session identically.
+const APPLE_BUNDLE_ID = process.env.APPLE_BUNDLE_ID ?? "com.theoracle.app";
+const APPLE_JWKS = createRemoteJWKSet(new URL("https://appleid.apple.com/auth/keys"));
+
+router.post("/auth/apple", async (req: Request, res: Response) => {
+  try {
+    const { identityToken, fullName, email: clientEmail } = req.body as {
+      identityToken?: string;
+      fullName?: { givenName?: string | null; familyName?: string | null } | null;
+      email?: string | null;
+    };
+
+    if (!identityToken || typeof identityToken !== "string") {
+      res.status(400).json({ error: "identityToken is required" });
+      return;
+    }
+
+    const { payload } = await jwtVerify(identityToken, APPLE_JWKS, {
+      issuer: "https://appleid.apple.com",
+      audience: APPLE_BUNDLE_ID,
+    });
+
+    const sub = typeof payload.sub === "string" ? payload.sub : null;
+    if (!sub) {
+      res.status(400).json({ error: "Invalid Apple token (missing sub)" });
+      return;
+    }
+
+    const tokenEmail = typeof payload.email === "string" ? payload.email : null;
+    const email = (tokenEmail ?? clientEmail ?? `${sub}@privaterelay.appleid`).toLowerCase().trim();
+
+    let [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, email))
+      .limit(1);
+
+    if (!user) {
+      [user] = await db
+        .insert(usersTable)
+        .values({ email, emailVerified: true })
+        .returning();
+    } else if (!user.emailVerified) {
+      await db
+        .update(usersTable)
+        .set({ emailVerified: true })
+        .where(eq(usersTable.id, user.id));
+    }
+
+    const token = signToken(user.id, user.email);
+
+    logger.info({ userId: user.id, email, hasFullName: !!fullName }, "Apple sign-in succeeded");
+
+    res.json({
+      success: true,
+      token,
+      user: { id: user.id, email: user.email },
+    });
+  } catch (error) {
+    logger.error(error, "Apple sign-in failed");
+    res.status(401).json({ error: "Apple sign-in failed. Please try again." });
   }
 });
 

@@ -22,6 +22,7 @@ import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import { useSubscription } from "@/lib/revenuecat";
 import { safeOpenURL } from "@/lib/safeOpenURL";
+import { useOracle } from "@/context/OracleContext";
 
 const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
 const DOMAIN = process.env.EXPO_PUBLIC_DOMAIN ?? "";
@@ -80,7 +81,25 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const { isSubscribed, restore, isRestoring, isConfigured, customerInfo } =
     useSubscription();
+  const { setQuestionnaireAnswers } = useOracle();
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleRetakeQuestionnaire = () => {
+    Alert.alert(
+      "Retake questionnaire",
+      "This will clear your saved answers and walk you through the 8 questions again.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Retake",
+          onPress: () => {
+            setQuestionnaireAnswers(null);
+            router.push("/questionnaire");
+          },
+        },
+      ],
+    );
+  };
 
   const [notifReadings, setNotifReadings] = useState(true);
   const [notifUpdates, setNotifUpdates] = useState(true);
@@ -353,6 +372,11 @@ export default function SettingsScreen() {
       label: "About Oracle",
       icon: "info",
       onPress: () => router.push("/about"),
+    },
+    {
+      label: "Retake questionnaire",
+      icon: "edit-3",
+      onPress: handleRetakeQuestionnaire,
     },
     {
       label: "Send Feedback",
