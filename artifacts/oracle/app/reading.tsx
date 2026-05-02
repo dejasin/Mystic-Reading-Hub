@@ -862,22 +862,22 @@ export default function ReadingScreen() {
               await maybeShowPaywall();
               return;
             }
-            if (parsed.event === "behavioral_scores" && parsed.scores) {
-              const s = parsed.scores;
+            if (parsed.event === "behavioralScores" && parsed.behavioralScores) {
+              const s = parsed.behavioralScores;
               if (
                 typeof s.intuition === "number" &&
-                typeof s.emotional_depth === "number" &&
+                typeof s.emotionalDepth === "number" &&
                 typeof s.drive === "number" &&
                 typeof s.adaptability === "number" &&
-                typeof s.inner_knowing === "number" &&
+                typeof s.innerKnowing === "number" &&
                 typeof s.expression === "number"
               ) {
                 setBehavioralScores({
                   intuition: s.intuition,
-                  emotional_depth: s.emotional_depth,
+                  emotionalDepth: s.emotionalDepth,
                   drive: s.drive,
                   adaptability: s.adaptability,
-                  inner_knowing: s.inner_knowing,
+                  innerKnowing: s.innerKnowing,
                   expression: s.expression,
                 });
               }
@@ -921,9 +921,6 @@ export default function ReadingScreen() {
     }
   };
 
-  // Per-session paywall gate: at most once per sessionId, never for active subscribers.
-  // Spec (Section 10a): auto-paywall fires 1500ms AFTER the free-reading reveal,
-  // exactly once per session, and is skipped entirely for active subscribers.
   const PAYWALL_REVEAL_DELAY_MS = 1500;
   const maybeShowPaywall = async () => {
     const isSubscribed = !!customerInfo?.entitlements?.active?.["full_reading"];
@@ -968,22 +965,22 @@ export default function ReadingScreen() {
       });
       if (!response.ok) return;
       const data = await response.json();
-      const s = data?.scores;
+      const s = data?.behavioralScores;
       if (
         s &&
         typeof s.intuition === "number" &&
-        typeof s.emotional_depth === "number" &&
+        typeof s.emotionalDepth === "number" &&
         typeof s.drive === "number" &&
         typeof s.adaptability === "number" &&
-        typeof s.inner_knowing === "number" &&
+        typeof s.innerKnowing === "number" &&
         typeof s.expression === "number"
       ) {
         setBehavioralScores({
           intuition: s.intuition,
-          emotional_depth: s.emotional_depth,
+          emotionalDepth: s.emotionalDepth,
           drive: s.drive,
           adaptability: s.adaptability,
-          inner_knowing: s.inner_knowing,
+          innerKnowing: s.innerKnowing,
           expression: s.expression,
         });
       }

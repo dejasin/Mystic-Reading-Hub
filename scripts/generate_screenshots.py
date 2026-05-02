@@ -1,19 +1,7 @@
 """Generate 5 App Store marketing screenshots for Oracle: AI Life Advisor.
 
 Apple 6.7"+ display (iPhone 16 Pro Max) screenshot size: 1320 x 2868.
-Output: artifacts/oracle/assets/app-store/screenshots/screenshot-{1..5}.png
-
-Per submission spec Section 12, the ordered narrative is:
-    1. The Advisor       — Oracle Chat conversation (the lead frame)
-    2. Real Guidance     — sample reading with italic disclaimer
-    3. Your Profile      — six-dimension behavioral radar
-    4. The Intake        — onboarding / intake step
-    5. Always With You   — Oracle Pro / ongoing relationship
-
-Each screenshot is a self-contained marketing image with the Oracle visual
-language: deep cosmic background, gold accents, Cormorant/EB Garamond style
-typography (rendered with available system fonts), and a single clear value
-prop per screen.
+Output: artifacts/oracle/assets/app-store/screenshot-{1..5}.png
 """
 from __future__ import annotations
 
@@ -24,7 +12,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 W, H = 1320, 2868
-OUT_DIR = Path("artifacts/oracle/assets/app-store/screenshots")
+OUT_DIR = Path("artifacts/oracle/assets/app-store")
 
 GOLD = (201, 168, 76)
 GOLD_LIGHT = (235, 207, 132)
@@ -589,21 +577,14 @@ def screen_subscription(out: Path) -> None:
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Per submission spec Section 12: ordered narrative is
-    # 1=Advisor (chat), 2=Real Guidance (reading), 3=Your Profile (radar),
-    # 4=The Intake (intake), 5=Always With You (subscription).
-    # Filenames use a dash, not underscore, per spec.
     screens = [
-        ("screenshot-1.png", screen_chat),          # The Advisor
-        ("screenshot-2.png", screen_reading),       # Real Guidance
-        ("screenshot-3.png", screen_profile),       # Your Profile
-        ("screenshot-4.png", screen_intake),        # The Intake
-        ("screenshot-5.png", screen_subscription),  # Always With You
+        ("screenshot-1.png", screen_chat),
+        ("screenshot-2.png", screen_reading),
+        ("screenshot-3.png", screen_profile),
+        ("screenshot-4.png", screen_intake),
+        ("screenshot-5.png", screen_subscription),
     ]
 
-    # Remove any stale legacy underscore-named screenshots so the App Store
-    # bundle directory contains only the canonical 5 files in the correct
-    # order.
     for old in OUT_DIR.glob("screenshot_*.png"):
         old.unlink()
 

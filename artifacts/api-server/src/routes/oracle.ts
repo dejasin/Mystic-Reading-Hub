@@ -581,7 +581,7 @@ End Section 2 with exactly this sentence: "Your behavioral profile points to a p
       // Second Anthropic call: behavioral scores. Wrapped so a scoring failure
       // can never break the reading flow — defaults to {0.5,...} on any error.
       const behavioralScores = await computeBehavioralScores(fullReading, userData, req.log);
-      sendEvent({ event: "behavioral_scores", scores: behavioralScores });
+      sendEvent({ event: "behavioralScores", behavioralScores });
 
       stopKeepAlive();
       sendEvent({ event: "paywall" });
@@ -1473,13 +1473,12 @@ life path, sun sign, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, 
   }
 });
 
-// POST /api/behavioral-profile - Compute 6 behavioral dimension scores from the palm session
 const BEHAVIORAL_DIMENSIONS = [
   "intuition",
-  "emotional_depth",
+  "emotionalDepth",
   "drive",
   "adaptability",
-  "inner_knowing",
+  "innerKnowing",
   "expression",
 ] as const;
 
@@ -1491,13 +1490,12 @@ function clampScore(n: unknown): number | null {
   return Math.max(0, Math.min(1, n));
 }
 
-// Default fallback so the reading flow never fails if scoring fails.
 const DEFAULT_BEHAVIORAL_SCORES: Record<BehavioralDimension, number> = {
   intuition: 0.5,
-  emotional_depth: 0.5,
+  emotionalDepth: 0.5,
   drive: 0.5,
   adaptability: 0.5,
-  inner_knowing: 0.5,
+  innerKnowing: 0.5,
   expression: 0.5,
 };
 
@@ -1517,10 +1515,10 @@ async function computeBehavioralScores(
 
 Return ONLY a single JSON object with these exact keys, each a number between 0.0 and 1.0:
 - intuition
-- emotional_depth
+- emotionalDepth
 - drive
 - adaptability
-- inner_knowing
+- innerKnowing
 - expression
 
 RULES:
@@ -1549,10 +1547,18 @@ Produce the JSON object now.`;
     });
 
     const text = result.content[0]?.type === "text" ? result.content[0].text.trim() : "";
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) return { ...DEFAULT_BEHAVIORAL_SCORES };
+    if (!text) return { ...DEFAULT_BEHAVIORAL_SCORES };
 
-    const parsed = JSON.parse(match[0]) as Record<string, unknown>;
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(text) as Record<string, unknown>;
+    } catch {
+      return { ...DEFAULT_BEHAVIORAL_SCORES };
+    }
+    if (!parsed || typeof parsed !== "object") {
+      return { ...DEFAULT_BEHAVIORAL_SCORES };
+    }
+
     const out: Partial<Record<BehavioralDimension, number>> = {};
     for (const dim of BEHAVIORAL_DIMENSIONS) {
       const v = clampScore(parsed[dim]);
@@ -1567,8 +1573,6 @@ Produce the JSON object now.`;
 }
 
 router.post("/behavioral-profile", async (req: Request, res: Response) => {
-  // This endpoint NEVER returns a non-200 response; on any failure it returns
-  // the default {0.5,...} fallback so the reading flow can never be blocked.
   try {
     const { sessionId, userData } = req.body as {
       sessionId?: string;
@@ -1576,17 +1580,23 @@ router.post("/behavioral-profile", async (req: Request, res: Response) => {
     };
 
     if (!sessionId) {
-      res.status(200).json({ scores: { ...DEFAULT_BEHAVIORAL_SCORES }, fallback: true });
+      res.status(200).json({
+        behavioralScores: { ...DEFAULT_BEHAVIORAL_SCORES },
+        fallback: true,
+      });
       return;
     }
 
     const session = await getOrCreateSession(sessionId);
     const reading = (session.reading ?? "").trim();
-    const scores = await computeBehavioralScores(reading, userData, req.log);
-    res.status(200).json({ scores });
+    const behavioralScores = await computeBehavioralScores(reading, userData, req.log);
+    res.status(200).json({ behavioralScores });
   } catch (err) {
     req.log.error({ err }, "Behavioral profile error (returning defaults)");
-    res.status(200).json({ scores: { ...DEFAULT_BEHAVIORAL_SCORES }, fallback: true });
+    res.status(200).json({
+      behavioralScores: { ...DEFAULT_BEHAVIORAL_SCORES },
+      fallback: true,
+    });
   }
 });
 

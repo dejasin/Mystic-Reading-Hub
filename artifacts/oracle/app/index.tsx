@@ -39,8 +39,6 @@ const ONBOARDING_COMPLETE_KEY = "@oracle/onboarding_complete";
 
 const { width } = Dimensions.get("window");
 
-// Per spec Section 6e: five "what Oracle can help with" items shown on the
-// home screen for first-time / no-profile users.
 const ORACLE_HELP_LINES = [
   "Career direction and major life decisions",
   "Relationships, intimacy, and how you connect",

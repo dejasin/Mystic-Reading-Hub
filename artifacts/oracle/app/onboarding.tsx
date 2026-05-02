@@ -40,10 +40,6 @@ interface SlideData {
   isFinal?: boolean;
 }
 
-// Per spec Section 5: onboarding leads with the headline "Know yourself at a
-// level most people never reach.", three feature rows in order chat → profile
-// → palm, CTA "Begin Your Session", and "Powered by Anthropic Claude AI"
-// subtext under the CTA on the final slide.
 const SLIDES: SlideData[] = [
   {
     key: "veil",

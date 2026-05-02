@@ -35,7 +35,7 @@ const DIMENSIONS = [
     description: "How readily you sense beneath the surface of a situation.",
   },
   {
-    key: "emotional_depth",
+    key: "emotionalDepth",
     label: "Emotional Depth",
     description: "The range and intensity of feeling you can hold and process.",
   },
@@ -50,7 +50,7 @@ const DIMENSIONS = [
     description: "How fluidly you adjust when circumstances shift.",
   },
   {
-    key: "inner_knowing",
+    key: "innerKnowing",
     label: "Inner Knowing",
     description: "Your access to clarity that does not need external proof.",
   },

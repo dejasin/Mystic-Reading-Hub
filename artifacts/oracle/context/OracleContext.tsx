@@ -25,10 +25,10 @@ export type DeepDiveCategory = "career" | "relationship" | "finances" | "fitness
 
 export interface BehavioralScores {
   intuition: number;
-  emotional_depth: number;
+  emotionalDepth: number;
   drive: number;
   adaptability: number;
-  inner_knowing: number;
+  innerKnowing: number;
   expression: number;
 }
 

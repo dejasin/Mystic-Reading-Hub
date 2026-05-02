@@ -128,13 +128,13 @@ RevenueCat entitlement: `full_reading` (unchanged).
 Generator: `scripts/generate_oracle_icon.py` (re-runnable).
 
 ### Screenshots (App Store — iPhone 6.7"+, 1320 × 2868)
-- `artifacts/oracle/assets/app-store/screenshots/screenshot-1.png` — **The Advisor** — Oracle Chat conversation (lead frame)
-- `artifacts/oracle/assets/app-store/screenshots/screenshot-2.png` — **Real Guidance** — sample reading with italic disclaimer
-- `artifacts/oracle/assets/app-store/screenshots/screenshot-3.png` — **Your Profile** — six-dimension behavioral radar
-- `artifacts/oracle/assets/app-store/screenshots/screenshot-4.png` — **The Intake** — intake / onboarding capture
-- `artifacts/oracle/assets/app-store/screenshots/screenshot-5.png` — **Always With You** — Oracle Pro / ongoing relationship
+- `artifacts/oracle/assets/app-store/screenshot-1.png` — **The Advisor** — Oracle Chat conversation (lead frame)
+- `artifacts/oracle/assets/app-store/screenshot-2.png` — **Real Guidance** — sample reading with italic disclaimer
+- `artifacts/oracle/assets/app-store/screenshot-3.png` — **Your Profile** — six-dimension behavioral radar
+- `artifacts/oracle/assets/app-store/screenshot-4.png` — **The Intake** — intake / onboarding capture
+- `artifacts/oracle/assets/app-store/screenshot-5.png` — **Always With You** — Oracle Pro / ongoing relationship
 
-Generator: `scripts/generate_app_store_screenshots.py` (re-runnable).
+Generator: `scripts/generate_screenshots.py` (re-runnable).
 
 ### App Previews (Video)
 **Skipped for this submission** per Option-C scope (per-user agreement). Reviewer notes above explain the in-app journey instead. Videos can be generated in a follow-up submission via the existing `artifacts/oracle-preview-ritual` artifact.
@@ -169,7 +169,7 @@ eas submit --platform ios --latest
 ```
 
 ### E. In App Store Connect — required uploads
-1. Upload the 5 screenshots from `artifacts/oracle/assets/app-store/screenshots/` to the **iPhone 6.7" Display** screenshot slot.
+1. Upload the 5 screenshots from `artifacts/oracle/assets/app-store/` (files `screenshot-1.png` through `screenshot-5.png`) to the **iPhone 6.7" Display** screenshot slot.
 2. Apple will reuse them for the 6.5" slot automatically when no 6.5" assets are provided.
 3. Paste the **App Description** (above) and **Reviewer Notes** (above).
 4. Set the **Promotional Text**, **Keywords**, **Privacy URL**, **Support URL**, **Marketing URL**, **Category**, **Age Rating** as listed in §1.

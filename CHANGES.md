@@ -56,7 +56,7 @@ The previous submission was rejected for being a palmistry / palm-reading app wi
 
 ### Tooling — `scripts/`
 - `generate_oracle_icon.py` — Extended to also output `adaptive-icon.png` (432×432 RGBA) and `notification-icon.png` (96×96 RGBA monochrome) in addition to icon + splash. Includes re-runnable verification block.
-- `generate_app_store_screenshots.py` — New. Pillow-based generator for 5 × 1320×2868 marketing screenshots (hero / behavioral profile / reading / chat / subscription).
+- `generate_screenshots.py` — New. Pillow-based generator for 5 × 1320×2868 marketing screenshots (chat / reading / behavioral profile / intake / subscription) saved to `artifacts/oracle/assets/app-store/screenshot-[1-5].png`.
 
 ### Submission documentation
 - `CHANGES.md` (this file) — Top-level changelog.
@@ -105,7 +105,7 @@ Per user agreement (Option-C scope), the following are deferred:
 ```bash
 # 1. Regenerate assets if needed
 python scripts/generate_oracle_icon.py
-python scripts/generate_app_store_screenshots.py
+python scripts/generate_screenshots.py
 
 # 2. Prebuild verification (regenerates ios/ from app.json — gitignored)
 cd artifacts/oracle
