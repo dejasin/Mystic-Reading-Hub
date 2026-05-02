@@ -1,0 +1,270 @@
+You are generating App Store submission assets for Oracle — an AI life 
+advisor app. Before processing anything, you need to capture the actual 
+app screens from the iOS simulator that is already running in this 
+Replit project.
+
+App identity:
+- Name: Oracle
+- Tagline: "Your Personal AI Advisor"
+- Color palette: #0a0a0f background, #f59e0b gold accents, white text
+- This is an AI life advisor app. The palm photo is the biometric 
+  intake mechanism. Never describe it as a palm reading app.
+
+=============================================================
+STEP 1 — VERIFY SIMULATOR IS RUNNING
+=============================================================
+
+Run this and confirm the simulator and app are active:
+
+xcrun simctl list devices | grep Booted
+
+If nothing is booted, start the simulator:
+npx expo start --ios
+
+Wait for the app to fully load before proceeding. Do not move to 
+Step 2 until you confirm the simulator is running and the app is 
+on screen.
+
+=============================================================
+STEP 2 — NAVIGATE AND CAPTURE EACH SCREEN
+=============================================================
+
+You will capture 5 specific screens from the live app. For each 
+screen, navigate to it in the simulator, wait 1.5 seconds for 
+animations to settle, then capture a screenshot using:
+
+xcrun simctl io booted screenshot /path/to/raw/raw_XX.png
+
+Create a /raw folder in the project root for all captures.
+
+Capture these 5 screens in this exact order:
+
+RAW_01 — Home/Landing screen
+Navigate to: the app's initial landing screen
+Wait for: the gold sigil and title to be fully rendered
+Capture as: raw/raw_01_home.png
+
+RAW_02 — Palm Capture screen  
+Navigate to: the palm/hand capture screen
+Wait for: the camera frame UI and capture button to be visible
+Do NOT trigger the camera — just show the UI
+Capture as: raw/raw_02_capture.png
+
+RAW_03 — Reading/Profile Reveal screen
+Navigate to: the behavioral profile or reading results screen
+Wait for: all content sections to be fully loaded and visible
+If this screen requires a completed session to show real data, 
+use any existing test session or demo state
+Capture as: raw/raw_03_reading.png
+
+RAW_04 — Chat screen
+Navigate to: the Oracle chat/conversation screen
+Wait for: the input bar, suggested prompt chips, and any existing 
+messages to be visible
+Capture as: raw/raw_04_chat.png
+
+RAW_05 — Paywall/Subscription screen
+Navigate to: the RevenueCat paywall or subscription screen
+This screen MUST be captured — Apple's reviewer needs to see it
+Wait for: both plan options (monthly and yearly) to be visible
+Capture as: raw/raw_05_paywall.png
+
+After all 5 are captured, list each file with its actual pixel 
+dimensions using Python + Pillow:
+
+from PIL import Image
+for f in ['raw_01_home.png', 'raw_02_capture.png', 'raw_03_reading.png', 
+          'raw_04_chat.png', 'raw_05_paywall.png']:
+    img = Image.open(f'raw/{f}')
+    print(f'{f}: {img.size}')
+
+Do not proceed to Step 3 until all 5 files exist and dimensions 
+are confirmed.
+
+=============================================================
+STEP 3 — CAPTURE SCREEN RECORDINGS FOR PREVIEW VIDEOS
+=============================================================
+
+You need 3 screen recordings of specific app flows. Use the 
+simulator's built-in recording:
+
+xcrun simctl io booted recordVideo --codec=h264 output.mp4
+
+For each recording, start the recorder, perform the flow in the 
+simulator, then stop with Ctrl+C.
+
+RECORDING 1 — The Advisor flow (target: 25-28 seconds)
+File: raw/recording_01_advisor.mp4
+Flow to perform:
+1. Start on the home screen — hold for 2 seconds
+2. Navigate into the chat screen
+3. Tap the prompt chip "Why do I keep repeating the same patterns?"
+   or type it manually if chips aren't present
+4. Wait for Oracle's full response to appear
+5. Type a follow-up: "What should I do differently?"
+6. Wait for Oracle's response
+7. Navigate to the profile/behavioral screen
+8. Hold on the radar chart for 2 seconds
+9. Stop recording
+
+RECORDING 2 — The Session flow (target: 20-24 seconds)
+File: raw/recording_02_session.mp4
+Flow to perform:
+1. Start on the home/onboarding screen — hold 2 seconds
+2. Navigate to the palm capture screen
+3. Hold on the capture UI for 3 seconds (show the interface)
+4. Navigate to the reading/profile reveal screen
+5. Hold as content loads — 3 seconds
+6. Navigate to the chat screen
+7. Tap a suggested prompt chip
+8. Hold for 2 seconds showing the response beginning
+9. Stop recording
+
+RECORDING 3 — The Profile flow (target: 18-20 seconds)
+File: raw/recording_03_profile.mp4
+Flow to perform:
+1. Start on the behavioral profile screen — hold 2 seconds
+2. Slowly scroll down through all dimension cards — take your time
+3. Navigate to the chat screen
+4. Tap the chip "What does my Emotional Depth score mean?" 
+   or type a question about one of the profile dimensions
+5. Hold on Oracle's response for 3 seconds
+6. Navigate back to the profile screen
+7. Hold on the radar chart — 2 seconds
+8. Stop recording
+
+After all 3 recordings are captured, confirm each file exists 
+and print its duration using FFmpeg:
+
+ffprobe -v error -show_entries format=duration \
+  -of default=noprint_wrappers=1 raw/recording_01_advisor.mp4
+
+Do not proceed to Step 4 until all 3 recordings are confirmed.
+
+=============================================================
+STEP 4 — PROCESS SCREENSHOTS TO APPLE SPEC
+=============================================================
+
+REQUIRED SPEC:
+- Dimensions: 1320 x 2868 pixels exactly
+- Format: PNG
+- Color space: RGB
+- Max file size: 500KB per file
+
+Write a Python script using Pillow: scripts/process_screenshots.py
+
+For each of the 5 raw screenshots:
+
+1. Open the raw file
+2. Get actual dimensions
+3. Calculate scale to fit within 1320x2868 while preserving 
+   aspect ratio — scale to width 1320 first
+4. If the scaled image is shorter than 2868px, add #0a0a0f 
+   background padding top and bottom to reach exactly 2868px
+5. If the scaled image is taller than 2868px, center-crop 
+   to 2868px height
+6. Add a caption bar at the bottom — 140px tall, #0a0a0f 
+   background, semi-transparent overlay — with this text 
+   per screenshot:
+
+   raw_01_home    → "Know yourself at a level most people never reach"
+   raw_02_capture → "Your palm reveals your behavioral patterns"
+   raw_03_reading → "AI-powered insight into your core nature"
+   raw_04_chat    → "Your most honest advisor. Always available."
+   raw_05_paywall → "Unlimited AI advisory sessions"
+
+   Caption text: white, centered, 32px, clean sans-serif (use 
+   DejaVuSans or any system font available)
+
+7. Verify final dimensions are exactly 1320x2868
+8. Save to /output folder:
+   output/screenshot_01.png through screenshot_05.png
+9. Check file size — if over 500KB, re-save with 
+   optimize=True and quality=95 until under 500KB
+10. Print: filename, dimensions, file size for each
+
+=============================================================
+STEP 5 — PROCESS PREVIEW VIDEOS TO APPLE SPEC
+=============================================================
+
+REQUIRED SPEC:
+- Dimensions: 1320 x 2868 pixels exactly  
+- Format: MP4, H.264
+- Frame rate: 30fps
+- Duration: 15-30 seconds each
+- Max file size: 500MB
+- Must start AND end on a still frame held for at least 1 second
+
+Write a shell script: scripts/process_videos.sh
+
+For each of the 3 raw recordings, run this FFmpeg pipeline:
+
+# Step A — Scale to 1320 wide, pad height to 2868 with #0a0a0f
+ffmpeg -i raw/recording_XX.mp4 \
+  -vf "scale=1320:-2,pad=1320:2868:(ow-iw)/2:(oh-ih)/2:color=0x0a0a0f" \
+  -c:v libx264 -pix_fmt yuv420p -crf 18 -r 30 \
+  -movflags +faststart \
+  tmp/recording_XX_scaled.mp4
+
+# Step B — Trim to 28 seconds max if longer
+ffmpeg -i tmp/recording_XX_scaled.mp4 -t 28 -c copy tmp/recording_XX_trimmed.mp4
+
+# Step C — Add 1-second still frame hold at start and end
+# Extract first frame
+ffmpeg -i tmp/recording_XX_trimmed.mp4 -vframes 1 tmp/first_frame.png
+# Extract last frame  
+ffmpeg -sseof -0.1 -i tmp/recording_XX_trimmed.mp4 -vframes 1 tmp/last_frame.png
+# Create 1-second still videos from each frame
+ffmpeg -loop 1 -i tmp/first_frame.png -t 1 -r 30 -c:v libx264 \
+  -pix_fmt yuv420p tmp/hold_start.mp4
+ffmpeg -loop 1 -i tmp/last_frame.png -t 1 -r 30 -c:v libx264 \
+  -pix_fmt yuv420p tmp/hold_end.mp4
+# Concatenate: hold_start + main + hold_end
+echo "file 'tmp/hold_start.mp4'
+file 'tmp/recording_XX_trimmed.mp4'
+file 'tmp/hold_end.mp4'" > tmp/concat_XX.txt
+ffmpeg -f concat -safe 0 -i tmp/concat_XX.txt -c copy \
+  output/preview_XX.mp4
+
+Output files:
+output/preview_01_advisor.mp4
+output/preview_02_session.mp4
+output/preview_03_profile.mp4
+
+After processing each video verify with ffprobe:
+- Resolution is 1320x2868
+- Duration is between 15-30 seconds  
+- File size is under 500MB
+- Codec is H.264
+
+=============================================================
+STEP 6 — FINAL VERIFICATION CHECKLIST
+=============================================================
+
+Print this checklist with actual values filled in:
+
+SCREENSHOTS:
+[ ] screenshot_01.png — dimensions: ___ — size: ___KB — PASS/FAIL
+[ ] screenshot_02.png — dimensions: ___ — size: ___KB — PASS/FAIL
+[ ] screenshot_03.png — dimensions: ___ — size: ___KB — PASS/FAIL
+[ ] screenshot_04.png — dimensions: ___ — size: ___KB — PASS/FAIL
+[ ] screenshot_05.png — dimensions: ___ — size: ___KB — PASS/FAIL
+
+PREVIEW VIDEOS:
+[ ] preview_01_advisor.mp4 — res: ___ — duration: ___s — size: ___MB — PASS/FAIL
+[ ] preview_02_session.mp4 — res: ___ — duration: ___s — size: ___MB — PASS/FAIL
+[ ] preview_03_profile.mp4 — res: ___ — duration: ___s — size: ___MB — PASS/FAIL
+
+APPLE HARD REQUIREMENTS:
+[ ] All videos begin on a still frame held for at least 1 second
+[ ] All videos end on a still frame held for at least 1 second
+[ ] No screenshot is just the app icon
+[ ] Paywall screenshot clearly shows both subscription options
+[ ] All 8 files are in the /output folder
+
+If any item shows FAIL — fix it before finishing. Do not stop 
+until every item shows PASS.
+
+Final output: print "All 8 assets verified and ready for 
+App Store Connect upload." then list the full /output 
+directory with file names and sizes.
