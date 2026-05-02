@@ -214,7 +214,7 @@ function ProfileFormModal({
 
         <ScrollView contentContainerStyle={modalStyles.form} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           {/* Photos */}
-          <Text style={modalStyles.sectionLabel}>SACRED IMAGES</Text>
+          <Text style={modalStyles.sectionLabel}>PHOTOS</Text>
           <View style={modalStyles.photoRow}>
             {PHOTO_SLOTS.map(slot => {
               const uri = photos[slot.key];
@@ -383,14 +383,14 @@ export default function ProfilesScreen() {
           <Pressable
             style={({ pressed }) => [styles.synastryBtn, pressed && { opacity: 0.85 }]}
             onPress={() => router.push("/synastry")}
-            accessibilityLabel="Open Synastry Reading — combine two profiles"
+            accessibilityLabel="Open Synastry — compare two profiles"
             accessibilityRole="button"
           >
             <View style={styles.synastryBtnLeft}>
               <Text style={styles.synastryIcon}>✦ ✦</Text>
               <View>
-                <Text style={styles.synastryBtnTitle}>Synastry Reading</Text>
-                <Text style={styles.synastryBtnSub}>Combine two profiles for compatibility</Text>
+                <Text style={styles.synastryBtnTitle}>Synastry</Text>
+                <Text style={styles.synastryBtnSub}>Compare two profiles for compatibility</Text>
               </View>
             </View>
             <Feather name="arrow-right" size={16} color={Colors.gold} />
@@ -412,7 +412,7 @@ export default function ProfilesScreen() {
           <Text style={styles.emptyIcon}>✦</Text>
           <Text style={styles.emptyTitle}>Your vault is empty.</Text>
           <Text style={styles.emptyText}>
-            Add the people in your life — partners, family, friends — to unlock synastry readings and chart comparisons.
+            Add the people in your life — partners, family, friends — to unlock profile comparisons and synastry sessions.
           </Text>
           <Pressable
             style={({ pressed }) => [styles.emptyAddBtn, pressed && { opacity: 0.85 }]}

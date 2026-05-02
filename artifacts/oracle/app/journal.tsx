@@ -15,11 +15,11 @@ import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import { useJournal, JournalEntry, ReadingType } from "@/context/JournalContext";
 
-const TYPE_CONFIG: Record<ReadingType, { icon: React.ComponentProps<typeof Feather>["name"]; color: string }> = {
-  "Full Reading": { icon: "eye", color: Colors.gold },
-  "Deep Dive": { icon: "compass", color: "#8b9fd4" },
-  "Synastry": { icon: "heart", color: "#b87b7b" },
-  "Profile Reading": { icon: "user", color: "#7bc4a0" },
+const TYPE_CONFIG: Record<ReadingType, { icon: React.ComponentProps<typeof Feather>["name"]; color: string; label: string }> = {
+  "Full Reading": { icon: "eye", color: Colors.gold, label: "Full Session" },
+  "Deep Dive": { icon: "compass", color: "#8b9fd4", label: "Deep Dive" },
+  "Synastry": { icon: "heart", color: "#b87b7b", label: "Synastry" },
+  "Profile Reading": { icon: "user", color: "#7bc4a0", label: "Profile Session" },
 };
 
 function formatDate(ts: number): string {
@@ -49,13 +49,13 @@ function EntryCard({ entry, onPress, onToggleFavorite }: {
       <Pressable
         style={({ pressed }) => [styles.card, pressed && { opacity: 0.85 }]}
         onPress={onPress}
-        accessibilityLabel={`${entry.readingType} from ${formatDate(entry.date)}`}
+        accessibilityLabel={`${config.label} from ${formatDate(entry.date)}`}
         accessibilityRole="button"
       >
         <View style={styles.cardHeader}>
           <View style={styles.typeBadge}>
             <Feather name={config.icon} size={12} color={config.color} />
-            <Text style={[styles.typeText, { color: config.color }]}>{entry.readingType}</Text>
+            <Text style={[styles.typeText, { color: config.color }]}>{config.label}</Text>
           </View>
           <Pressable
             onPress={(e) => { e.stopPropagation(); onToggleFavorite(); }}
@@ -126,7 +126,7 @@ export default function JournalScreen() {
           onPress={() => setShowFavoritesOnly(!showFavoritesOnly)}
           style={styles.filterBtn}
           hitSlop={12}
-          accessibilityLabel={showFavoritesOnly ? "Show all readings" : "Show favorites only"}
+          accessibilityLabel={showFavoritesOnly ? "Show all sessions" : "Show favorites only"}
           accessibilityRole="button"
         >
           <Feather
@@ -150,8 +150,8 @@ export default function JournalScreen() {
           </Text>
           <Text style={styles.emptyText}>
             {showFavoritesOnly
-              ? "Star your most meaningful readings to find them here."
-              : "Complete a reading and it will appear here — a record of everything The Oracle has revealed to you."}
+              ? "Star your most meaningful sessions to find them here."
+              : "Complete a session and it will appear here — a record of every conversation with The Oracle."}
           </Text>
         </View>
       ) : (

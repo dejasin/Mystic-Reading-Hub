@@ -15,11 +15,11 @@ import Colors from "@/constants/colors";
 import StarField from "@/components/StarField";
 import { useJournal, ReadingType } from "@/context/JournalContext";
 
-const TYPE_CONFIG: Record<ReadingType, { icon: React.ComponentProps<typeof Feather>["name"]; color: string }> = {
-  "Full Reading": { icon: "eye", color: Colors.gold },
-  "Deep Dive": { icon: "compass", color: "#8b9fd4" },
-  "Synastry": { icon: "heart", color: "#b87b7b" },
-  "Profile Reading": { icon: "user", color: "#7bc4a0" },
+const TYPE_CONFIG: Record<ReadingType, { icon: React.ComponentProps<typeof Feather>["name"]; color: string; label: string }> = {
+  "Full Reading": { icon: "eye", color: Colors.gold, label: "Full Session" },
+  "Deep Dive": { icon: "compass", color: "#8b9fd4", label: "Deep Dive" },
+  "Synastry": { icon: "heart", color: "#b87b7b", label: "Synastry" },
+  "Profile Reading": { icon: "user", color: "#7bc4a0", label: "Profile Session" },
 };
 
 function formatDate(ts: number): string {
@@ -145,7 +145,7 @@ export default function JournalDetailScreen() {
         <Animated.View entering={FadeIn.duration(600)} style={styles.meta}>
           <View style={styles.typeBadge}>
             <Feather name={config.icon} size={13} color={config.color} />
-            <Text style={[styles.typeText, { color: config.color }]}>{entry.readingType}</Text>
+            <Text style={[styles.typeText, { color: config.color }]}>{config.label}</Text>
           </View>
           <Text style={styles.dateText}>{formatDate(entry.date)}</Text>
           {entry.metadata?.category && (

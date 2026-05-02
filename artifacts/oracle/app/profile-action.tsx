@@ -16,26 +16,6 @@ import StarField from "@/components/StarField";
 import { useProfiles } from "@/context/ProfileContext";
 import { useOracle } from "@/context/OracleContext";
 
-function computeSunSign(dob: string): string {
-  if (!dob || !dob.includes("-")) return "";
-  const parts = dob.split("-");
-  if (parts.length < 3) return "";
-  const m = parseInt(parts[1] ?? "0");
-  const d = parseInt(parts[2] ?? "0");
-  if ((m === 3 && d >= 21) || (m === 4 && d <= 19)) return "♈ Aries";
-  if ((m === 4 && d >= 20) || (m === 5 && d <= 20)) return "♉ Taurus";
-  if ((m === 5 && d >= 21) || (m === 6 && d <= 20)) return "♊ Gemini";
-  if ((m === 6 && d >= 21) || (m === 7 && d <= 22)) return "♋ Cancer";
-  if ((m === 7 && d >= 23) || (m === 8 && d <= 22)) return "♌ Leo";
-  if ((m === 8 && d >= 23) || (m === 9 && d <= 22)) return "♍ Virgo";
-  if ((m === 9 && d >= 23) || (m === 10 && d <= 22)) return "♎ Libra";
-  if ((m === 10 && d >= 23) || (m === 11 && d <= 21)) return "♏ Scorpio";
-  if ((m === 11 && d >= 22) || (m === 12 && d <= 21)) return "♐ Sagittarius";
-  if ((m === 12 && d >= 22) || (m === 1 && d <= 19)) return "♑ Capricorn";
-  if ((m === 1 && d >= 20) || (m === 2 && d <= 18)) return "♒ Aquarius";
-  return "♓ Pisces";
-}
-
 export default function ProfileActionScreen() {
   const insets = useSafeAreaInsets();
   const { profileId } = useLocalSearchParams<{ profileId: string }>();
@@ -62,7 +42,6 @@ export default function ProfileActionScreen() {
     );
   }
 
-  const sunSign = computeSunSign(profile.dob);
   const faceUri = profile.photos.face;
   const initials = profile.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
@@ -88,9 +67,6 @@ export default function ProfileActionScreen() {
             </View>
           )}
           <Text style={styles.profileName}>{profile.name}</Text>
-          {sunSign ? (
-            <Text style={styles.profileSign}>{sunSign}</Text>
-          ) : null}
           {profile.dob ? (
             <Text style={styles.profileDob}>{profile.dob}</Text>
           ) : null}
@@ -102,7 +78,7 @@ export default function ProfileActionScreen() {
 
         <Pressable
           style={({ pressed }) => [styles.actionCard, pressed && { opacity: 0.85 }]}
-          accessibilityLabel={`View Reading for ${profile.name}`}
+          accessibilityLabel={`Start a session for ${profile.name}`}
           accessibilityRole="button"
           onPress={() => {
             resetAll();
@@ -129,8 +105,8 @@ export default function ProfileActionScreen() {
             <Feather name="book-open" size={22} color={Colors.gold} />
           </View>
           <View style={styles.actionInfo}>
-            <Text style={styles.actionTitle}>View Reading</Text>
-            <Text style={styles.actionSub}>New reading tailored to {profile.name}</Text>
+            <Text style={styles.actionTitle}>Start Session</Text>
+            <Text style={styles.actionSub}>New session tailored to {profile.name}</Text>
           </View>
           <Feather name="arrow-right" size={18} color={Colors.gold} />
         </Pressable>
@@ -138,15 +114,15 @@ export default function ProfileActionScreen() {
         <Pressable
           style={({ pressed }) => [styles.actionCard, pressed && { opacity: 0.85 }]}
           onPress={() => router.push({ pathname: "/synastry", params: { profileId: profile.id } })}
-          accessibilityLabel={`View Synastry for ${profile.name}`}
+          accessibilityLabel={`Compare ${profile.name} with another profile`}
           accessibilityRole="button"
         >
           <View style={styles.actionIconWrap}>
             <Feather name="users" size={22} color={Colors.gold} />
           </View>
           <View style={styles.actionInfo}>
-            <Text style={styles.actionTitle}>View Synastry</Text>
-            <Text style={styles.actionSub}>Compatibility reading with another soul</Text>
+            <Text style={styles.actionTitle}>Compare Profiles</Text>
+            <Text style={styles.actionSub}>Compatibility session with another profile</Text>
           </View>
           <Feather name="arrow-right" size={18} color={Colors.gold} />
         </Pressable>
@@ -166,7 +142,6 @@ const styles = StyleSheet.create({
   avatarPlaceholder: { width: 88, height: 88, borderRadius: 44, backgroundColor: "rgba(201,168,76,0.12)", borderWidth: 2, borderColor: Colors.gold, alignItems: "center", justifyContent: "center" },
   avatarInitials: { fontFamily: "CormorantGaramond_400Regular", fontSize: 26, color: Colors.gold },
   profileName: { fontFamily: "CormorantGaramond_400Regular", fontSize: 18, color: Colors.cream, letterSpacing: 0.5, textAlign: "center" },
-  profileSign: { fontFamily: "EBGaramond_400Regular", fontSize: 16, color: Colors.gold },
   profileDob: { fontFamily: "EBGaramond_400Regular_Italic", fontSize: 14, color: Colors.muted },
   divider: { fontFamily: "EBGaramond_400Regular", fontSize: 13, color: Colors.gold, textAlign: "center", letterSpacing: 4, opacity: 0.6 },
   chooseLabel: { fontFamily: "EBGaramond_400Regular_Italic", fontSize: 16, color: Colors.muted, textAlign: "center" },

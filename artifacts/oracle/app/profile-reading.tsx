@@ -33,30 +33,10 @@ const LIFE_CATEGORIES = [
   { label: "Love & Relationships", icon: "heart" },
   { label: "Career & Purpose", icon: "briefcase" },
   { label: "Health & Vitality", icon: "activity" },
-  { label: "Spiritual Growth", icon: "star" },
+  { label: "Personal Growth", icon: "star" },
   { label: "Finances & Abundance", icon: "trending-up" },
   { label: "Family & Roots", icon: "home" },
 ];
-
-function computeSunSign(dob: string): string {
-  if (!dob || !dob.includes("-")) return "";
-  const parts = dob.split("-");
-  if (parts.length < 3) return "";
-  const m = parseInt(parts[1] ?? "0");
-  const d = parseInt(parts[2] ?? "0");
-  if ((m === 3 && d >= 21) || (m === 4 && d <= 19)) return "Aries";
-  if ((m === 4 && d >= 20) || (m === 5 && d <= 20)) return "Taurus";
-  if ((m === 5 && d >= 21) || (m === 6 && d <= 20)) return "Gemini";
-  if ((m === 6 && d >= 21) || (m === 7 && d <= 22)) return "Cancer";
-  if ((m === 7 && d >= 23) || (m === 8 && d <= 22)) return "Leo";
-  if ((m === 8 && d >= 23) || (m === 9 && d <= 22)) return "Virgo";
-  if ((m === 9 && d >= 23) || (m === 10 && d <= 22)) return "Libra";
-  if ((m === 10 && d >= 23) || (m === 11 && d <= 21)) return "Scorpio";
-  if ((m === 11 && d >= 22) || (m === 12 && d <= 21)) return "Sagittarius";
-  if ((m === 12 && d >= 22) || (m === 1 && d <= 19)) return "Capricorn";
-  if ((m === 1 && d >= 20) || (m === 2 && d <= 18)) return "Aquarius";
-  return "Pisces";
-}
 
 function Bubble({ msg }: { msg: Message }) {
   const isUser = msg.role === "user";
@@ -97,7 +77,6 @@ export default function ProfileReadingScreen() {
   const { addEntry: addJournalEntry } = useJournal();
 
   const profile = profiles.find(p => p.id === profileId) ?? null;
-  const sunSign = profile ? computeSunSign(profile.dob) : "";
 
   const [phase, setPhase] = useState<Phase>("greeting");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -128,7 +107,7 @@ export default function ProfileReadingScreen() {
       const greetMsg: Message = {
         id: genId(),
         role: "assistant",
-        content: `I see ${profile.name} before me — ${sunSign ? `a ${sunSign}` : "a soul"} carrying patterns written long before this moment.\n\nWhich area of life shall we illuminate today?`,
+        content: `Looking at ${profile.name}'s profile now.\n\nWhich area of life would you like to explore today?`,
       };
       setMessages([greetMsg]);
       setPhase("category");
@@ -226,7 +205,7 @@ export default function ProfileReadingScreen() {
       setReadError(
         isNetwork
           ? "The connection was severed. Check your network and try again."
-          : "The Oracle could not reach this reading. Try selecting a category again."
+          : "The Oracle could not complete this session. Try selecting a category again."
       );
       // Remove the user's category message and go back to category selection
       setMessages(prev => prev.filter(m => m.content !== category || m.role !== "user"));
@@ -317,7 +296,7 @@ export default function ProfileReadingScreen() {
           <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back" accessibilityRole="button">
             <Feather name="arrow-left" size={20} color={Colors.gold} />
           </Pressable>
-          <Text style={styles.headerTitle}>Reading</Text>
+          <Text style={styles.headerTitle}>Session</Text>
           <View style={{ width: 44 }} />
         </View>
         <View style={styles.errorContainer}>
@@ -348,7 +327,6 @@ export default function ProfileReadingScreen() {
           )}
           <View>
             <Text style={styles.headerTitle}>{profile.name}</Text>
-            {sunSign ? <Text style={styles.headerSign}>{sunSign}</Text> : null}
           </View>
         </View>
         <View style={{ width: 44 }} />
@@ -432,7 +410,7 @@ export default function ProfileReadingScreen() {
         {phase === "reading" && isStreaming && (
           <View style={[styles.streamingBar, { paddingBottom: Platform.OS === "web" ? 20 : insets.bottom + 8 }]}>
             <GoldSigil size={18} />
-            <Text style={styles.streamingText}>The Oracle is reading...</Text>
+            <Text style={styles.streamingText}>The Oracle is responding...</Text>
           </View>
         )}
       </KeyboardAvoidingView>
@@ -449,7 +427,6 @@ const styles = StyleSheet.create({
   headerAvatarPlaceholder: { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(201,168,76,0.12)", borderWidth: 1.5, borderColor: Colors.gold, alignItems: "center", justifyContent: "center" },
   headerAvatarInitials: { fontFamily: "CormorantGaramond_400Regular", fontSize: 12, color: Colors.gold },
   headerTitle: { fontFamily: "CormorantGaramond_400Regular", fontSize: 14, color: Colors.cream, letterSpacing: 0.3 },
-  headerSign: { fontFamily: "EBGaramond_400Regular_Italic", fontSize: 12, color: Colors.muted },
   chatList: { paddingHorizontal: 16, paddingTop: 12, flexGrow: 1, justifyContent: "flex-end" },
   categoriesWrap: { paddingTop: 12, paddingBottom: 8, gap: 12 },
   readErrorBox: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(204,68,68,0.1)", borderWidth: 1, borderColor: "rgba(204,68,68,0.25)", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },

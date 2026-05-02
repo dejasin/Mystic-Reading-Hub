@@ -263,7 +263,7 @@ export default function SynastryScreen() {
       trackEvent(AnalyticsEvent.SYNASTRY_READING_GENERATED);
       setPhase("complete");
     } catch {
-      setErrorMsg("The Oracle could not complete this synastry reading. Please try again.");
+      setErrorMsg("The Oracle could not complete this synastry session. Please try again.");
       setPhase("error");
     }
   };
@@ -339,7 +339,7 @@ export default function SynastryScreen() {
       }
     } catch {
       setShowTyping(false);
-      setMessages(prev => [...prev, { id: genId(), role: "assistant", content: "The Oracle is resting. Please try again." }]);
+      setMessages(prev => [...prev, { id: genId(), role: "assistant", content: "The Oracle is temporarily unavailable. Please try again." }]);
     } finally {
       setIsStreaming(false);
       setShowTyping(false);
@@ -370,9 +370,9 @@ export default function SynastryScreen() {
         <ScrollView contentContainerStyle={styles.selectContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           <Animated.View entering={FadeIn.duration(500)} style={styles.selectCard}>
             <GoldSigil size={64} style={{ alignSelf: "center", marginBottom: 16 }} />
-            <Text style={styles.selectTitle}>Combine Two Souls</Text>
+            <Text style={styles.selectTitle}>Compare Two Profiles</Text>
             <Text style={styles.selectSubtitle}>
-              The Oracle will reveal the ancient patterns, karmic connections, and hidden dynamics between two people.
+              The Oracle will surface the overlapping patterns, friction points, and dynamics between two people based on their profiles.
             </Text>
             <Text style={styles.divider}>─── ✦ ───</Text>
 
@@ -380,7 +380,7 @@ export default function SynastryScreen() {
               <View style={styles.notEnoughProfiles}>
                 <Feather name="users" size={24} color={Colors.muted} />
                 <Text style={styles.notEnoughText}>
-                  You need at least 2 profiles in your vault to perform a synastry reading.
+                  You need at least 2 profiles in your vault to start a synastry session.
                 </Text>
                 <Pressable
                   style={styles.goToVaultBtn}
@@ -394,13 +394,13 @@ export default function SynastryScreen() {
             ) : (
               <>
                 <ProfileSelector
-                  label="First Soul"
+                  label="First Profile"
                   selected={profile1}
                   profiles={profiles}
                   onSelect={setProfile1}
                 />
                 <ProfileSelector
-                  label="Second Soul"
+                  label="Second Profile"
                   selected={profile2}
                   profiles={availableForP2}
                   onSelect={setProfile2}
@@ -414,11 +414,11 @@ export default function SynastryScreen() {
                   style={({ pressed }) => [styles.generateBtn, !canGenerate && styles.generateBtnDisabled, pressed && canGenerate && { opacity: 0.85 }]}
                   onPress={handleGenerate}
                   disabled={!canGenerate}
-                  accessibilityLabel="Reveal Synastry — generate compatibility reading"
+                  accessibilityLabel="Compare Profiles — generate compatibility session"
                   accessibilityRole="button"
                 >
                   <Text style={[styles.generateBtnText, !canGenerate && { color: Colors.muted }]}>
-                    Reveal Synastry
+                    Compare Profiles
                   </Text>
                   <Feather name="eye" size={18} color={canGenerate ? Colors.bg : Colors.muted} />
                 </Pressable>
@@ -434,7 +434,7 @@ export default function SynastryScreen() {
         <View style={styles.loadingContainer}>
           <GoldSigil size={100} />
           <Text style={styles.loadingText}>
-            The Oracle is weaving the threads between {profile1?.name} and {profile2?.name}...
+            The Oracle is comparing the profiles of {profile1?.name} and {profile2?.name}...
           </Text>
         </View>
       )}
@@ -467,8 +467,8 @@ export default function SynastryScreen() {
 
           {/* Tabs */}
           <View style={styles.tabBar}>
-            <Pressable style={[styles.tab, tab === "reading" && styles.tabActive]} onPress={() => setTab("reading")} accessibilityLabel="Reading tab" accessibilityRole="tab" accessibilityState={{ selected: tab === "reading" }}>
-              <Text style={[styles.tabText, tab === "reading" && styles.tabTextActive]}>Reading</Text>
+            <Pressable style={[styles.tab, tab === "reading" && styles.tabActive]} onPress={() => setTab("reading")} accessibilityLabel="Session tab" accessibilityRole="tab" accessibilityState={{ selected: tab === "reading" }}>
+              <Text style={[styles.tabText, tab === "reading" && styles.tabTextActive]}>Session</Text>
             </Pressable>
             <Pressable style={[styles.tab, tab === "chat" && styles.tabActive]} onPress={() => { setTab("chat"); trackEvent(AnalyticsEvent.SYNASTRY_CHAT_OPENED); }} accessibilityLabel="Ask The Oracle tab" accessibilityRole="tab" accessibilityState={{ selected: tab === "chat" }}>
               <Text style={[styles.tabText, tab === "chat" && styles.tabTextActive]}>Ask The Oracle</Text>
@@ -483,27 +483,27 @@ export default function SynastryScreen() {
             >
               <ReadingText text={reading} />
               {phase === "streaming" && (
-                <Text style={styles.streamingIndicator}>The Oracle speaks...</Text>
+                <Text style={styles.streamingIndicator}>The Oracle is responding...</Text>
               )}
               {phase === "complete" && (
                 <Animated.View entering={FadeIn.duration(600)} style={styles.completeActions}>
-                  <Text style={styles.completeLabel}>─── ✦ Reading Complete ✦ ───</Text>
+                  <Text style={styles.completeLabel}>─── ✦ Session Complete ✦ ───</Text>
                   <Pressable
                     style={styles.shareBtn}
                     onPress={() => setShowShareCard(true)}
-                    accessibilityLabel="Share synastry reading"
+                    accessibilityLabel="Share this session"
                     accessibilityRole="button"
                   >
                     <Feather name="share-2" size={16} color={Colors.gold} />
-                    <Text style={styles.shareText}>Share this reading</Text>
+                    <Text style={styles.shareText}>Share this session</Text>
                   </Pressable>
                   <Pressable style={styles.switchToChatBtn} onPress={() => setTab("chat")} accessibilityLabel="Ask The Oracle — open chat" accessibilityRole="button">
                     <Feather name="message-circle" size={16} color={Colors.bg} />
                     <Text style={styles.switchToChatText}>Ask The Oracle</Text>
                   </Pressable>
-                  <Pressable style={styles.newSynastryBtn} onPress={() => { setPhase("select"); setReading(""); setMessages([]); }} accessibilityLabel="New Synastry Reading — start over" accessibilityRole="button">
+                  <Pressable style={styles.newSynastryBtn} onPress={() => { setPhase("select"); setReading(""); setMessages([]); }} accessibilityLabel="Start a new comparison" accessibilityRole="button">
                     <Feather name="refresh-cw" size={14} color={Colors.muted} />
-                    <Text style={styles.newSynastryText}>New Synastry Reading</Text>
+                    <Text style={styles.newSynastryText}>New Comparison</Text>
                   </Pressable>
                 </Animated.View>
               )}
@@ -570,8 +570,8 @@ export default function SynastryScreen() {
         onClose={() => setShowShareCard(false)}
         data={extractSynastryData(
           reading,
-          profile1?.name ?? "Soul 1",
-          profile2?.name ?? "Soul 2",
+          profile1?.name ?? "Profile 1",
+          profile2?.name ?? "Profile 2",
         )}
       />
     </View>

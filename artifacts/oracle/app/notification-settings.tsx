@@ -79,20 +79,20 @@ export default function NotificationSettingsScreen() {
   const NOTIFICATION_TYPES = [
     {
       key: "dailyPrompts" as const,
-      title: "Daily Mystical Prompts",
-      description: "Receive a daily cosmic insight crafted for your unique energy signature.",
+      title: "Daily Reflection Prompts",
+      description: "A daily reflection prompt tuned to your behavioral profile.",
       icon: "sun" as const,
     },
     {
       key: "weeklyForecasts" as const,
-      title: "Weekly Cosmic Forecasts",
-      description: "A weekly overview of the celestial currents shaping your path ahead.",
+      title: "Weekly Reflections",
+      description: "A weekly snapshot of the patterns shaping the week ahead.",
       icon: "calendar" as const,
     },
     {
       key: "reEngagement" as const,
-      title: "Cosmic Reminders",
-      description: "Gentle nudges when the stars have shifted and new patterns await your discovery.",
+      title: "Check-In Reminders",
+      description: "Gentle nudges to return when there's a new pattern worth examining.",
       icon: "star" as const,
     },
   ];
@@ -122,7 +122,7 @@ export default function NotificationSettingsScreen() {
         <Animated.View entering={FadeIn.duration(600)} style={styles.content}>
           <Text style={styles.sectionTitle}>Notification Preferences</Text>
           <Text style={styles.sectionDescription}>
-            Choose which cosmic transmissions you wish to receive.
+            Choose which notifications you wish to receive.
           </Text>
 
           <View style={styles.toggleList}>

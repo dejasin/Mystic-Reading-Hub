@@ -71,7 +71,7 @@ export default function DailyHistoryScreen() {
           <Feather name="arrow-left" size={22} color={Colors.gold} />
         </Pressable>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Oracle History</Text>
+          <Text style={styles.headerTitle}>Daily History</Text>
           {params.profileName && (
             <Text style={styles.headerSubtitle}>For {params.profileName}</Text>
           )}
@@ -86,7 +86,7 @@ export default function DailyHistoryScreen() {
         {loading && (
           <View style={styles.centerContainer}>
             <ActivityIndicator size="large" color={Colors.gold} />
-            <Text style={styles.loadingText}>Gathering past whispers…</Text>
+            <Text style={styles.loadingText}>Loading past entries…</Text>
           </View>
         )}
 
@@ -100,7 +100,7 @@ export default function DailyHistoryScreen() {
           <View style={styles.centerContainer}>
             <Text style={styles.emptyTitle}>No Messages Yet</Text>
             <Text style={styles.emptyText}>
-              Return to the home screen to receive your first Daily Oracle message. Each day brings new wisdom.
+              Return to the home screen to receive your first Daily Oracle message. A new check-in arrives each day.
             </Text>
           </View>
         )}

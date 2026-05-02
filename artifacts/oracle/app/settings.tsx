@@ -119,7 +119,7 @@ export default function SettingsScreen() {
   const handleDeleteAccount = () => {
     Alert.alert(
       "Delete Account",
-      "This will permanently delete all your data including saved profiles and readings. This action cannot be undone.",
+      "This will permanently delete all your data including saved profiles and sessions. This action cannot be undone.",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -128,7 +128,7 @@ export default function SettingsScreen() {
           onPress: () => {
             Alert.alert(
               "Are you absolutely sure?",
-              "All your Oracle profiles, readings, and preferences will be permanently erased.",
+              "All your Oracle profiles, sessions, and preferences will be permanently erased.",
               [
                 { text: "Cancel", style: "cancel" },
                 {
@@ -194,7 +194,7 @@ export default function SettingsScreen() {
       if (info?.entitlements?.active?.["full_reading"]) {
         Alert.alert(
           "Purchase Restored",
-          "Your full reading has been restored."
+          "Your full session has been restored."
         );
       } else {
         Alert.alert(
@@ -302,7 +302,7 @@ export default function SettingsScreen() {
 
   const notificationItems: SectionItem[] = [
     {
-      label: "Reading Notifications",
+      label: "Session Notifications",
       icon: "bell",
       rightElement: (
         <Switch
