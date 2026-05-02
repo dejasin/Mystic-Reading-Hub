@@ -136,18 +136,22 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
       ? (annualPackage ?? monthlyPackage ?? availablePackages[0])
       : (monthlyPackage ?? annualPackage ?? availablePackages[0]);
 
-  const priceString = packageToPurchase?.product.priceString ?? "$9.99";
-  const annualPriceString = annualPackage?.product.priceString ?? "$49.99";
-  const monthlyPriceString = monthlyPackage?.product.priceString ?? "$9.99";
-  const purchasesAvailable = isConfigured && !!packageToPurchase;
+  // Apple requires the displayed price to come from StoreKit — never hard
+  // code a fallback like "$9.99". When the package hasn't loaded yet we
+  // render a skeleton instead and keep the purchase button disabled.
+  const priceString = packageToPurchase?.product.priceString ?? null;
+  const annualPriceString = annualPackage?.product.priceString ?? null;
+  const monthlyPriceString = monthlyPackage?.product.priceString ?? null;
+  const purchasesAvailable =
+    isConfigured && !!packageToPurchase && !!priceString;
 
   const handlePurchase = async () => {
     if (!packageToPurchase) return;
     setErrorMsg(null);
-    trackEvent(AnalyticsEvent.PAYWALL_PURCHASE_TAPPED, { price: priceString });
+    trackEvent(AnalyticsEvent.PAYWALL_PURCHASE_TAPPED, { price: priceString ?? "unknown" });
     try {
       await purchase(packageToPurchase);
-      trackFunnelStep("purchase", { price: priceString });
+      trackFunnelStep("purchase", { price: priceString ?? "unknown" });
       onUnlock();
     } catch (e: any) {
       if (e?.userCancelled) {
@@ -190,8 +194,8 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
             <Text style={paywallStyles.modalTitle}>Confirm Subscription</Text>
             <Text style={paywallStyles.modalBody}>
               {selectedPlan === "annual"
-                ? `Subscribe to Oracle Pro Annual for ${annualPriceString}/year?\n\nAuto-renews annually. Cancel anytime in Settings → Apple ID → Subscriptions.`
-                : `Subscribe to Oracle Pro Monthly for ${monthlyPriceString}/month?\n\nAuto-renews monthly. Cancel anytime in Settings → Apple ID → Subscriptions.`}
+                ? `Subscribe to Oracle Pro Annual for ${annualPriceString ?? ""}/year?\n\nAuto-renews annually. Cancel anytime in Settings → Apple ID → Subscriptions.`
+                : `Subscribe to Oracle Pro Monthly for ${monthlyPriceString ?? ""}/month?\n\nAuto-renews monthly. Cancel anytime in Settings → Apple ID → Subscriptions.`}
             </Text>
             <View style={paywallStyles.modalBtns}>
               <Pressable
@@ -208,7 +212,7 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
                   setShowConfirm(false);
                   handlePurchase();
                 }}
-                accessibilityLabel={`Confirm purchase for ${priceString}`}
+                accessibilityLabel={`Confirm purchase for ${priceString ?? ""}`}
                 accessibilityRole="button"
               >
                 <Text style={paywallStyles.modalConfirmText}>Purchase</Text>
@@ -244,13 +248,16 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
         ) : (
           <>
             <Pressable
-              onPress={() => setSelectedPlan("annual")}
+              onPress={() => annualPackage && setSelectedPlan("annual")}
+              disabled={!annualPackage}
               style={[
                 paywallStyles.planCard,
                 selectedPlan === "annual" && paywallStyles.planCardSelected,
+                !annualPackage && paywallStyles.planCardDisabled,
               ]}
-              accessibilityLabel="Annual plan"
+              accessibilityLabel={annualPriceString ? `Annual plan ${annualPriceString} per year` : "Annual plan, price loading"}
               accessibilityRole="button"
+              accessibilityState={{ disabled: !annualPackage, selected: selectedPlan === "annual" }}
             >
               <View style={paywallStyles.planHeaderRow}>
                 <Text style={paywallStyles.planLabel}>Annual</Text>
@@ -258,23 +265,34 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
                   <Text style={paywallStyles.savePillText}>Save 58%</Text>
                 </View>
               </View>
-              <Text style={paywallStyles.planPrice}>{annualPriceString}/yr</Text>
+              {annualPriceString ? (
+                <Text style={paywallStyles.planPrice}>{annualPriceString}/yr</Text>
+              ) : (
+                <View style={paywallStyles.priceSkeleton} accessibilityLabel="Loading annual price" />
+              )}
               <Text style={paywallStyles.planSub}>Full Session + Chat Access · best value</Text>
             </Pressable>
 
             <Pressable
-              onPress={() => setSelectedPlan("monthly")}
+              onPress={() => monthlyPackage && setSelectedPlan("monthly")}
+              disabled={!monthlyPackage}
               style={[
                 paywallStyles.planCard,
                 selectedPlan === "monthly" && paywallStyles.planCardSelected,
+                !monthlyPackage && paywallStyles.planCardDisabled,
               ]}
-              accessibilityLabel="Monthly plan"
+              accessibilityLabel={monthlyPriceString ? `Monthly plan ${monthlyPriceString} per month` : "Monthly plan, price loading"}
               accessibilityRole="button"
+              accessibilityState={{ disabled: !monthlyPackage, selected: selectedPlan === "monthly" }}
             >
               <View style={paywallStyles.planHeaderRow}>
                 <Text style={paywallStyles.planLabel}>Monthly</Text>
               </View>
-              <Text style={paywallStyles.planPrice}>{monthlyPriceString}/mo</Text>
+              {monthlyPriceString ? (
+                <Text style={paywallStyles.planPrice}>{monthlyPriceString}/mo</Text>
+              ) : (
+                <View style={paywallStyles.priceSkeleton} accessibilityLabel="Loading monthly price" />
+              )}
               <Text style={paywallStyles.planSub}>Full Session + Chat Access</Text>
             </Pressable>
 
@@ -296,7 +314,7 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
           style={({ pressed }) => [paywallStyles.unlockBtn, (pressed || isPurchasing) && { opacity: 0.85 }]}
           onPress={() => setShowConfirm(true)}
           disabled={isPurchasing || isLoading || !purchasesAvailable}
-          accessibilityLabel={`Unlock Full Session for ${priceString}`}
+          accessibilityLabel={priceString ? `Unlock Full Session for ${priceString}` : "Unlock Full Session"}
           accessibilityRole="button"
         >
           {isPurchasing ? (
@@ -427,6 +445,16 @@ const paywallStyles = StyleSheet.create({
     borderColor: Colors.gold,
     backgroundColor: "rgba(201,168,76,0.10)",
     borderWidth: 2,
+  },
+  planCardDisabled: {
+    opacity: 0.5,
+  },
+  priceSkeleton: {
+    height: 26,
+    width: 110,
+    borderRadius: 6,
+    backgroundColor: "rgba(201,168,76,0.18)",
+    marginVertical: 2,
   },
   planHeaderRow: {
     flexDirection: "row",

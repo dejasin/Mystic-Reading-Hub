@@ -11,11 +11,27 @@ const REVENUECAT_ANDROID_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_AP
 export const REVENUECAT_ENTITLEMENT_IDENTIFIER = "full_reading";
 
 // Product identifiers for RevenueCat / App Store Connect.
-// TODO: The annual SKU `oracle_annual_4999` ($49.99/year, 3-day free trial)
-// must be created in the RevenueCat dashboard and in App Store Connect
-// (offering: "annual_49_99") before shipping the new annual paywall.
+//
+// These constants document the auto-renewable subscription product IDs the
+// Oracle paywall expects to find. They MUST exist in BOTH places before a
+// build is submitted, otherwise that tier's purchase will fail at runtime
+// (and Apple will reject the build under guideline 2.1 — App Completeness):
+//
+//   1. App Store Connect → Subscriptions → "Oracle Pro" group
+//        - oracle_monthly_999  ($9.99 / month, no intro offer)
+//        - oracle_annual_4999  ($49.99 / year, no intro offer)
+//   2. RevenueCat dashboard → Products  (same identifiers, attached to the
+//      "default" offering as the MONTHLY and ANNUAL packages respectively).
+//
+// The paywall UI does NOT reference these strings directly — it reads the
+// live `priceString` off the package returned by `Purchases.getOfferings()`
+// so Apple's "displayed price must come from StoreKit" rule is honored.
+// These constants exist for documentation, restore-purchase logic, and
+// runtime verification (see the dev-only offerings log below).
 export const MONTHLY_PRODUCT_ID = "oracle_monthly_999";
 export const ANNUAL_PRODUCT_ID = "oracle_annual_4999";
+
+let offeringsVerificationLogged = false;
 
 let revenueCatInitialized = false;
 
@@ -84,6 +100,44 @@ function useSubscriptionContext() {
     queryFn: async () => {
       if (!revenueCatInitialized) return null;
       const offerings = await Purchases.getOfferings();
+
+      if (__DEV__ && !offeringsVerificationLogged) {
+        offeringsVerificationLogged = true;
+        const current = offerings?.current;
+        const packages = current?.availablePackages ?? [];
+        const ids = packages.map((p) => ({
+          packageType: p.packageType,
+          identifier: p.product?.identifier,
+          priceString: p.product?.priceString,
+        }));
+        const monthlyOk = packages.some(
+          (p) => p.product?.identifier === MONTHLY_PRODUCT_ID,
+        );
+        const annualOk = packages.some(
+          (p) => p.product?.identifier === ANNUAL_PRODUCT_ID,
+        );
+        console.log(
+          "[RevenueCat] offerings verification —",
+          JSON.stringify(
+            {
+              currentOfferingId: current?.identifier ?? null,
+              availablePackages: ids,
+              monthlySkuFound: monthlyOk,
+              annualSkuFound: annualOk,
+              expected: { MONTHLY_PRODUCT_ID, ANNUAL_PRODUCT_ID },
+            },
+            null,
+            2,
+          ),
+        );
+        if (!monthlyOk || !annualOk) {
+          console.warn(
+            "[RevenueCat] One or both paywall SKUs are missing from the current offering. " +
+              "Verify both products exist in App Store Connect AND in RevenueCat (default offering).",
+          );
+        }
+      }
+
       return offerings;
     },
     staleTime: 300 * 1000,
