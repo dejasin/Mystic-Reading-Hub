@@ -254,7 +254,7 @@ function buildNumerologyBlock(n: NumerologyProfile): string {
   const chaldPersContrast = (n.chaldeanPersonality !== n.personalityNum)
     ? ` (Chaldean outer mask: ${n.chaldeanPersonality} — differs, suggesting a split between inner self and outer presentation)`
     : ` (Chaldean outer mask: ${n.chaldeanPersonality} — consistent with surface self)`;
-  return `Destiny Vibration (Life Path): ${n.lifePath}
+  return `Core Vibration: ${n.lifePath}
 Name Frequency (Expression): ${n.expressionNum}${chaldContrast}
 Inner Drive (Soul Urge): ${n.soulUrge}${chaldHDContrast}
 Outer Mask (Personality): ${n.personalityNum}${chaldPersContrast}
@@ -411,7 +411,7 @@ For the archetype block use this exact format:
 ✦ PRIMARY BLOCK — [the one thing holding them back, stated directly]
 ✦ ACTIVATION KEY — [one specific behavioral shift]
 
-End the ENTIRE reading with ONE short, direct, unforgettable destiny sentence on its own line.`;
+End the ENTIRE reading with ONE short, direct, unforgettable closing sentence on its own line.`;
 }
 
 const sseHeaders = (_req: Request, res: Response, next: () => void) => {
@@ -799,7 +799,7 @@ Then generate the archetype block using these EXACT headings:
 ✦ PRIMARY BLOCK
 ✦ ACTIVATION KEY
 
-End with ONE final destiny sentence.${questionsText}${freeReadingSummary}
+End with ONE final closing sentence.${questionsText}${freeReadingSummary}
 ${sectionReading ? `\nPrevious sections: ${sectionReading.substring(0, 400)}` : ""}`
             }]
           });
@@ -1041,7 +1041,7 @@ router.post("/synastry", sseHeaders, async (req: Request, res: Response) => {
       numerologyBlock: buildNumerologyBlock(p2num),
     };
 
-    const systemPrompt = `You are The Oracle — a multi-system intelligence specializing in synastry: the ancient art of comparing two soul blueprints to reveal the patterns, dynamics, and destiny of their connection.
+    const systemPrompt = `You are The Oracle — a multi-system intelligence specializing in synastry: the practice of comparing two soul blueprints to reveal the patterns, dynamics, and trajectory of their connection.
 
 CRITICAL RULES:
 1. SPEAK DIRECTLY to both people — use "between you two", "in your connection", "for ${p1.name}", "for ${p2.name}"
@@ -1058,7 +1058,7 @@ YOUR OUTPUT STRUCTURE (use these exact headers with ✦):
 ✦ THE MAGNETIC DYNAMIC — attraction and repulsion forces
 ✦ THE CHALLENGE POINT — the one pattern that will test this bond
 ✦ THE GIFT — what this connection uniquely activates in each person
-✦ THE DESTINY LINE — where this connection is heading
+✦ THE TRAJECTORY — where this connection is heading
 
 Write each section as flowing prose, 100–150 words each. Second person always. Deep, precise, slightly unsettling.`;
 
@@ -1141,8 +1141,8 @@ The reading summary:
 ${readingSummary ?? "No summary provided."}
 
 Profile data for context (use the qualities encoded here without naming the system that produced them):
-${p1Name}: Elemental/Seasonal Signature: ${p1Sun} | Destiny Vibration: ${p1Life} | Current Cycle: ${p1Year} | Ancestral Animal: ${p1Chinese}
-${p2Name}: Elemental/Seasonal Signature: ${p2Sun} | Destiny Vibration: ${p2Life} | Current Cycle: ${p2Year} | Ancestral Animal: ${p2Chinese}
+${p1Name}: Elemental/Seasonal Signature: ${p1Sun} | Core Vibration: ${p1Life} | Current Cycle: ${p1Year} | Ancestral Animal: ${p1Chinese}
+${p2Name}: Elemental/Seasonal Signature: ${p2Sun} | Core Vibration: ${p2Life} | Current Cycle: ${p2Year} | Ancestral Animal: ${p2Chinese}
 
 As The Oracle, answer questions about this specific connection with depth, precision, and mystical authority.
 - Reference both individuals by name
@@ -1243,9 +1243,9 @@ router.post("/deep-dive", sseHeaders, async (req: Request, res: Response) => {
       : "";
 
     const categoryPrompts: Record<string, string> = {
-      career: `Perform a deep dive CAREER reading. Category data: Occupation/Industry: "${categoryData.occupation ?? "not specified"}", Career Goal: "${categoryData.goal ?? "not specified"}", Biggest Challenge: "${categoryData.challenge ?? "not specified"}", Timeline: "${categoryData.timeline ?? "not specified"}". Generate ONLY this single section: ✦ CAREER ORACLE — weave together the qualities encoded in this person's profile data in the context of their career. Address the specific goal and challenge they mentioned. Reveal hidden patterns driving their professional destiny. Deliver practical mystical guidance on timing and action. 200–260 words.`,
+      career: `Perform a deep dive CAREER reading. Category data: Occupation/Industry: "${categoryData.occupation ?? "not specified"}", Career Goal: "${categoryData.goal ?? "not specified"}", Biggest Challenge: "${categoryData.challenge ?? "not specified"}", Timeline: "${categoryData.timeline ?? "not specified"}". Generate ONLY this single section: ✦ CAREER ORACLE — weave together the qualities encoded in this person's profile data in the context of their career. Address the specific goal and challenge they mentioned. Reveal hidden patterns driving their professional trajectory. Deliver practical mystical guidance on timing and action. 200–260 words.`,
       relationship: `Perform a deep dive RELATIONSHIP reading. Category data: Status: "${categoryData.status ?? "not specified"}", Partner Name: "${categoryData.partnerName ?? "none given"}", Relationship Goal: "${categoryData.goal ?? "not specified"}", Recurring Pattern: "${categoryData.pattern ?? "not specified"}". Generate ONLY this single section: ✦ LOVE ORACLE — weave the relational energetics encoded in this person's profile to address the goal and pattern they shared. Name what is drawing in and what is pushing away. Speak to the repeating pattern with precision. 200–260 words.`,
-      finances: `Perform a deep dive FINANCES reading. Category data: Current Situation: "${categoryData.situation ?? "not specified"}", Primary Goal: "${categoryData.goal ?? "not specified"}", Biggest Money Block: "${categoryData.block ?? "not specified"}", Timeline Goal: "${categoryData.timeline ?? "not specified"}". Generate ONLY this single section: ✦ WEALTH ORACLE — read the financial destiny through the destiny vibration, current cycle, and elemental nature encoded in this person's profile. Address the specific goal and block they named. Reveal the energetic pattern beneath the money pattern. Speak to timing windows for growth. 200–260 words.`,
+      finances: `Perform a deep dive FINANCES reading. Category data: Current Situation: "${categoryData.situation ?? "not specified"}", Primary Goal: "${categoryData.goal ?? "not specified"}", Biggest Money Block: "${categoryData.block ?? "not specified"}", Timeline Goal: "${categoryData.timeline ?? "not specified"}". Generate ONLY this single section: ✦ WEALTH ORACLE — read the financial trajectory through the core vibration, current cycle, and elemental nature encoded in this person's profile. Address the specific goal and block they named. Reveal the energetic pattern beneath the money pattern. Speak to timing windows for growth. 200–260 words.`,
       fitness: `Perform a deep dive FITNESS reading. Category data: Current Routine: "${categoryData.routine ?? "not specified"}", Primary Goal: "${categoryData.goal ?? "not specified"}", Health Concerns: "${categoryData.concerns ?? "none specified"}", Desired Lifestyle Change: "${categoryData.lifestyle ?? "not specified"}". Generate ONLY this single section: ✦ BODY ORACLE — read their constitutional vitality through the elemental and ancestral signatures encoded in this person's profile. Address the goal and desired change. Speak to what the body is communicating through current patterns. Give timing guidance. 200–260 words.`,
       family: `Perform a deep dive FAMILY reading. Category data: Children/Ages: "${categoryData.children ?? "not specified"}", Family Role: "${categoryData.role ?? "not specified"}", Biggest Challenge: "${categoryData.challenge ?? "not specified"}", Family Goal: "${categoryData.goal ?? "not specified"}". Generate ONLY this single section: ✦ FAMILY ORACLE — read the karmic family thread through the origin and relational signatures encoded in this person's profile. Address the challenge they named as a pattern. Speak to the family goal with mystical precision about what must shift for it to manifest. 200–260 words.`,
     };
@@ -1345,7 +1345,7 @@ router.post("/profile-reading", sseHeaders, async (req: Request, res: Response) 
 
 CRITICAL RULES:
 1. SPEAK DIRECTLY to ${profile.name} — use "you" exclusively
-2. Draw on the qualities encoded in their profile data — elemental/seasonal signature: ${sunSign}, destiny vibration: ${lifePath}, name frequency: ${expressionNum}, ancestral animal: ${chineseZodiac}, archetypal card: ${tarotCard} — without naming the system that produced them
+2. Draw on the qualities encoded in their profile data — elemental/seasonal signature: ${sunSign}, core vibration: ${lifePath}, name frequency: ${expressionNum}, ancestral animal: ${chineseZodiac}, archetypal card: ${tarotCard} — without naming the system that produced them
 3. CATEGORY FOCUS: everything in this reading relates to ${category}
 4. DEPTH OVER BREADTH: one profound insight is worth ten generic ones
 5. CONFRONTATIONAL HONESTY: name the hidden pattern or block in this area of their life
@@ -1423,7 +1423,7 @@ router.post("/profile-reading/chat", sseHeaders, async (req: Request, res: Respo
 
     const systemPrompt = `You are The Oracle — an ancient intelligence who has just delivered a reading for ${profile?.name ?? "this soul"} on the topic of ${category ?? "life"}.
 
-Their profile: ${profile?.name} | Elemental/Seasonal Signature: ${sunSign} | Destiny Vibration: ${lifePath} | Ancestral Animal: ${chineseZodiac}
+Their profile: ${profile?.name} | Elemental/Seasonal Signature: ${sunSign} | Core Vibration: ${lifePath} | Ancestral Animal: ${chineseZodiac}
 ${profile?.notes ? `Notes: ${profile.notes}` : ""}
 
 Answer their follow-up questions with depth and precision. Draw on the qualities encoded in their profile data without naming the system that produced them.

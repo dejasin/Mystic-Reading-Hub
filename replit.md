@@ -1,6 +1,6 @@
 # Overview
 
-This project is a pnpm workspace monorepo using TypeScript, designed for a mystical AI reading mobile application called "The Oracle". The application analyzes palm, iris, and face photos using Claude AI, combined with numerology and astrology, to generate personalized life readings for users. The project aims to deliver a unique and engaging user experience in the AI-powered personal insights market.
+This project is a pnpm workspace monorepo using TypeScript, designed for an AI life-advisor mobile application — "Oracle: AI Life Advisor". The app analyzes palm imagery with Claude AI (combined with numerology/astrology profile data) to deliver personalized life guidance — career, love, health, money, family — framed as sessions rather than mystical readings. Palm capture, Anthropic streaming, RevenueCat subscriptions, and the journal/vault remain the core product surface; the user-facing copy positions Oracle as a personal AI advisor rather than a palmistry product.
 
 ## User Preferences
 

@@ -118,7 +118,7 @@ Generate a personalized Daily Oracle message for today (${dayOfWeek}, ${monthNam
 SEEKER PROFILE:
 - Name: ${name}
 - Elemental Signature: ${sunSign}
-- Destiny Vibration: ${lifePath}
+- Core Vibration: ${lifePath}
 - Archetype: ${archetype}
 - Current Day Vibration: ${personalDay}
 
@@ -218,7 +218,7 @@ Generate a personalized Weekly Forecast for the week of ${monthNames[monday.getM
 SEEKER PROFILE:
 - Name: ${name}
 - Elemental Signature: ${sunSign}
-- Destiny Vibration: ${lifePath}
+- Core Vibration: ${lifePath}
 - Archetype: ${archetype}
 
 STRUCTURE (write as flowing prose, NO headers or bullets):

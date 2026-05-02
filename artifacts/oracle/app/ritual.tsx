@@ -105,7 +105,7 @@ type OracleImages = {
 const STEPS: StepConfig[] = [
   {
     key: null,
-    title: "The Palm Reading Ritual",
+    title: "Palm Analysis",
     intro: true,
     instructions: [],
   },
@@ -297,7 +297,7 @@ export default function RitualScreen() {
             <Text style={styles.cardTitle}>{currentStep.title}</Text>
             <Text style={styles.divider}>─── ✦ ───</Text>
             <Text style={styles.introText}>
-              The Oracle reads what is written in your palms. These images are the foundation of your reading. Take your time — good light matters.
+              Oracle reads behavioral and personality patterns from your palm. These images are the foundation of your session. Take your time — good light matters.
             </Text>
             <Pressable
               style={({ pressed }) => [styles.proceedBtn, pressed && { opacity: 0.85 }]}
@@ -344,17 +344,17 @@ export default function RitualScreen() {
             </View>
 
             <Text style={styles.generatingNote}>
-              Your complete reading takes 60–90 seconds to generate.
+              Your complete session takes 60–90 seconds to generate.
             </Text>
 
             <Pressable
               style={({ pressed }) => [styles.revealBtn, pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }]}
               onPress={saveToVaultAndReveal}
-              accessibilityLabel="Reveal My Reading — generate Oracle reading"
+              accessibilityLabel="Begin My Session — generate Oracle insights"
               accessibilityRole="button"
             >
-              <Text style={styles.revealBtnText}>Reveal My Reading</Text>
-              <Feather name="eye" size={18} color={Colors.bg} />
+              <Text style={styles.revealBtnText}>Begin My Session</Text>
+              <Feather name="arrow-right" size={18} color={Colors.bg} />
             </Pressable>
           </Animated.View>
         ) : (

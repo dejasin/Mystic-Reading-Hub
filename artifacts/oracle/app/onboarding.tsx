@@ -43,33 +43,33 @@ interface SlideData {
 const SLIDES: SlideData[] = [
   {
     key: "veil",
-    title: "THE ORACLE",
-    subtitle: "Ancient wisdom stirs beneath the stars.\nThe veil between worlds grows thin.",
+    title: "ORACLE",
+    subtitle: "Your personal AI life advisor.\nGuidance on what matters most.",
   },
   {
     key: "gift",
-    title: "THE SIGHT",
-    subtitle: "Your palm holds the map of your life.",
+    title: "PERSONAL INSIGHT",
+    subtitle: "Powered by your palm. Guided by AI.",
     bodyLines: [
-      "Each line a story written before birth",
-      "Each pattern a gateway to hidden truth",
-      "Each crease a chapter of your destiny",
+      "Real understanding, not generic horoscopes",
+      "Insight rooted in who you actually are",
+      "Patterns, blind spots, and what to do next",
     ],
   },
   {
     key: "depth",
-    title: "THE DEPTH",
-    subtitle: "Ancient palmistry, deeply personal.",
+    title: "DEEP & PERSONAL",
+    subtitle: "AI-driven analysis, deeply personal.",
     bodyLines: [
-      "Heart, head, life, and fate lines read",
-      "Mounts, markings, and elemental hand analysis",
-      "Not generic archetypes — your truth",
+      "Career, love, health, money, family",
+      "Behavioral patterns and inner wiring read clearly",
+      "Honest answers — no vague platitudes",
     ],
   },
   {
     key: "promise",
-    title: "YOUR TRUTH AWAITS",
-    subtitle: "Step beyond the veil.\nDiscover what has always been written.",
+    title: "REAL ANSWERS AWAIT",
+    subtitle: "Step into clarity.\nUnderstand yourself like never before.",
     isFinal: true,
   },
 ];
@@ -262,7 +262,7 @@ export default function OnboardingScreen() {
               accessibilityLabel="Begin your journey"
               accessibilityRole="button"
             >
-              <Text style={styles.ctaText}>Begin Your Journey</Text>
+              <Text style={styles.ctaText}>Begin Your Session</Text>
             </Pressable>
           </Animated.View>
         ) : (

@@ -40,11 +40,11 @@ import { hasBeenPromptedForNotifications, requestAndRegisterNotifications } from
 import { getApiUrl } from "@/lib/api";
 
 const LOADING_MESSAGES = [
-  "Mapping your palm lines...",
-  "Reading the lines of heart and fate...",
-  "Tracing the ancient patterns in your hands...",
-  "Synthesizing your palm's hidden language...",
-  "Your Oracle is preparing to speak...",
+  "Mapping your palm...",
+  "Reading your behavioral patterns...",
+  "Tracing the patterns in your hands...",
+  "Synthesizing your personal blueprint...",
+  "Oracle is preparing your insights...",
 ];
 
 function LoadingView() {
@@ -170,7 +170,7 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
           <View style={paywallStyles.modalCard}>
             <Text style={paywallStyles.modalTitle}>Confirm Subscription</Text>
             <Text style={paywallStyles.modalBody}>
-              Subscribe to Full Oracle Reading for {priceString}/month?{"\n\n"}Auto-renews monthly. Cancel anytime in Settings → Apple ID → Subscriptions.
+              Subscribe to Full Oracle Session for {priceString}/month?{"\n\n"}Auto-renews monthly. Cancel anytime in Settings → Apple ID → Subscriptions.
             </Text>
             <View style={paywallStyles.modalBtns}>
               <Pressable
@@ -203,7 +203,7 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
       </Text>
       <Text style={paywallStyles.divider}>─── ✦ ───</Text>
       <Text style={paywallStyles.pitch}>
-        Unlock your complete reading — 4 remaining sections + your Archetype + Oracle Chat access.
+        Unlock your complete session — 4 remaining sections + your Archetype + Oracle Chat access.
       </Text>
       <View style={paywallStyles.priceRow}>
         {isLoading ? (
@@ -211,7 +211,7 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
         ) : (
           <>
             <Text style={paywallStyles.price}>{priceString}/mo</Text>
-            <Text style={paywallStyles.priceDesc}>Full Reading + Chat Access</Text>
+            <Text style={paywallStyles.priceDesc}>Full Session + Chat Access</Text>
             <Text style={paywallStyles.subTerms}>
               Auto-renews monthly. Cancel anytime in{"\n"}Settings → Apple ID → Subscriptions.
             </Text>
@@ -228,7 +228,7 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
           style={({ pressed }) => [paywallStyles.unlockBtn, (pressed || isPurchasing) && { opacity: 0.85 }]}
           onPress={() => setShowConfirm(true)}
           disabled={isPurchasing || isLoading || !purchasesAvailable}
-          accessibilityLabel={`Unlock Full Reading for ${priceString}`}
+          accessibilityLabel={`Unlock Full Session for ${priceString}`}
           accessibilityRole="button"
         >
           {isPurchasing ? (
@@ -236,7 +236,7 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
           ) : (
             <>
               <Feather name="unlock" size={18} color={Colors.bg} />
-              <Text style={paywallStyles.unlockText}>Unlock Full Reading</Text>
+              <Text style={paywallStyles.unlockText}>Unlock Full Session</Text>
             </>
           )}
         </Pressable>
@@ -636,7 +636,7 @@ function OracleActivationCard({
       <Pressable
         style={({ pressed }) => [activationStyles.confirmBtn, pressed && { opacity: 0.85 }]}
         onPress={() => onConfirm(q1, q2, q3)}
-        accessibilityLabel="Awaken the Oracle — begin reading"
+        accessibilityLabel="Awaken the Oracle — begin session"
         accessibilityRole="button"
       >
         <Text style={activationStyles.confirmText}>Awaken the Oracle</Text>
@@ -980,7 +980,7 @@ export default function ReadingScreen() {
       setPhase("complete");
     } catch (err) {
       if (abortController.signal.aborted) {
-        setErrorMsg("The reading took too long. Please try again.");
+        setErrorMsg("The session took too long. Please try again.");
       } else {
         const isNetwork = err instanceof TypeError || String(err).includes("fetch");
         setErrorMsg(
@@ -1068,7 +1068,7 @@ export default function ReadingScreen() {
           <Pressable onPress={() => { if (phase === "paywall") trackEvent(AnalyticsEvent.PAYWALL_DISMISSED); router.replace("/intake"); }} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back to intake" accessibilityRole="button">
             <Feather name="arrow-left" size={20} color={Colors.gold} />
           </Pressable>
-          <Text style={styles.headerTitle}>Your Reading</Text>
+          <Text style={styles.headerTitle}>Your Session</Text>
           <View style={{ width: 44 }} />
         </View>
       )}
@@ -1133,7 +1133,7 @@ export default function ReadingScreen() {
           {/* Reading title */}
           <Animated.View entering={FadeIn.duration(800)} style={styles.titleBlock}>
             <GoldSigil size={60} style={{ alignSelf: "center", marginBottom: 12 }} />
-            <Text style={styles.readingTitle}>YOUR ORACLE READING</Text>
+            <Text style={styles.readingTitle}>YOUR ORACLE SESSION</Text>
             <Text style={styles.readingName}>{state.userData.name}</Text>
           </Animated.View>
 
@@ -1203,14 +1203,14 @@ export default function ReadingScreen() {
           {/* Complete — Deep Dive + chat CTA */}
           {phase === "complete" && (
             <Animated.View entering={FadeIn.duration(800)} style={styles.completeCta}>
-              <Text style={styles.completeTitle}>Your reading is complete.</Text>
+              <Text style={styles.completeTitle}>Your session is complete.</Text>
               <Text style={styles.completeDivider}>─── ✦ ───</Text>
 
               {/* Deep Dive Section */}
               <Animated.View entering={FadeIn.duration(600).delay(200)} style={styles.deepDiveSection}>
                 <Text style={styles.deepDiveTitle}>Explore Further</Text>
                 <Text style={styles.deepDiveSubtitle}>
-                  Select a life area for a targeted Oracle reading woven from your profile.
+                  Select a life area for a targeted Oracle session woven from your profile.
                 </Text>
                 <View style={styles.deepDiveGrid}>
                   {(["career", "relationship", "finances", "fitness", "family"] as DeepDiveCategory[]).map((cat) => {
@@ -1310,11 +1310,11 @@ export default function ReadingScreen() {
               <Pressable
                 style={({ pressed }) => [styles.chatBtn, pressed && { opacity: 0.85 }]}
                 onPress={() => router.push("/chat")}
-                accessibilityLabel="Ask The Oracle a Question — open chat"
+                accessibilityLabel="Ask Oracle Anything — open chat"
                 accessibilityRole="button"
               >
                 <Feather name="message-circle" size={18} color={Colors.bg} />
-                <Text style={styles.chatBtnText}>Ask The Oracle a Question</Text>
+                <Text style={styles.chatBtnText}>Ask Oracle Anything</Text>
               </Pressable>
 
               <View style={styles.endDivider}>
@@ -1329,11 +1329,11 @@ export default function ReadingScreen() {
                   resetAll();
                   router.replace("/");
                 }}
-                accessibilityLabel="Begin a New Reading"
+                accessibilityLabel="Begin a New Session"
                 accessibilityRole="button"
               >
                 <Feather name="refresh-cw" size={15} color={Colors.muted} />
-                <Text style={styles.newReadingText}>Begin a New Reading</Text>
+                <Text style={styles.newReadingText}>Begin a New Session</Text>
               </Pressable>
             </Animated.View>
           )}

@@ -54,7 +54,7 @@ router.get("/privacy", (_req: Request, res: Response) => {
     <p><strong>Effective date:</strong> March 26, 2026</p>
 
     <h2>1. Who We Are</h2>
-    <p>The Oracle is a mobile application that provides personalised readings using palmistry, facial analysis, and other symbolic systems. References to "we", "us", or "our" refer to the developers and operators of The Oracle app.</p>
+    <p>The Oracle is a mobile application that acts as a personal AI life advisor, generating personalised guidance from palm imagery and birth-data inputs you provide. References to "we", "us", or "our" refer to the developers and operators of The Oracle app.</p>
 
     <h2>2. What Information We Collect</h2>
     <ul>

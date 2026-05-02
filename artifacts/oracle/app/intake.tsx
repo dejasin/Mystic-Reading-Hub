@@ -244,7 +244,7 @@ export default function IntakeScreen() {
         <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back" accessibilityRole="button">
           <Feather name="arrow-left" size={20} color={Colors.gold} />
         </Pressable>
-        <Text style={styles.headerTitle}>Prepare for Your Palm Reading</Text>
+        <Text style={styles.headerTitle}>Prepare for Your Palm Analysis</Text>
       </View>
 
       <ScrollView
@@ -330,7 +330,7 @@ export default function IntakeScreen() {
         <Text style={styles.divider}>─── ✦ ───</Text>
         <Text style={styles.questionsHeader}>Life Questions</Text>
         <Text style={styles.questionsSubtext}>
-          What do you most want The Oracle to illuminate?
+          What do you most want Oracle to help you with?
         </Text>
 
         <Field label="Question 1" optional>
@@ -363,10 +363,10 @@ export default function IntakeScreen() {
         <Pressable
           style={({ pressed }) => [styles.submitBtn, pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }]}
           onPress={handleSubmit}
-          accessibilityLabel="Prepare My Sacred Images — proceed to photo capture"
+          accessibilityLabel="Capture My Palm — proceed to photo capture"
           accessibilityRole="button"
         >
-          <Text style={styles.submitText}>Prepare My Sacred Images</Text>
+          <Text style={styles.submitText}>Capture My Palm</Text>
           <Feather name="arrow-right" size={18} color={Colors.bg} />
         </Pressable>
 

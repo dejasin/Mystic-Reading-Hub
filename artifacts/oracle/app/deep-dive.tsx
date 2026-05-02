@@ -50,7 +50,7 @@ const CATEGORIES: Record<CategoryKey, CategoryConfig> = {
     label: "Career",
     icon: "briefcase",
     color: "#c9a84c",
-    description: "Your path, purpose & professional destiny",
+    description: "Your path, purpose & professional direction",
     fields: [
       { key: "occupation", label: "Current Occupation / Industry", placeholder: "e.g. Software engineer, healthcare, freelance", type: "text" },
       { key: "goal", label: "Career Goal", placeholder: "What do you most want to achieve professionally?", type: "multiline" },

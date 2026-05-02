@@ -40,9 +40,9 @@ const ONBOARDING_COMPLETE_KEY = "@oracle/onboarding_complete";
 const { width } = Dimensions.get("window");
 
 const TRUST_LINES = [
-  "Real palm analysis — not generic archetypes",
-  "Ancient palmistry synthesized with modern insight",
-  "Deep readings across love, career, health & purpose",
+  "Personal AI advisor — not generic horoscopes",
+  "Powered by your palm. Guided by AI.",
+  "Honest guidance across love, career, health & purpose",
 ];
 
 function DailyOracleCard({ profile }: { profile: { id: string; name: string; dob: string } }) {
@@ -245,7 +245,7 @@ export default function LandingScreen() {
     try {
       const info = await restore();
       if (info?.entitlements?.active?.["full_reading"]) {
-        Alert.alert("Purchase Restored", "Your full reading has been restored.");
+        Alert.alert("Purchase Restored", "Your full session has been restored.");
       } else {
         Alert.alert("No Purchase Found", "No previous purchase was found for this account.");
       }
@@ -304,10 +304,10 @@ export default function LandingScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeIn.duration(1000).delay(200)}>
-          <Text style={styles.appName}>THE ORACLE</Text>
+          <Text style={styles.appName}>ORACLE</Text>
           {!hasProfile && (
             <Text style={styles.tagline}>
-              Your palm holds the truth.{"\n"}Let The Oracle read it.
+              Your Personal AI Life Advisor.{"\n"}Powered by your palm. Guided by AI.
             </Text>
           )}
         </Animated.View>
@@ -339,10 +339,10 @@ export default function LandingScreen() {
                 pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] },
               ]}
               onPress={handleBegin}
-              accessibilityLabel="Begin your Oracle reading"
+              accessibilityLabel="Start your Oracle session"
               accessibilityRole="button"
             >
-              <Text style={styles.ctaText}>{hasProfile ? "New Reading" : "Begin Your Reading"}</Text>
+              <Text style={styles.ctaText}>{hasProfile ? "New Session" : "Start Your Session"}</Text>
               <Feather name="arrow-right" size={20} color={Colors.bg} style={{ marginLeft: 8 }} />
             </Pressable>
           </Animated.View>
@@ -358,8 +358,8 @@ export default function LandingScreen() {
               <Text style={styles.referralTitle}>Refer a Friend</Text>
               <Text style={styles.referralSub}>
                 {referralCount > 0
-                  ? `${referralCount} referred · ${freeDeepDives} free readings`
-                  : "Both of you get a free deep-dive reading"}
+                  ? `${referralCount} referred · ${freeDeepDives} free sessions`
+                  : "Both of you get a free deep-dive session"}
               </Text>
             </View>
             <Feather name="chevron-right" size={18} color={Colors.gold} />
@@ -373,7 +373,7 @@ export default function LandingScreen() {
               accessibilityRole="button"
             >
               <Feather name="users" size={16} color={Colors.gold} />
-              <Text style={styles.secondaryText}>The Vault</Text>
+              <Text style={styles.secondaryText}>Vault</Text>
             </Pressable>
 
             <View style={styles.secondarySep} />
@@ -381,7 +381,7 @@ export default function LandingScreen() {
             <Pressable
               style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.75 }]}
               onPress={() => router.push("/journal")}
-              accessibilityLabel="Open your reading journal"
+              accessibilityLabel="Open your session journal"
               accessibilityRole="button"
             >
               <Feather name="book-open" size={16} color={Colors.gold} />
@@ -392,8 +392,20 @@ export default function LandingScreen() {
 
             <Pressable
               style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.75 }]}
+              onPress={() => router.push("/behavioral-profile")}
+              accessibilityLabel="Open your behavioral profile"
+              accessibilityRole="button"
+            >
+              <Feather name="user" size={16} color={Colors.gold} />
+              <Text style={styles.secondaryText}>Profile</Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.secondaryRow}>
+            <Pressable
+              style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.75 }]}
               onPress={() => router.push("/synastry")}
-              accessibilityLabel="Start a synastry reading"
+              accessibilityLabel="Start a relationship session"
               accessibilityRole="button"
             >
               <Text style={styles.secondaryIcon}>✦ ✦</Text>

@@ -34,11 +34,12 @@ interface Message {
 }
 
 const STARTER_QUESTIONS = [
-  "When will I find love?",
-  "What is blocking my success?",
-  "What career path suits me?",
+  "What's holding me back right now?",
+  "How do I navigate my current relationship?",
+  "What career move should I make?",
   "Why do I keep repeating this pattern?",
-  "What is coming in the next 6 months?",
+  "How can I trust myself more?",
+  "What should I focus on in the next 6 months?",
 ];
 
 function MessageBubble({ msg }: { msg: Message }) {
@@ -278,7 +279,7 @@ export default function ChatScreen() {
         </Pressable>
         <View style={styles.headerCenter}>
           <Text style={styles.headerSymbol}>✦</Text>
-          <Text style={styles.headerTitle}>THE ORACLE</Text>
+          <Text style={styles.headerTitle}>ASK ORACLE ANYTHING</Text>
         </View>
         <View style={{ width: 44 }} />
       </View>
@@ -308,7 +309,7 @@ export default function ChatScreen() {
           ListFooterComponent={
             showStarters ? (
               <View style={styles.startersContainer}>
-                <Text style={styles.startersTitle}>Ask The Oracle anything...</Text>
+                <Text style={styles.startersTitle}>Ask Oracle anything about your life...</Text>
                 <View style={styles.starterChips}>
                   {STARTER_QUESTIONS.map((q, i) => (
                     <Pressable
@@ -334,7 +335,7 @@ export default function ChatScreen() {
             style={styles.input}
             value={input}
             onChangeText={handleInputChange}
-            placeholder="Ask The Oracle..."
+            placeholder="Ask Oracle anything about your life..."
             placeholderTextColor={Colors.muted}
             multiline
             maxLength={500}
