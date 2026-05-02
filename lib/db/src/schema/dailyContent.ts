@@ -6,8 +6,6 @@ export const dailyContentTable = pgTable("daily_content", {
   contentType: text("content_type").notNull(),
   contentDate: text("content_date").notNull(),
   content: text("content").notNull(),
-  lifePathNumber: integer("life_path_number"),
-  sunSign: text("sun_sign"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => [
   uniqueIndex("daily_content_profile_type_date_idx").on(table.profileId, table.contentType, table.contentDate),

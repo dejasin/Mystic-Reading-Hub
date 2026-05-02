@@ -135,8 +135,6 @@ RULES:
       contentType: "daily",
       contentDate: today,
       content,
-      lifePathNumber: null,
-      sunSign: null,
     }).onConflictDoNothing();
 
     res.json({ content, date: today, cached: false, label: "Daily Reflection" });
@@ -235,8 +233,6 @@ RULES:
       contentType: "weekly",
       contentDate: weekStr,
       content,
-      lifePathNumber: null,
-      sunSign: null,
     }).onConflictDoNothing();
 
     res.json({ content, date: weekStr, cached: false, label: "This Week's Focus" });
