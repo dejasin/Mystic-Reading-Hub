@@ -23,6 +23,11 @@ SPLASH_PATH = ASSETS_DIR / "splash-icon.png"
 ADAPTIVE_PATH = ASSETS_DIR / "adaptive-icon.png"
 NOTIFICATION_PATH = ASSETS_DIR / "notification-icon.png"
 APP_JSON_PATH = Path("artifacts/oracle/app.json")
+IOS_ICONS_DIR = ASSETS_DIR / "ios-icons"
+
+# Apple iOS app icon sizes (in px). 13 sizes covering iPhone, iPad, Spotlight,
+# Settings, Notification, and the App Store master.
+IOS_ICON_SIZES = [20, 29, 40, 58, 60, 76, 80, 87, 120, 152, 167, 180, 1024]
 
 
 def lerp(a, b, t):
@@ -306,6 +311,7 @@ def render_notification_icon() -> Image.Image:
 
 def main() -> None:
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+    IOS_ICONS_DIR.mkdir(parents=True, exist_ok=True)
 
     icon = render_icon()
     icon.save(ICON_PATH, format="PNG", optimize=True)
@@ -317,12 +323,21 @@ def main() -> None:
     notification = render_notification_icon()
     notification.save(NOTIFICATION_PATH, format="PNG", optimize=True)
 
+    # Downsample the 1024 master to all iOS app-icon sizes via Lanczos.
+    for px in IOS_ICON_SIZES:
+        out_path = IOS_ICONS_DIR / f"icon-{px}.png"
+        if px == SIZE:
+            icon.save(out_path, format="PNG", optimize=True)
+        else:
+            scaled = icon.resize((px, px), resample=Image.LANCZOS)
+            scaled.save(out_path, format="PNG", optimize=True)
+
     print("=" * 60)
     print("Verification")
     print("=" * 60)
 
     checks_passed = 0
-    total = 8
+    total = 9
 
     if ICON_PATH.exists():
         print(f"[PASS] icon exists at {ICON_PATH}")
@@ -391,6 +406,27 @@ def main() -> None:
 
     if SPLASH_PATH.exists() and SPLASH_PATH.stat().st_size == ICON_PATH.stat().st_size:
         print(f"[INFO] splash-icon.png mirrored ({SPLASH_PATH.stat().st_size} bytes)")
+
+    ios_ok = True
+    for px in IOS_ICON_SIZES:
+        p = IOS_ICONS_DIR / f"icon-{px}.png"
+        if not p.exists():
+            ios_ok = False
+            print(f"[FAIL] iOS icon missing: {p}")
+            continue
+        with Image.open(p) as v:
+            if v.size != (px, px):
+                ios_ok = False
+                print(f"[FAIL] iOS icon-{px} wrong size {v.size}")
+            elif v.mode not in ("RGB", "RGBA"):
+                ios_ok = False
+                print(f"[FAIL] iOS icon-{px} wrong mode {v.mode}")
+    if ios_ok:
+        print(f"[PASS] all {len(IOS_ICON_SIZES)} iOS icon downscales present at "
+              f"{IOS_ICONS_DIR}")
+        checks_passed += 1
+    else:
+        print("[FAIL] iOS icon downscale set incomplete")
 
     print("=" * 60)
     print(f"{checks_passed}/{total} checks passed")

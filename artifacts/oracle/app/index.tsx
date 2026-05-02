@@ -39,10 +39,14 @@ const ONBOARDING_COMPLETE_KEY = "@oracle/onboarding_complete";
 
 const { width } = Dimensions.get("window");
 
-const TRUST_LINES = [
-  "Personal AI advisor — not generic advice",
-  "Powered by AI. Refined by your biometrics.",
-  "Honest guidance across love, career, health & purpose",
+// Per spec Section 6e: five "what Oracle can help with" items shown on the
+// home screen for first-time / no-profile users.
+const ORACLE_HELP_LINES = [
+  "Career direction and major life decisions",
+  "Relationships, intimacy, and how you connect",
+  "Money, drive, and what you actually want",
+  "Family dynamics and inherited patterns",
+  "Health, energy, and your inner rhythms",
 ];
 
 const PRO_BANNER_DISMISS_KEY = "oracle_pro_banner_dismissed_at";
@@ -368,9 +372,16 @@ export default function LandingScreen() {
         <Animated.View entering={FadeIn.duration(1000).delay(200)}>
           <Text style={styles.appName}>ORACLE</Text>
           {!hasProfile && (
-            <Text style={styles.tagline}>
-              Your Personal AI Life Advisor.{"\n"}Powered by AI. Refined by your biometrics.
-            </Text>
+            <>
+              <Text style={styles.taglineHeadline}>Your Personal AI Advisor</Text>
+              <Text style={styles.tagline}>
+                Powered by your palm. Guided by AI.
+              </Text>
+              <Text style={styles.taglineDescription}>
+                Oracle uses a few biometric reference images and your context to map your
+                behavioral profile — then helps you navigate the decisions in front of you.
+              </Text>
+            </>
           )}
         </Animated.View>
 
@@ -384,7 +395,8 @@ export default function LandingScreen() {
 
         {!hasProfile && (
           <Animated.View entering={FadeIn.duration(800).delay(500)} style={styles.trustContainer}>
-            {TRUST_LINES.map((line, i) => (
+            <Text style={styles.helpHeader}>Oracle can help with:</Text>
+            {ORACLE_HELP_LINES.map((line, i) => (
               <View key={i} style={styles.trustLine}>
                 <Text style={styles.trustDiamond}>✦</Text>
                 <Text style={styles.trustText}>{line}</Text>
@@ -590,14 +602,40 @@ const styles = StyleSheet.create({
     letterSpacing: 4,
     marginBottom: 14,
   },
+  taglineHeadline: {
+    fontFamily: "CormorantGaramond_700Bold",
+    fontSize: 22,
+    color: Colors.cream,
+    textAlign: "center",
+    letterSpacing: 1,
+    marginBottom: 8,
+  },
   tagline: {
     fontFamily: "EBGaramond_400Regular_Italic",
     fontSize: 17,
     color: Colors.cream,
     textAlign: "center",
     lineHeight: 26,
-    marginBottom: 40,
+    marginBottom: 18,
     opacity: 0.9,
+  },
+  taglineDescription: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 15,
+    color: Colors.cream,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 36,
+    opacity: 0.78,
+    paddingHorizontal: 8,
+  },
+  helpHeader: {
+    fontFamily: "CormorantGaramond_700Bold",
+    fontSize: 16,
+    color: Colors.gold,
+    textAlign: "center",
+    letterSpacing: 2,
+    marginBottom: 12,
   },
   trustContainer: {
     width: "100%",

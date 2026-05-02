@@ -40,36 +40,45 @@ interface SlideData {
   isFinal?: boolean;
 }
 
+// Per spec Section 5: onboarding leads with the headline "Know yourself at a
+// level most people never reach.", three feature rows in order chat → profile
+// → palm, CTA "Begin Your Session", and "Powered by Anthropic Claude AI"
+// subtext under the CTA on the final slide.
 const SLIDES: SlideData[] = [
   {
     key: "veil",
     title: "ORACLE",
-    subtitle: "Your personal AI life advisor.\nGuidance on what matters most.",
+    subtitle: "Know yourself at a level most people never reach.",
   },
   {
-    key: "gift",
-    title: "PERSONAL INSIGHT",
+    key: "chat",
+    title: "ORACLE CHAT",
+    subtitle: "An ongoing AI advisor for the decisions in front of you.",
+    bodyLines: [
+      "Ask Oracle anything — career, love, money, family",
+      "Specific, grounded answers, not generic advice",
+      "Continues the conversation between sessions",
+    ],
+  },
+  {
+    key: "profile",
+    title: "YOUR BEHAVIORAL PROFILE",
+    subtitle: "Six dimensions of who you are, mapped clearly.",
+    bodyLines: [
+      "Intuition, drive, adaptability, expression",
+      "Inner knowing and emotional depth, scored",
+      "A map of patterns — not a prediction",
+    ],
+  },
+  {
+    key: "palm",
+    title: "PALM ANALYSIS",
     subtitle: "Powered by AI. Refined by your biometrics.",
     bodyLines: [
-      "Real understanding, not generic advice",
-      "Insight rooted in who you actually are",
-      "Patterns, blind spots, and what to do next",
+      "A few reference images of your hand",
+      "AI reads behavioral signal from your imprint",
+      "Images are sent securely and never stored",
     ],
-  },
-  {
-    key: "depth",
-    title: "DEEP & PERSONAL",
-    subtitle: "AI-driven analysis, deeply personal.",
-    bodyLines: [
-      "Career, love, health, money, family",
-      "Behavioral patterns and inner wiring read clearly",
-      "Honest answers — no vague platitudes",
-    ],
-  },
-  {
-    key: "promise",
-    title: "REAL ANSWERS AWAIT",
-    subtitle: "Step into clarity.\nUnderstand yourself like never before.",
     isFinal: true,
   },
 ];
@@ -252,19 +261,22 @@ export default function OnboardingScreen() {
         </View>
 
         {isFinal ? (
-          <Animated.View style={[styles.ctaButtonWrapper, ctaGlowStyle]}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.ctaButton,
-                pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] },
-              ]}
-              onPress={handleBeginJourney}
-              accessibilityLabel="Begin your journey"
-              accessibilityRole="button"
-            >
-              <Text style={styles.ctaText}>Begin Your Session</Text>
-            </Pressable>
-          </Animated.View>
+          <>
+            <Animated.View style={[styles.ctaButtonWrapper, ctaGlowStyle]}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.ctaButton,
+                  pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] },
+                ]}
+                onPress={handleBeginJourney}
+                accessibilityLabel="Begin your session"
+                accessibilityRole="button"
+              >
+                <Text style={styles.ctaText}>Begin Your Session</Text>
+              </Pressable>
+            </Animated.View>
+            <Text style={styles.poweredByText}>Powered by Anthropic Claude AI</Text>
+          </>
         ) : (
           <Pressable
             style={({ pressed }) => [styles.nextBtn, pressed && { opacity: 0.7 }]}
@@ -421,5 +433,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.bg,
     letterSpacing: 2,
+  },
+  poweredByText: {
+    fontFamily: "EBGaramond_400Regular_Italic",
+    fontSize: 12,
+    color: Colors.muted,
+    textAlign: "center",
+    marginTop: 12,
+    letterSpacing: 1,
+    opacity: 0.85,
   },
 });

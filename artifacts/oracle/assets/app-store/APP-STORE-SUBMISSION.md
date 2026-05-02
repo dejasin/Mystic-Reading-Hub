@@ -128,11 +128,11 @@ RevenueCat entitlement: `full_reading` (unchanged).
 Generator: `scripts/generate_oracle_icon.py` (re-runnable).
 
 ### Screenshots (App Store — iPhone 6.7"+, 1320 × 2868)
-- `artifacts/oracle/assets/app-store/screenshots/screenshot_1_hero.png` — Hero / launch
-- `artifacts/oracle/assets/app-store/screenshots/screenshot_2_profile.png` — Behavioral profile (radar)
-- `artifacts/oracle/assets/app-store/screenshots/screenshot_3_reading.png` — Sample reading (with italic disclaimer)
-- `artifacts/oracle/assets/app-store/screenshots/screenshot_4_chat.png` — Oracle Chat
-- `artifacts/oracle/assets/app-store/screenshots/screenshot_5_subscription.png` — Oracle Pro subscription value
+- `artifacts/oracle/assets/app-store/screenshots/screenshot-1.png` — **The Advisor** — Oracle Chat conversation (lead frame)
+- `artifacts/oracle/assets/app-store/screenshots/screenshot-2.png` — **Real Guidance** — sample reading with italic disclaimer
+- `artifacts/oracle/assets/app-store/screenshots/screenshot-3.png` — **Your Profile** — six-dimension behavioral radar
+- `artifacts/oracle/assets/app-store/screenshots/screenshot-4.png` — **The Intake** — intake / onboarding capture
+- `artifacts/oracle/assets/app-store/screenshots/screenshot-5.png` — **Always With You** — Oracle Pro / ongoing relationship
 
 Generator: `scripts/generate_app_store_screenshots.py` (re-runnable).
 

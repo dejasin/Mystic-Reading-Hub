@@ -1,7 +1,14 @@
 """Generate 5 App Store marketing screenshots for Oracle: AI Life Advisor.
 
 Apple 6.7"+ display (iPhone 16 Pro Max) screenshot size: 1320 x 2868.
-Output: artifacts/oracle/assets/app-store/screenshots/screenshot_{1..5}.png
+Output: artifacts/oracle/assets/app-store/screenshots/screenshot-{1..5}.png
+
+Per submission spec Section 12, the ordered narrative is:
+    1. The Advisor       — Oracle Chat conversation (the lead frame)
+    2. Real Guidance     — sample reading with italic disclaimer
+    3. Your Profile      — six-dimension behavioral radar
+    4. The Intake        — onboarding / intake step
+    5. Always With You   — Oracle Pro / ongoing relationship
 
 Each screenshot is a self-contained marketing image with the Oracle visual
 language: deep cosmic background, gold accents, Cormorant/EB Garamond style
@@ -272,27 +279,46 @@ def draw_radar_mock(img: Image.Image, cx: int, cy: int, r: int) -> None:
 
 
 # ─────────────────────────── screens ───────────────────────────
-def screen_hero(out: Path) -> None:
+def screen_intake(out: Path) -> None:
+    """Frame 4 — The Intake. Onboarding capture: name, date of birth, context."""
     img = make_background()
-    add_stars(img, count=260, seed=11)
+    add_stars(img, count=220, seed=11)
 
-    # Top sigil
-    draw_sigil(img, W // 2, int(H * 0.20), 320)
-
-    y = int(H * 0.38)
-    draw_centered_text(img, "ORACLE", font_serif_bold(180), y,
-                       color=GOLD, letter_spacing=14)
-    y += 220
-    draw_centered_text(img, "AI LIFE ADVISOR", font_sans(56), y,
-                       color=CREAM, letter_spacing=10)
-    y += 140
+    y = 200
+    draw_centered_text(img, "THE INTAKE", font_serif_bold(96), y,
+                       color=GOLD, letter_spacing=10)
+    y += 160
     draw_divider(img, y)
-    y += 100
+    y += 90
     y = draw_paragraph(
         img,
-        "A personal AI advisor that learns your inner wiring and helps you navigate the decisions in front of you.",
-        font_serif(54), y, color=CREAM, max_w=1080, line_gap=24,
+        "A few questions. Your context. The signal Oracle needs to read you clearly.",
+        font_serif_italic(44), y, color=MUTED, max_w=1080, line_gap=18,
     )
+    y += 60
+
+    # Mocked intake fields
+    d = ImageDraw.Draw(img)
+    fields = [
+        ("Your Name", "Alex Rivera"),
+        ("Date of Birth", "March 14, 1991"),
+        ("What brings you to Oracle?", "Career direction. Whether to leave."),
+    ]
+    fl = font_sans(36)
+    fv = font_serif(48)
+    field_w = 1100
+    field_x = (W - field_w) // 2
+    for label, value in fields:
+        d.text((field_x + 8, y), label.upper(), font=fl, fill=GOLD)
+        y += 60
+        layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
+        dl = ImageDraw.Draw(layer)
+        dl.rounded_rectangle((field_x, y, field_x + field_w, y + 110),
+                             radius=14, fill=(30, 22, 50, 220),
+                             outline=(*GOLD, 100), width=1)
+        img.paste(layer, (0, 0), layer)
+        d.text((field_x + 32, y + 32), value, font=fv, fill=CREAM)
+        y += 150
 
     # Bottom CTA pill
     pill_h = 130
@@ -317,12 +343,16 @@ def screen_hero(out: Path) -> None:
 
 
 def screen_profile(out: Path) -> None:
+    """Frame 3 — Your Profile. Six-dimension behavioral radar."""
     img = make_background()
     add_stars(img, count=200, seed=23)
 
-    y = 200
-    draw_centered_text(img, "YOUR INNER WIRING", font_serif_bold(78), y,
-                       color=GOLD, letter_spacing=8)
+    y = 180
+    draw_centered_text(img, "YOUR PROFILE", font_serif_bold(96), y,
+                       color=GOLD, letter_spacing=10)
+    y += 140
+    draw_centered_text(img, "YOUR INNER WIRING", font_serif_bold(56), y,
+                       color=CREAM, letter_spacing=8)
     y += 130
     draw_divider(img, y)
     y += 80
@@ -375,12 +405,16 @@ def screen_profile(out: Path) -> None:
 
 
 def screen_reading(out: Path) -> None:
+    """Frame 2 — Real Guidance. Sample reading with italic disclaimer."""
     img = make_background()
     add_stars(img, count=220, seed=37)
 
-    y = 220
-    draw_centered_text(img, "YOUR ORACLE SESSION", font_serif_bold(72), y,
-                       color=GOLD, letter_spacing=8)
+    y = 200
+    draw_centered_text(img, "REAL GUIDANCE", font_serif_bold(96), y,
+                       color=GOLD, letter_spacing=10)
+    y += 160
+    draw_centered_text(img, "YOUR ORACLE SESSION", font_serif_bold(52), y,
+                       color=CREAM, letter_spacing=8)
     y += 120
     draw_divider(img, y)
     y += 90
@@ -417,11 +451,12 @@ def screen_reading(out: Path) -> None:
 
 
 def screen_chat(out: Path) -> None:
+    """Frame 1 — The Advisor. Oracle Chat conversation. (Lead frame.)"""
     img = make_background()
     add_stars(img, count=220, seed=51)
 
     y = 200
-    draw_centered_text(img, "ASK ANYTHING", font_serif_bold(96), y,
+    draw_centered_text(img, "THE ADVISOR", font_serif_bold(96), y,
                        color=GOLD, letter_spacing=10)
     y += 160
     draw_divider(img, y)
@@ -473,14 +508,18 @@ def screen_chat(out: Path) -> None:
 
 
 def screen_subscription(out: Path) -> None:
+    """Frame 5 — Always With You. Oracle Pro / ongoing relationship."""
     img = make_background()
     add_stars(img, count=240, seed=83)
 
-    draw_sigil(img, W // 2, int(H * 0.18), 240)
+    draw_sigil(img, W // 2, int(H * 0.16), 220)
 
-    y = int(H * 0.30)
-    draw_centered_text(img, "ORACLE PRO", font_serif_bold(120), y,
-                       color=GOLD, letter_spacing=12)
+    y = int(H * 0.27)
+    draw_centered_text(img, "ALWAYS WITH YOU", font_serif_bold(84), y,
+                       color=GOLD, letter_spacing=10)
+    y += 140
+    draw_centered_text(img, "ORACLE PRO", font_serif_bold(72), y,
+                       color=CREAM, letter_spacing=12)
     y += 180
     draw_divider(img, y)
     y += 100
@@ -550,13 +589,23 @@ def screen_subscription(out: Path) -> None:
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
+    # Per submission spec Section 12: ordered narrative is
+    # 1=Advisor (chat), 2=Real Guidance (reading), 3=Your Profile (radar),
+    # 4=The Intake (intake), 5=Always With You (subscription).
+    # Filenames use a dash, not underscore, per spec.
     screens = [
-        ("screenshot_1_hero.png", screen_hero),
-        ("screenshot_2_profile.png", screen_profile),
-        ("screenshot_3_reading.png", screen_reading),
-        ("screenshot_4_chat.png", screen_chat),
-        ("screenshot_5_subscription.png", screen_subscription),
+        ("screenshot-1.png", screen_chat),          # The Advisor
+        ("screenshot-2.png", screen_reading),       # Real Guidance
+        ("screenshot-3.png", screen_profile),       # Your Profile
+        ("screenshot-4.png", screen_intake),        # The Intake
+        ("screenshot-5.png", screen_subscription),  # Always With You
     ]
+
+    # Remove any stale legacy underscore-named screenshots so the App Store
+    # bundle directory contains only the canonical 5 files in the correct
+    # order.
+    for old in OUT_DIR.glob("screenshot_*.png"):
+        old.unlink()
 
     print("=" * 60)
     print("Generating App Store screenshots")

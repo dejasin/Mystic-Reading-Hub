@@ -211,6 +211,13 @@ export default function SettingsScreen() {
   };
 
   const handleManageSubscription = () => {
+    // Per spec Section 10c: non-subscribers see the paywall (intake flow opens
+    // the paywall step), active subscribers go to the platform store
+    // subscription management surface.
+    if (!isSubscribed) {
+      router.push("/intake");
+      return;
+    }
     if (Platform.OS === "ios") {
       safeOpenURL("https://apps.apple.com/account/subscriptions");
     } else if (Platform.OS === "android") {
