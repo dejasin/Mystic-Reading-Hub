@@ -1,0 +1,286 @@
+You are generating App Store submission assets for an iOS app called 
+Oracle — an AI life advisor app powered by Claude. The palm photo is 
+the biometric intake mechanism that builds the user's behavioral 
+profile. The product is the ongoing AI advisory conversation. This is 
+NOT a palm reading app. Never describe it as one.
+
+App identity:
+- Name: Oracle
+- Tagline: "Your Personal AI Advisor"
+- Color palette: #0a0a0f (near-black navy background), #f59e0b (gold 
+  accents), white body text
+- Typography: CinzelDecorative for headings, EBGaramond for body
+- Aesthetic: dark, premium, mystical — think high-end wellness meets 
+  ancient wisdom meets modern AI
+
+=============================================================
+PART 1 — SCREENSHOTS
+=============================================================
+
+SPECS (non-negotiable, Apple will reject anything outside these):
+- Dimensions: 1320 x 2868 pixels exactly
+- Format: PNG
+- Color space: RGB (not CMYK)
+- Resolution: 72 DPI
+- Max file size: 500KB per file
+- Count: 5 screenshots minimum, 10 maximum
+- Do NOT use the app icon as the screenshot image
+
+Generate exactly 5 screenshots using Python and Pillow. Each is a 
+full-screen UI mockup rendered at 1320x2868. Use the app color scheme 
+above. All text must be legible and appropriately sized for the 
+resolution. Pad or fill any empty space with the #0a0a0f background.
+
+Output each as an individual PNG file:
+- screenshot_01.png
+- screenshot_02.png
+- screenshot_03.png
+- screenshot_04.png
+- screenshot_05.png
+
+After generating all 5, verify each file:
+1. Is exactly 1320 x 2868 pixels
+2. Is PNG format
+3. Is under 500KB — if over, losslessly compress with Pillow optimize=True
+4. Print confirmation of dimensions and file size for each
+
+SCREENSHOT CONTENT — render in this exact order:
+
+SCREENSHOT 1 — THE HOOK (Home/Landing Screen)
+This is the first thing Apple reviewers and users see. It must 
+immediately communicate "AI advisor" not "palm reading app."
+- Full dark background with subtle star field (small white dots, 
+  randomized, low opacity)
+- Center: gold geometric sigil/hexagram symbol, 300px, with a soft 
+  gold glow effect
+- Below symbol: "ORACLE" in CinzelDecorative, 72px, gold, letter-spaced
+- Below title: "Your Personal AI Advisor" in EBGaramond italic, 32px, 
+  cream/white
+- Bottom third: large gold CTA button "Begin Your Session", full width 
+  minus 48px margins, 72px height, rounded 16px
+- Bottom caption bar (120px tall, slightly lighter navy): 
+  "Know yourself at a level most people never reach" centered, 
+  EBGaramond, 28px, white
+
+SCREENSHOT 2 — THE INTAKE (Palm Capture Screen)
+Reframe the palm scan as a biometric intake ritual, not fortune telling.
+- Top: "Biometric Intake" label in gold, small caps, centered
+- Center: a large phone/camera frame UI element — dark rounded rectangle 
+  800px wide showing a stylized hand outline with a gold scanning line 
+  across the middle (animate suggestion: horizontal line mid-frame)
+- Above the frame: "Position your palm" in EBGaramond, 36px, white
+- Below the frame: "Oracle reads your hand's structure to build your 
+  behavioral profile. Your image is processed by AI and never stored." 
+  in EBGaramond, 24px, grey/cream, centered with 80px side margins
+- Gold circular capture button at bottom center, 120px diameter
+- Bottom caption bar: "Your palm reveals your patterns" in gold italic
+
+SCREENSHOT 3 — THE READING (Behavioral Profile Reveal)
+This is the money screen. Show the AI advisor's output, not a 
+horoscope. Make it look like a psychological profile, not a tarot card.
+- Top: "Your Oracle Profile" in CinzelDecorative, 48px, gold
+- Below: "Derived from your biometric analysis" in EBGaramond, 26px, grey
+- Center: a radar/spider chart, 500px diameter
+  - 6 axes labeled: Intuition, Emotional Depth, Drive, Adaptability, 
+    Inner Knowing, Expression
+  - Filled gold polygon at 40% opacity showing a realistic score 
+    distribution (not perfect — make it feel real: 7.2, 8.5, 6.1, 
+    7.8, 9.0, 6.7)
+  - Gold border on polygon at full opacity
+  - White axis lines at low opacity
+  - Score numbers at each axis tip in gold, 22px
+- Below chart: 2 dimension cards side by side
+  - Each card: dimension name in gold bold, score bar (gold fill on 
+    dark track), 1 line of description text
+  - Gold border, dark navy bg, 12px radius
+- Bottom caption bar: "AI-powered insight into your core patterns"
+
+SCREENSHOT 4 — THE CONVERSATION (Chat Screen)
+This is what makes Oracle different from every other palm app. Lead 
+with the conversation.
+- Top: "Ask Oracle Anything" as screen title, CinzelDecorative, 48px
+- Show a realistic 3-message chat exchange rendered as chat bubbles:
+  USER BUBBLE (right-aligned, gold bg, dark text):
+  "Why do I keep repeating the same patterns in relationships?"
+  ORACLE BUBBLE (left-aligned, dark navy with gold border, white text):
+  "Your palm profile shows exceptionally high Emotional Depth — a 9.0 
+  out of 10. People with this pattern often unconsciously seek the 
+  familiar emotional intensity of early experiences, even when those 
+  patterns cause pain. Your Adaptability score of 6.1 suggests you 
+  recognize the pattern but find it difficult to interrupt in real 
+  time..."
+  USER BUBBLE: "How do I break it?"
+- Below the chat: a horizontal scrollable row of prompt chips with gold 
+  borders: "What are my core strengths?" / "Help me decide something" 
+  / "What's holding me back?"
+- Text input bar at bottom: "Ask Oracle anything about your life..."
+- Bottom caption bar: "Your AI advisor. Always available. Always personal."
+
+SCREENSHOT 5 — THE PAYWALL (Subscription Screen)
+Apple's reviewer must clearly see and be able to interact with the 
+subscription. This screenshot shows it exists and is clear.
+- Top: "Unlock Oracle" in CinzelDecorative, 56px, gold
+- Below: "Unlimited AI advisory sessions" in EBGaramond, 28px, white
+- 3 benefit rows with gold checkmarks:
+  ✓ Unlimited conversations with your advisor
+  ✓ Persistent behavioral profile that evolves over time  
+  ✓ Deep pattern analysis across all life areas
+- Two plan cards centered:
+  MONTHLY: "$9.99 / month" — dark navy card, gold border
+  YEARLY: "$59.99 / year" — highlighted card, gold background, dark 
+  text, "BEST VALUE" badge top-right, "Save 50%" below price
+- Primary CTA: "Start Free Trial" gold button, full width, 72px height
+- Fine print below: "3-day free trial • Cancel anytime • Billed by Apple"
+- Bottom caption bar: "Your most honest advisor — always in your pocket"
+
+=============================================================
+PART 2 — APP PREVIEW VIDEOS
+=============================================================
+
+SPECS (non-negotiable):
+- Dimensions: 1320 x 2868 pixels exactly
+- Format: MP4, H.264 codec
+- Frame rate: 30fps
+- Duration: minimum 15 seconds, maximum 30 seconds each
+- Max file size: 500MB per video
+- Must begin AND end on a still frame (Apple hard requirement — 
+  first and last frame must be held for at least 1 second)
+- Audio: optional but include a subtle ambient tone if possible
+- Count: generate 3 videos
+
+Generate each video using Python + Pillow (for frame rendering) + 
+FFmpeg (for encoding). Render each frame at 1320x2868, save as 
+sequential PNG frames, then encode with FFmpeg:
+
+ffmpeg -r 30 -i frame_%04d.png -c:v libx264 -pii yuv420p -crf 18 
+-movflags +faststart output.mp4
+
+Clean up PNG frames after encoding each video to save disk space.
+
+Output files:
+- preview_01_advisor.mp4
+- preview_02_session.mp4  
+- preview_03_profile.mp4
+
+After generating each video, verify:
+1. File exists and is valid MP4
+2. Duration is between 15-30 seconds
+3. Resolution is exactly 1320x2868
+4. File size is under 500MB
+5. Print confirmation of all 4 checks
+
+VIDEO 1 — "The Advisor" (lead video, 28 seconds)
+This runs first. Apple reviewers see this first. It must establish 
+Oracle as an AI advisor immediately.
+
+Frame sequence:
+0.0–1.5s  HOLD — Oracle home screen (match Screenshot 1 layout 
+          exactly). Still frame. No animation.
+1.5–4.0s  Slow zoom in on the gold sigil (scale 1.0 to 1.08 over 
+          2.5s, eased). Title fades up below.
+4.0–8.0s  Transition to chat screen. User message types character by 
+          character: "Why do I keep repeating the same patterns?"
+8.0–14.0s Oracle's response appears word by word, line by line:
+          "Your palm profile shows Emotional Depth at 9.0 — one of 
+          the highest patterns I see. This often means you unconsciously 
+          recreate familiar emotional intensity, even when it hurts..."
+14.0–17.0s User types: "What should I do differently?"
+17.0–22.0s Oracle responds: "Start by noticing the moment before the 
+          pattern activates — not after. Your Intuition score of 7.2 
+          means you likely sense it coming. The work is in that gap."
+22.0–25.0s Fade to Oracle profile screen — radar chart draws itself 
+          outward from center over 2 seconds, gold polygon filling in
+25.0–27.0s Hold on completed radar chart
+27.0–28.0s HOLD — fade to black, "Oracle" gold text centered, 
+          "Your Personal AI Advisor" below in cream. Still frame.
+
+VIDEO 2 — "The Session" (24 seconds)
+Shows the complete intake-to-insight flow from cold open.
+
+Frame sequence:
+0.0–1.0s  HOLD — black screen with "Oracle" gold text. Still frame.
+1.0–4.0s  Fade to onboarding screen: "Know yourself at a level most 
+          people never reach" fades in. Gold CTA button pulses softly.
+4.0–8.0s  Cut to palm capture screen. A stylized hand outline 
+          appears inside the capture frame. A gold scanning line 
+          sweeps top to bottom slowly, twice.
+8.0–12.0s Transition to reading reveal — "Your Oracle Profile" fades 
+          in at top. Radar chart draws in from center (same animation 
+          as Video 1). Dimension cards slide up from bottom one by one.
+12.0–16.0s Cut to chat screen. Suggested prompt chips slide in from 
+          right. User taps "What are my core strengths?" chip — it 
+          fills the input. Oracle begins responding.
+16.0–20.0s Oracle's response continues appearing: "Your strongest 
+          dimension is Inner Knowing at 9.0 — you have an unusually 
+          reliable internal compass. Most people override it. Yours 
+          is worth trusting..."
+20.0–23.0s Fade back to home screen. Sigil glows. CTA button visible.
+23.0–24.0s HOLD — home screen still. No animation. Still frame.
+
+VIDEO 3 — "The Profile" (20 seconds)
+Shows the depth of the persistent behavioral profile — Oracle's 
+proprietary differentiator.
+
+Frame sequence:
+0.0–1.0s  HOLD — "Your Oracle Profile" text centered on dark bg. 
+          Still frame.
+1.0–5.0s  Profile screen fades in. Radar chart animates from center 
+          outward, each axis drawing in sequence with 150ms stagger.
+5.0–10.0s Slow scroll down through the 6 dimension cards. Each card 
+          visible for ~0.8s. Score bars animate fill left to right as 
+          each card comes into view.
+10.0–14.0s Cut to chat screen. Question chip tapped: 
+          "What does my Emotional Depth score mean for my career?"
+          Oracle responds: "A 9.0 Emotional Depth in a professional 
+          context means you read rooms, people, and unspoken dynamics 
+          with rare accuracy. The risk is absorbing others' emotional 
+          states as your own..."
+14.0–18.0s Cut back to profile screen — radar chart fully lit, 
+          all 6 scores visible and glowing gold.
+18.0–19.0s "Your palm. Your patterns. Your Oracle." fades in 
+          centered in gold over the profile screen.
+19.0–20.0s HOLD — still frame on above text. No animation.
+
+=============================================================
+PART 3 — AMBIENT AUDIO (for videos)
+=============================================================
+
+Generate a 30-second ambient audio track using numpy and scipy:
+- Base tone: 432Hz sine wave at 8% volume
+- Layer: 528Hz sine wave at 4% volume  
+- Slow amplitude pulse at 0.08Hz (gives a breathing/living quality)
+- Fade in: 0 to full over first 3 seconds
+- Fade out: full to 0 over last 3 seconds
+- Export as audio.wav
+
+Merge into all 3 videos using FFmpeg:
+ffmpeg -i preview_XX.mp4 -i audio.wav -c:v copy -c:a aac 
+-shortest preview_XX_audio.mp4
+
+=============================================================
+PART 4 — FINAL VERIFICATION CHECKLIST
+=============================================================
+
+After all assets are generated, print a full checklist:
+
+SCREENSHOTS:
+[ ] screenshot_01.png — 1320x2868px — PNG — under 500KB
+[ ] screenshot_02.png — 1320x2868px — PNG — under 500KB
+[ ] screenshot_03.png — 1320x2868px — PNG — under 500KB
+[ ] screenshot_04.png — 1320x2868px — PNG — under 500KB
+[ ] screenshot_05.png — 1320x2868px — PNG — under 500KB
+
+PREVIEW VIDEOS:
+[ ] preview_01_advisor.mp4 — 1320x2868 — H.264 — 15-30s — under 500MB
+[ ] preview_02_session.mp4 — 1320x2868 — H.264 — 15-30s — under 500MB
+[ ] preview_03_profile.mp4 — 1320x2868 — H.264 — 15-30s — under 500MB
+
+APPLE HARD REQUIREMENTS:
+[ ] All videos begin on a still frame held for at least 1 second
+[ ] All videos end on a still frame held for at least 1 second
+[ ] No screenshot uses the app icon as the screenshot image
+[ ] All files are in the /output folder and ready to upload
+
+If any check fails, fix it before finishing. Do not stop until every 
+box is green. When done, print: "All assets verified. Ready for App 
+Store Connect upload."
