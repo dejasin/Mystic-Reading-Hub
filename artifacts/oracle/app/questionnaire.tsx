@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -8,9 +8,9 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
-import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutLeft } from "react-native-reanimated";
+import Animated, { FadeIn, FadeOut, SlideInRight } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/colors";
@@ -18,15 +18,31 @@ import StarField from "@/components/StarField";
 import { useOracle, QuestionnaireAnswers } from "@/context/OracleContext";
 import { QUESTIONNAIRE_QUESTIONS } from "@/lib/questionnaireData";
 
-type IconName = React.ComponentProps<typeof Feather>["name"];
-
 const QUESTIONS = QUESTIONNAIRE_QUESTIONS;
+
+type FieldKey = keyof QuestionnaireAnswers;
 
 export default function QuestionnaireScreen() {
   const insets = useSafeAreaInsets();
-  const { setQuestionnaireAnswers } = useOracle();
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Partial<QuestionnaireAnswers>>({});
+  const { state, setQuestionnaireAnswers } = useOracle();
+  const params = useLocalSearchParams<{ field?: string; returnTo?: string }>();
+
+  // Single-question edit mode is triggered by `?field=<fieldKey>`. In that
+  // mode we only render the matching question, save updates the existing
+  // answer record (without nuking the others or any past reading), and we
+  // return to `returnTo` (defaults to the answers review screen).
+  const editIndex = useMemo(() => {
+    if (!params.field) return -1;
+    return QUESTIONS.findIndex(q => q.field === params.field);
+  }, [params.field]);
+  const isEditMode = editIndex >= 0;
+
+  // In edit mode we seed from the saved answer; in full-flow mode we start
+  // empty so the seeker walks every question fresh.
+  const [answers, setAnswers] = useState<Partial<QuestionnaireAnswers>>(() =>
+    isEditMode ? { ...(state.questionnaireAnswers ?? {}) } : {},
+  );
+  const [step, setStep] = useState(isEditMode ? editIndex : 0);
   const [building, setBuilding] = useState(false);
 
   const q = QUESTIONS[step];
@@ -45,6 +61,24 @@ export default function QuestionnaireScreen() {
     if (Platform.OS !== "web") {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
+
+    // Edit mode: save just this field on top of the existing record and
+    // return to the review screen. Past readings (freeReading, paidReading,
+    // archetype, deep dives) are intentionally untouched so the seeker
+    // never loses what they already received.
+    if (isEditMode) {
+      const merged: QuestionnaireAnswers = {
+        ...(state.questionnaireAnswers ?? ({} as QuestionnaireAnswers)),
+        [q.field]: selectedValue,
+      } as QuestionnaireAnswers;
+      setQuestionnaireAnswers(merged);
+      const back = typeof params.returnTo === "string" && params.returnTo
+        ? params.returnTo
+        : "/answers";
+      router.replace(back as any);
+      return;
+    }
+
     if (step < total - 1) {
       setStep(s => s + 1);
       return;
@@ -57,6 +91,13 @@ export default function QuestionnaireScreen() {
   };
 
   const handleBack = () => {
+    if (isEditMode) {
+      const back = typeof params.returnTo === "string" && params.returnTo
+        ? params.returnTo
+        : "/answers";
+      router.replace(back as any);
+      return;
+    }
     if (step === 0) {
       router.back();
       return;
@@ -77,6 +118,16 @@ export default function QuestionnaireScreen() {
     );
   }
 
+  // In single-question mode we suppress the "n of 8" progress and show an
+  // "Edit answer" header instead so the seeker understands they're updating
+  // one answer rather than starting the whole flow over.
+  const headerLabel = isEditMode ? "Edit answer" : `${step + 1} of ${total}`;
+  const nextLabel = isEditMode
+    ? "Save"
+    : step === total - 1
+      ? "Complete"
+      : "Next";
+
   return (
     <View style={[styles.container, { paddingTop: Platform.OS === "web" ? 67 : insets.top }]}>
       <StarField />
@@ -85,13 +136,15 @@ export default function QuestionnaireScreen() {
         <Pressable onPress={handleBack} style={styles.backBtn} hitSlop={12} accessibilityLabel="Go back" accessibilityRole="button">
           <Feather name="arrow-left" size={20} color={Colors.gold} />
         </Pressable>
-        <Text style={styles.progress}>{step + 1} of {total}</Text>
+        <Text style={styles.progress}>{headerLabel}</Text>
         <View style={styles.backBtn} />
       </View>
 
-      <View style={styles.progressBarTrack}>
-        <View style={[styles.progressBarFill, { width: `${((step + 1) / total) * 100}%` }]} />
-      </View>
+      {!isEditMode && (
+        <View style={styles.progressBarTrack}>
+          <View style={[styles.progressBarFill, { width: `${((step + 1) / total) * 100}%` }]} />
+        </View>
+      )}
 
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -123,7 +176,7 @@ export default function QuestionnaireScreen() {
                   accessibilityState={{ selected }}
                 >
                   <View style={[styles.iconWrap, selected && styles.iconWrapSelected]}>
-                    <Feather name={opt.icon} size={20} color={selected ? Colors.bg : Colors.gold} />
+                    <Feather name={opt.icon as any} size={20} color={selected ? Colors.bg : Colors.gold} />
                   </View>
                   <Text style={[styles.optionLabel, selected && styles.optionLabelSelected]}>
                     {opt.label}
@@ -145,13 +198,13 @@ export default function QuestionnaireScreen() {
             !selectedValue && styles.nextBtnDisabled,
             pressed && selectedValue && { opacity: 0.85 },
           ]}
-          accessibilityLabel={step === total - 1 ? "Complete questionnaire" : "Next question"}
+          accessibilityLabel={isEditMode ? "Save answer" : (step === total - 1 ? "Complete questionnaire" : "Next question")}
           accessibilityRole="button"
         >
           <Text style={[styles.nextText, !selectedValue && { color: Colors.muted }]}>
-            {step === total - 1 ? "Complete" : "Next"}
+            {nextLabel}
           </Text>
-          <Feather name="arrow-right" size={18} color={selectedValue ? Colors.bg : Colors.muted} />
+          <Feather name={isEditMode ? "check" : "arrow-right"} size={18} color={selectedValue ? Colors.bg : Colors.muted} />
         </Pressable>
 
         <View style={{ height: Platform.OS === "web" ? 34 : insets.bottom + 24 }} />

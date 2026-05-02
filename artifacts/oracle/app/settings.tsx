@@ -374,6 +374,11 @@ export default function SettingsScreen() {
       onPress: () => router.push("/about"),
     },
     {
+      label: "Review my answers",
+      icon: "list",
+      onPress: () => router.push("/answers"),
+    },
+    {
       label: "Retake questionnaire",
       icon: "edit-3",
       onPress: handleRetakeQuestionnaire,
