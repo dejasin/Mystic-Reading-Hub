@@ -71,3 +71,33 @@ id = "ulH3heiL04B30aCf2rlx-"
 uri = "file://artifacts/oracle-preview-ritual/downloads/mystic-oracle-beyond-the-reading.mp4"
 type = "video"
 title = "Mystic Oracle — Beyond the Reading (App Store ready, with silent audio)"
+
+[[outputs]]
+id = "qqQJfKjGk-EnBC6zxwmZs"
+uri = "file://tools/appstore-assets/output/screenshot_01.png"
+type = "image"
+title = "screenshot_01 — Onboarding"
+
+[[outputs]]
+id = "DC1XifCIdk5b75t2iERqf"
+uri = "file://tools/appstore-assets/output/screenshot_02.png"
+type = "image"
+title = "screenshot_02 — Intake"
+
+[[outputs]]
+id = "ezAagnMcw8eIbwWf5x_CQ"
+uri = "file://tools/appstore-assets/output/screenshot_03.png"
+type = "image"
+title = "screenshot_03 — Questionnaire"
+
+[[outputs]]
+id = "7MQ-surMxNIjJHhLGaVQW"
+uri = "file://tools/appstore-assets/output/screenshot_04.png"
+type = "image"
+title = "screenshot_04 — Chat"
+
+[[outputs]]
+id = "NQNR1pG2bOIhVpIRSqmmw"
+uri = "file://tools/appstore-assets/output/screenshot_05.png"
+type = "image"
+title = "screenshot_05 — Behavioral profile"
