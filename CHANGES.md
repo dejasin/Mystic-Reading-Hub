@@ -60,7 +60,7 @@ The previous submission was rejected for being a palmistry / palm-reading app wi
 
 ### Submission documentation
 - `CHANGES.md` (this file) — Top-level changelog.
-- `artifacts/oracle/APP-STORE-SUBMISSION.md` — Full submission package.
+- `artifacts/oracle/assets/app-store/APP-STORE-SUBMISSION.md` — Full submission package.
 
 ### Post-review remediation (after architect code review)
 A final architect review surfaced four user-visible / server-side palmistry leaks that were not caught by the original sweep. All four were fixed:

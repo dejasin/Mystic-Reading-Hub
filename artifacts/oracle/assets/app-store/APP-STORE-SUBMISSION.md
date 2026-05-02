@@ -2,7 +2,7 @@
 
 **Bundle ID:** `com.theoracle.app`
 **Version:** `1.0.0`
-**Build:** `2` (resubmission)
+**Build:** `1` (unchanged — resubmission)
 **Submission Date:** May 02, 2026
 **Previous Status:** Rejected — Apple identified the app as a palmistry / palm-reading app with insufficient utility for the App Store.
 **Resubmission Strategy:** Reframe the app as a **personal AI life advisor** that uses biometric reference imagery as input to produce a structured behavioral profile and ongoing chat-based decision support. Palmistry framing has been removed throughout the user-visible product surface.
@@ -147,7 +147,7 @@ Generator: `scripts/generate_app_store_screenshots.py` (re-runnable).
 ```
 node -e "console.log(require('./artifacts/oracle/app.json').expo.version, require('./artifacts/oracle/app.json').expo.ios.buildNumber)"
 ```
-Expected: `1.0.0 2`
+Expected: `1.0.0 1`
 
 ### B. Local prebuild verification (no install)
 ```

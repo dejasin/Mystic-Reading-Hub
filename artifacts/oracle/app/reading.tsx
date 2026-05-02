@@ -922,7 +922,9 @@ export default function ReadingScreen() {
   };
 
   // Per-session paywall gate: at most once per sessionId, never for active subscribers.
-  // Spec: artifacts/oracle/app/reading.tsx — Section 10a.
+  // Spec (Section 10a): auto-paywall fires 1500ms AFTER the free-reading reveal,
+  // exactly once per session, and is skipped entirely for active subscribers.
+  const PAYWALL_REVEAL_DELAY_MS = 1500;
   const maybeShowPaywall = async () => {
     const isSubscribed = !!customerInfo?.entitlements?.active?.["full_reading"];
     if (isSubscribed) {
@@ -943,7 +945,12 @@ export default function ReadingScreen() {
     } catch (e) {
       console.warn("Paywall session flag persistence failed:", e);
     }
-    setPhase("paywall");
+    // Let the user briefly see the completed free reveal before the paywall
+    // overlay; then transition to the paywall phase.
+    setPhase("complete");
+    setTimeout(() => {
+      setPhase("paywall");
+    }, PAYWALL_REVEAL_DELAY_MS);
   };
 
   const fetchBehavioralScores = async () => {
