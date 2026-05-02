@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { PREVIEW_SIZE_KEYS, PREVIEW_SIZES } from '@/lib/previewSizes';
 
 const previews = [
   {
@@ -90,9 +91,10 @@ export function PreviewIndex() {
             maxWidth: '720px',
           }}
         >
-          Each composition renders inside a fixed 886 × 1920 stage — the 6.5"
-          iPhone App Store preview spec. Open one and the player auto-records
-          one full pass, then loops for review.
+          Each composition renders inside a fixed portrait stage and adapts to
+          three Apple-supported canvases — 6.5" iPhone, 6.7" iPhone, and iPad.
+          Open one and the player auto-records one full pass, then loops for
+          review.
         </p>
 
         <div
@@ -104,9 +106,8 @@ export function PreviewIndex() {
           }}
         >
           {previews.map((p) => (
-            <a
+            <div
               key={p.slug}
-              href={`#${p.slug}`}
               style={{
                 display: 'block',
                 padding: '1.8rem 1.6rem',
@@ -114,20 +115,7 @@ export function PreviewIndex() {
                 background:
                   'linear-gradient(160deg, rgba(20,18,42,0.85) 0%, rgba(11,11,30,0.95) 100%)',
                 border: '1px solid rgba(201,168,76,0.35)',
-                textDecoration: 'none',
                 color: 'inherit',
-                transition: 'transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.borderColor = 'rgba(232,204,122,0.7)';
-                e.currentTarget.style.boxShadow =
-                  '0 16px 36px -16px rgba(201,168,76,0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = '';
-                e.currentTarget.style.borderColor = 'rgba(201,168,76,0.35)';
-                e.currentTarget.style.boxShadow = '';
               }}
             >
               <div
@@ -164,18 +152,51 @@ export function PreviewIndex() {
               >
                 {p.blurb}
               </div>
+
               <div
                 style={{
-                  marginTop: '1.2rem',
-                  fontSize: '12px',
-                  letterSpacing: '0.3em',
-                  textTransform: 'uppercase',
-                  color: '#e8cc7a',
+                  marginTop: '1.4rem',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem',
                 }}
               >
-                Open →
+                {PREVIEW_SIZE_KEYS.map((sizeKey) => {
+                  const s = PREVIEW_SIZES[sizeKey];
+                  return (
+                    <a
+                      key={sizeKey}
+                      href={`?size=${sizeKey}#${p.slug}`}
+                      style={{
+                        display: 'inline-block',
+                        padding: '0.55rem 0.9rem',
+                        borderRadius: '999px',
+                        border: '1px solid rgba(232,204,122,0.45)',
+                        color: '#e8cc7a',
+                        textDecoration: 'none',
+                        fontSize: '12px',
+                        letterSpacing: '0.18em',
+                        textTransform: 'uppercase',
+                        background: 'rgba(11,11,30,0.6)',
+                      }}
+                      title={`${s.width} × ${s.height} · ${s.appleSlot}`}
+                    >
+                      {s.label}
+                      <span
+                        style={{
+                          marginLeft: '0.5rem',
+                          color: '#c9a84c',
+                          opacity: 0.7,
+                          fontSize: '11px',
+                        }}
+                      >
+                        {s.width}×{s.height}
+                      </span>
+                    </a>
+                  );
+                })}
               </div>
-            </a>
+            </div>
           ))}
         </div>
 
@@ -292,9 +313,14 @@ export function PreviewIndex() {
             Capture Mode
           </div>
           Append <code style={{ color: '#e8cc7a' }}>?capture=1</code> to any
-          preview URL to render the stage at exact 886 × 1920 with no scaling
-          for screen-recording. See <code style={{ color: '#e8cc7a' }}>CAPTURE.md</code>{' '}
-          in this artifact for full export instructions.
+          preview URL to render the stage at exact pixel dimensions with no
+          scaling for screen-recording. Combine with{' '}
+          <code style={{ color: '#e8cc7a' }}>&amp;size=6.5</code>,{' '}
+          <code style={{ color: '#e8cc7a' }}>&amp;size=6.7</code>, or{' '}
+          <code style={{ color: '#e8cc7a' }}>&amp;size=ipad</code> to target a
+          specific Apple device group. See{' '}
+          <code style={{ color: '#e8cc7a' }}>CAPTURE.md</code> in this artifact
+          for full export instructions.
         </div>
       </div>
     </div>
