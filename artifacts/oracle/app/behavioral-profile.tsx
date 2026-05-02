@@ -248,7 +248,7 @@ export default function BehavioralProfileScreen() {
         >
           <Feather name="arrow-left" size={20} color={Colors.gold} />
         </Pressable>
-        <Text style={styles.headerTitle}>Behavioral Profile</Text>
+        <Text style={styles.headerTitle}>Your Oracle Profile</Text>
         <View style={{ width: 44 }} />
       </View>
 
@@ -261,12 +261,14 @@ export default function BehavioralProfileScreen() {
       >
         <Animated.View entering={FadeIn.duration(700)} style={styles.titleBlock}>
           <GoldSigil size={64} style={{ alignSelf: "center", marginBottom: 12 }} />
-          <Text style={styles.title}>YOUR INNER WIRING</Text>
+          <Text style={styles.title}>YOUR ORACLE PROFILE</Text>
           <Text style={styles.divider}>─── ✦ ───</Text>
           <Text style={styles.subtitle}>
-            {userData.name && !isLocked
-              ? `A snapshot of how ${userData.name} moves through the world.`
-              : "A snapshot of how you move through the world."}
+            {isLocked
+              ? "Derived from your palm analysis."
+              : userData.name
+                ? `A snapshot of how ${userData.name} moves through the world.`
+                : "A snapshot of how you move through the world."}
           </Text>
           {hasScores && lastAnalyzed && (
             <Text style={styles.timestamp}>Last analyzed {lastAnalyzed}</Text>
@@ -274,21 +276,26 @@ export default function BehavioralProfileScreen() {
         </Animated.View>
 
         {isLocked ? (
-          <Animated.View entering={FadeIn.duration(700).delay(150)} style={styles.lockedCard}>
-            <Feather name="lock" size={28} color={Colors.gold} style={{ opacity: 0.7, marginBottom: 12 }} />
-            <Text style={styles.lockedTitle}>Profile Locked</Text>
-            <Text style={styles.lockedBody}>
-              Your behavioral profile is generated from your first Oracle session. Complete a session to unlock the full radar — your six core dimensions, ranked.
-            </Text>
-            <Pressable
-              style={({ pressed }) => [styles.lockedCta, pressed && { opacity: 0.85 }]}
-              onPress={() => router.push("/intake")}
-              accessibilityLabel="Begin Your First Session"
-              accessibilityRole="button"
-            >
-              <Text style={styles.lockedCtaText}>Begin Your First Session</Text>
-              <Feather name="arrow-right" size={16} color={Colors.bg} />
-            </Pressable>
+          <Animated.View entering={FadeIn.duration(700).delay(150)} style={styles.lockedWrap}>
+            <View style={styles.lockedRadar}>
+              <RadarChart scores={scores} animate={false} />
+            </View>
+            <View style={styles.lockedOverlay} pointerEvents="box-none">
+              <Feather name="lock" size={32} color={Colors.gold} style={{ marginBottom: 14 }} />
+              <Text style={styles.lockedTitle}>Profile Locked</Text>
+              <Text style={styles.lockedBody}>
+                Complete your first Oracle session to unlock your six-dimension behavioral profile.
+              </Text>
+              <Pressable
+                style={({ pressed }) => [styles.lockedCta, pressed && { opacity: 0.85 }]}
+                onPress={() => router.push("/intake")}
+                accessibilityLabel="Begin Your Session"
+                accessibilityRole="button"
+              >
+                <Text style={styles.lockedCtaText}>Begin Your Session</Text>
+                <Feather name="arrow-right" size={16} color={Colors.bg} />
+              </Pressable>
+            </View>
           </Animated.View>
         ) : (
           <>
@@ -396,15 +403,28 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     opacity: 0.85,
   },
-  lockedCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "rgba(201,168,76,0.2)",
-    padding: 28,
+  lockedWrap: {
+    position: "relative",
     alignItems: "center",
     marginBottom: 24,
-    gap: 12,
+    minHeight: 320,
+  },
+  lockedRadar: {
+    opacity: 0.18,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+  },
+  lockedOverlay: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    gap: 10,
   },
   lockedTitle: {
     color: Colors.gold,

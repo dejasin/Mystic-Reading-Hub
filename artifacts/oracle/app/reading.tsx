@@ -119,8 +119,25 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
   }));
 
   const currentOffering = offerings?.current;
-  const packageToPurchase = currentOffering?.availablePackages[0];
-  const priceString = packageToPurchase?.product.priceString ?? "$4.99";
+  const availablePackages = currentOffering?.availablePackages ?? [];
+
+  const annualPackage =
+    availablePackages.find((p: any) => p.packageType === "ANNUAL") ??
+    availablePackages.find((p: any) => /annual|yearly|year/i.test(p?.product?.identifier ?? ""));
+  const monthlyPackage =
+    availablePackages.find((p: any) => p.packageType === "MONTHLY") ??
+    availablePackages.find((p: any) => /monthly|month/i.test(p?.product?.identifier ?? ""));
+
+  const [selectedPlan, setSelectedPlan] = useState<"annual" | "monthly">("annual");
+
+  const packageToPurchase =
+    selectedPlan === "annual"
+      ? (annualPackage ?? monthlyPackage ?? availablePackages[0])
+      : (monthlyPackage ?? annualPackage ?? availablePackages[0]);
+
+  const priceString = packageToPurchase?.product.priceString ?? "$9.99";
+  const annualPriceString = annualPackage?.product.priceString ?? "$49.99";
+  const monthlyPriceString = monthlyPackage?.product.priceString ?? "$9.99";
   const purchasesAvailable = isConfigured && !!packageToPurchase;
 
   const handlePurchase = async () => {
@@ -171,7 +188,9 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
           <View style={paywallStyles.modalCard}>
             <Text style={paywallStyles.modalTitle}>Confirm Subscription</Text>
             <Text style={paywallStyles.modalBody}>
-              Subscribe to Full Oracle Session for {priceString}/month?{"\n\n"}Auto-renews monthly. Cancel anytime in Settings → Apple ID → Subscriptions.
+              {selectedPlan === "annual"
+                ? `Subscribe to Oracle Pro Annual for ${annualPriceString}/year?\n\nAuto-renews annually. Cancel anytime in Settings → Apple ID → Subscriptions.`
+                : `Subscribe to Oracle Pro Monthly for ${monthlyPriceString}/month?\n\nAuto-renews monthly. Cancel anytime in Settings → Apple ID → Subscriptions.`}
             </Text>
             <View style={paywallStyles.modalBtns}>
               <Pressable
@@ -206,15 +225,50 @@ function PaywallGate({ onUnlock }: { onUnlock: () => void }) {
       <Text style={paywallStyles.pitch}>
         Unlock your complete session — 4 remaining sections + your Archetype + Oracle Chat access.
       </Text>
-      <View style={paywallStyles.priceRow}>
+      <View style={paywallStyles.planList}>
         {isLoading ? (
           <ActivityIndicator color={Colors.gold} />
         ) : (
           <>
-            <Text style={paywallStyles.price}>{priceString}/mo</Text>
-            <Text style={paywallStyles.priceDesc}>Full Session + Chat Access</Text>
+            <Pressable
+              onPress={() => setSelectedPlan("annual")}
+              style={[
+                paywallStyles.planCard,
+                selectedPlan === "annual" && paywallStyles.planCardSelected,
+              ]}
+              accessibilityLabel="Annual plan"
+              accessibilityRole="button"
+            >
+              <View style={paywallStyles.planHeaderRow}>
+                <Text style={paywallStyles.planLabel}>Annual</Text>
+                <View style={paywallStyles.savePill}>
+                  <Text style={paywallStyles.savePillText}>Save 58%</Text>
+                </View>
+              </View>
+              <Text style={paywallStyles.planPrice}>{annualPriceString}/yr</Text>
+              <Text style={paywallStyles.planSub}>Full Session + Chat Access · best value</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => setSelectedPlan("monthly")}
+              style={[
+                paywallStyles.planCard,
+                selectedPlan === "monthly" && paywallStyles.planCardSelected,
+              ]}
+              accessibilityLabel="Monthly plan"
+              accessibilityRole="button"
+            >
+              <View style={paywallStyles.planHeaderRow}>
+                <Text style={paywallStyles.planLabel}>Monthly</Text>
+              </View>
+              <Text style={paywallStyles.planPrice}>{monthlyPriceString}/mo</Text>
+              <Text style={paywallStyles.planSub}>Full Session + Chat Access</Text>
+            </Pressable>
+
             <Text style={paywallStyles.subTerms}>
-              Auto-renews monthly. Cancel anytime in{"\n"}Settings → Apple ID → Subscriptions.
+              {selectedPlan === "annual"
+                ? "Auto-renews annually. Cancel anytime in Settings → Apple ID → Subscriptions."
+                : "Auto-renews monthly. Cancel anytime in Settings → Apple ID → Subscriptions."}
             </Text>
           </>
         )}
@@ -325,18 +379,55 @@ const paywallStyles = StyleSheet.create({
     textAlign: "center",
     opacity: 0.8,
   },
-  priceRow: {
-    alignItems: "center",
+  planList: {
+    gap: 10,
+  },
+  planCard: {
+    borderWidth: 1,
+    borderColor: "rgba(201,168,76,0.25)",
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: "rgba(201,168,76,0.04)",
     gap: 4,
   },
-  price: {
+  planCardSelected: {
+    borderColor: Colors.gold,
+    backgroundColor: "rgba(201,168,76,0.10)",
+    borderWidth: 2,
+  },
+  planHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  planLabel: {
     fontFamily: "CormorantGaramond_700Bold",
-    fontSize: 26,
+    fontSize: 16,
+    color: Colors.cream,
+    letterSpacing: 1,
+  },
+  savePill: {
+    backgroundColor: Colors.gold,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 999,
+  },
+  savePillText: {
+    fontFamily: "EBGaramond_400Regular",
+    fontSize: 11,
+    color: Colors.bg,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
+  planPrice: {
+    fontFamily: "CormorantGaramond_700Bold",
+    fontSize: 22,
     color: Colors.gold,
   },
-  priceDesc: {
+  planSub: {
     fontFamily: "EBGaramond_400Regular",
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.muted,
   },
   subTerms: {

@@ -6,6 +6,7 @@ import {
   TextInput,
   Pressable,
   FlatList,
+  ScrollView,
   Platform,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
@@ -312,23 +313,34 @@ export default function ChatScreen() {
             showStarters ? (
               <View style={styles.startersContainer}>
                 <Text style={styles.startersTitle}>Ask the Oracle about your behavioral profile, your patterns, or any decision you're navigating.</Text>
-                <View style={styles.starterChips}>
-                  {STARTER_QUESTIONS.map((q, i) => (
-                    <Pressable
-                      key={i}
-                      style={({ pressed }) => [styles.chip, pressed && { opacity: 0.75 }]}
-                      onPress={() => handleSend(q)}
-                      accessibilityLabel={q}
-                      accessibilityRole="button"
-                    >
-                      <Text style={styles.chipText}>{q}</Text>
-                    </Pressable>
-                  ))}
-                </View>
               </View>
             ) : null
           }
         />
+
+        {showStarters && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.starterChips}
+            keyboardShouldPersistTaps="handled"
+          >
+            {STARTER_QUESTIONS.map((q, i) => (
+              <Pressable
+                key={i}
+                style={({ pressed }) => [styles.chip, pressed && { opacity: 0.75 }]}
+                onPress={() => {
+                  setInput(q);
+                  inputRef.current?.focus();
+                }}
+                accessibilityLabel={q}
+                accessibilityRole="button"
+              >
+                <Text style={styles.chipText}>{q}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        )}
 
         {/* Input */}
         <View style={[styles.inputBar, { paddingBottom: Platform.OS === "web" ? 34 : insets.bottom + 8 }]}>
@@ -510,26 +522,24 @@ const styles = StyleSheet.create({
   },
   starterChips: {
     flexDirection: "row",
-    flexWrap: "wrap",
+    flexWrap: "nowrap",
     gap: 10,
-    justifyContent: "center",
-    paddingHorizontal: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   chip: {
     borderWidth: 1,
-    borderColor: "rgba(201,168,76,0.3)",
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    backgroundColor: "rgba(201,168,76,0.05)",
-    maxWidth: 280,
+    borderColor: "rgba(201,168,76,0.5)",
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    backgroundColor: "#0a1428",
   },
   chipText: {
     fontFamily: "EBGaramond_400Regular",
     fontSize: 14,
-    color: Colors.cream,
+    color: "#ffffff",
     textAlign: "center",
-    opacity: 0.85,
   },
   inputBar: {
     flexDirection: "row",
