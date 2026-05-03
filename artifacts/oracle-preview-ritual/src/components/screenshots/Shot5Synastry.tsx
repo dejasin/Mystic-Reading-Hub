@@ -5,7 +5,7 @@ export function Shot5Synastry() {
     <ScreenshotShell
       index={5}
       eyebrow="People & Synastry"
-      headline={<>Two souls,<br />one reading.</>}
+      headline={<>Two lives,<br />one session.</>}
       subhead={<>See the threads<br />between you.</>}
     >
       <MockSynastryScreen />
@@ -66,7 +66,7 @@ function MockSynastryScreen() {
           opacity: 0.8,
         }}
       >
-        Combine two souls.
+        Compare two lives.
       </div>
 
       {/* Two profile cards joined by an infinity sigil */}
@@ -118,7 +118,7 @@ function MockSynastryScreen() {
             textTransform: 'uppercase',
           }}
         >
-          ✦ The Reading Begins
+          ✦ The Session Begins
         </div>
         <div
           style={{

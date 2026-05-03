@@ -111,7 +111,7 @@ export function SceneVault() {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.8, delay: 0.4 }}
       >
-        — every reading kept —
+        — every session kept —
       </motion.div>
 
       <div

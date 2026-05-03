@@ -47,7 +47,7 @@ export default function BeyondVideo() {
         }}
         transition={{ duration: 0.6 }}
       >
-        Mystic Oracle
+        Oracle
       </motion.div>
 
       <motion.div
@@ -72,7 +72,7 @@ export default function BeyondVideo() {
         {currentScene === 0 && (
           <SceneHook
             key="hook"
-            headline="Your daily mystic companion."
+            headline="Your daily AI life advisor."
             subline="Chat, deep dives, synastry, vault."
           />
         )}

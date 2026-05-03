@@ -4,9 +4,9 @@ export function Shot2Reading() {
   return (
     <ScreenshotShell
       index={2}
-      eyebrow="Your Reading"
+      eyebrow="Your Session"
       headline={<>Written for you,<br />line by line.</>}
-      subhead={<>Five chapters, woven from<br />the lines of your hands.</>}
+      subhead={<>Five chapters of guidance,<br />woven from your palm.</>}
     >
       <MockReadingScreen />
     </ScreenshotShell>
@@ -58,7 +58,7 @@ function MockReadingScreen() {
           textTransform: 'uppercase',
         }}
       >
-        Your Mystic Oracle Reading
+        Your Oracle Session
       </div>
 
       {/* section heading */}
@@ -107,7 +107,7 @@ function MockReadingScreen() {
         </p>
         <p style={{ margin: '0 0 22px' }}>
           The minor branches near its origin reveal a season of guarded hope:
-          you are not closed, but you are choosing carefully. Mystic Oracle sees
+          you are not closed, but you are choosing carefully. Your advisor sees
           someone you have already met — not yet recognised — circling back into
           your awareness within the next three lunar cycles.
         </p>

@@ -4,7 +4,7 @@ import { Sigil } from './Sigil';
 /**
  * Unified closing brand frame shared by all three App Store previews.
  *
- * Large "Mystic Oracle" wordmark, a category sub-line, and a non-interactive
+ * Large "Oracle" wordmark, a category sub-line, and a non-interactive
  * "Available on the App Store" affordance — sharing the gold-on-night palette
  * already used throughout the artifact.
  */
@@ -41,7 +41,7 @@ export function SceneAppStoreClose() {
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
         transition={{ duration: 0.9, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
       >
-        Mystic Oracle
+        Oracle
       </motion.div>
 
       <motion.div
@@ -59,7 +59,7 @@ export function SceneAppStoreClose() {
         animate={{ opacity: 0.85, y: 0 }}
         transition={{ duration: 0.7, delay: 0.7 }}
       >
-        Palm Reading · Astrology · Daily Guidance
+        Powered by your palm · Guided by AI
       </motion.div>
 
       <motion.div

@@ -13,8 +13,8 @@ export function Shot1Ritual() {
     <ScreenshotShell
       index={1}
       eyebrow="The Ritual"
-      headline={<>Read your palm<br />in seconds.</>}
-      subhead={<>Your hands hold the story.<br />Mystic Oracle reveals it.</>}
+      headline={<>Your session<br />starts with your palm.</>}
+      subhead={<>Powered by your palm.<br />Guided by AI.</>}
     >
       <MockRitualScreen palmUrl={palmUrl} />
     </ScreenshotShell>

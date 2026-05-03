@@ -7,33 +7,33 @@ const previews = [
     number: 'I',
     title: 'The Ritual',
     blurb:
-      'The mystical onboarding and palm-capture ceremony. Sigil, framing reticle, line tracing.',
+      'The biometric intake — palm-capture ceremony with sigil, framing reticle, and line tracing.',
     duration: '~20s',
   },
   {
     slug: 'reading',
     number: 'II',
-    title: 'The Reading Reveal',
+    title: 'The Session Reveal',
     blurb:
-      'The streaming, section-by-section reading flow culminating in the Archetype card reveal.',
+      'The streaming, section-by-section session flow culminating in the Archetype card reveal.',
     duration: '~26s',
   },
   {
     slug: 'beyond',
     number: 'III',
-    title: 'Beyond the Reading',
+    title: 'Beyond the Session',
     blurb:
-      'Mystic Chat, Deep Dives, Synastry, and the Vault — the ongoing companion.',
+      'Advisor Chat, Deep Dives, Synastry, and the Vault — the ongoing AI life advisor.',
     duration: '~25s',
   },
 ] as const;
 
 const screenshots = [
-  { slug: 'shot-1', number: '01', title: 'The Ritual', blurb: 'Read your palm in seconds.' },
-  { slug: 'shot-2', number: '02', title: 'Your Reading', blurb: 'Personally written, five chapters deep.' },
-  { slug: 'shot-3', number: '03', title: 'Go Deeper', blurb: 'Chat with Mystic Oracle anytime.' },
-  { slug: 'shot-4', number: '04', title: 'Daily & Journal', blurb: 'Every reading kept and remembered.' },
-  { slug: 'shot-5', number: '05', title: 'People & Synastry', blurb: 'Two souls, one reading.' },
+  { slug: 'shot-1', number: '01', title: 'The Ritual', blurb: 'Your session starts with your palm.' },
+  { slug: 'shot-2', number: '02', title: 'Your Session', blurb: 'Personally written, five chapters deep.' },
+  { slug: 'shot-3', number: '03', title: 'Go Deeper', blurb: 'Chat with your AI advisor anytime.' },
+  { slug: 'shot-4', number: '04', title: 'Daily & Journal', blurb: 'Every session kept and remembered.' },
+  { slug: 'shot-5', number: '05', title: 'People & Synastry', blurb: 'Two lives, one session.' },
 ] as const;
 
 export function PreviewIndex() {
@@ -65,7 +65,7 @@ export function PreviewIndex() {
             marginBottom: '1.2rem',
           }}
         >
-          Mystic Oracle: Palm Reading — App Store Previews
+          Oracle: AI Life Advisor — App Store Previews
         </div>
         <h1
           className="font-display"

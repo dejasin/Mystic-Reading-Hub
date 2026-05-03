@@ -1,7 +1,7 @@
-# Capturing Mystic Oracle: Palm Reading App Store Preview Videos
+# Capturing Oracle: AI Life Advisor App Store Preview Videos
 
 This artifact ships **three independent preview compositions** for the iOS app
-**Mystic Oracle: Palm Reading** — _Ritual_, _Reading_, and _Beyond_. Each one
+**Oracle: AI Life Advisor** — _Ritual_, _Session_, and _Beyond_. Each one
 renders inside a fixed portrait stage and adapts to **three Apple-supported
 canvases**:
 
@@ -21,18 +21,18 @@ without clipping.
 
 | # | Route | Title | Opening hook caption | Approx. duration |
 |---|-------|-------|----------------------|------------------|
-| I  | `#ritual`  | The Ritual — palm capture        | "Read your palm in seconds."    | ~17.5s |
-| II | `#reading` | The Reading Reveal               | "A reading written for you."    | ~23.1s |
-| III| `#beyond`  | Beyond the Reading               | "Your daily mystic companion."  | ~26.0s |
+| I  | `#ritual`  | The Ritual — palm capture        | "Your session starts with your palm." | ~17.5s |
+| II | `#reading` | The Session Reveal               | "A session written for you."          | ~23.1s |
+| III| `#beyond`  | Beyond the Session               | "Your daily AI life advisor."         | ~26.0s |
 
 Each preview opens on a bold typographic hook caption (visible inside the first
 ~600 ms, the Apple autoplay-with-sound-off frame) over the gold-on-night
 visual language used throughout the brand, then transitions into the in-app
-motion (palm capture, streaming reading + Archetype, chat / deep dives /
+motion (palm capture, streaming session + Archetype, chat / deep dives /
 synastry / vault). Every preview ends on a unified closing brand frame:
 
-> **Mystic Oracle**
-> Palm Reading · Astrology · Daily Guidance
+> **Oracle**
+> Powered by your palm · Guided by AI
 > Available on the App Store
 
 All three are auto-playing, loopable, and contain **zero interactive elements**

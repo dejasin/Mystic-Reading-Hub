@@ -46,8 +46,8 @@ export default function RitualVideo() {
         {currentScene === 0 && (
           <SceneHook
             key="hook"
-            headline="Read your palm in seconds."
-            subline="Ancient wisdom, modern AI."
+            headline="Your session starts with your palm."
+            subline="Powered by your palm. Guided by AI."
           />
         )}
         {currentScene === 1 && <ScenePalmFrame key="frame" />}

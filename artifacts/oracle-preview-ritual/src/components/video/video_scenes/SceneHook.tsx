@@ -11,7 +11,7 @@ interface SceneHookProps {
 /**
  * Opening typographic hook scene shared by all three previews.
  *
- * Renders the "Mystic Oracle" wordmark and a bold headline/subline within
+ * Renders the "Oracle" wordmark and a bold headline/subline within
  * the first ~600ms so the App Store autoplay frame reads as a title card,
  * not a slow logo fade.
  */
@@ -41,7 +41,7 @@ export function SceneHook({ headline, subline }: SceneHookProps) {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.45, delay: 0.05 }}
       >
-        Mystic Oracle
+        Oracle
       </motion.div>
 
       <motion.div

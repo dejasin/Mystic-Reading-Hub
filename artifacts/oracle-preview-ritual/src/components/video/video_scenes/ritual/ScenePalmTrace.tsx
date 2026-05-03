@@ -20,7 +20,7 @@ const lines = [
     delay: 2.6,
   },
   {
-    name: 'Fate',
+    name: 'Sun',
     d: 'M 56 122 C 54 100, 52 80, 56 58',
     delay: 3.8,
   },

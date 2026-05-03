@@ -48,8 +48,8 @@ export default function ReadingVideo() {
         {currentScene === 0 && (
           <SceneHook
             key="hook"
-            headline="A reading written for you."
-            subline="Five chapters deep, every time."
+            headline="A session written for you."
+            subline="Five chapters of personal guidance."
           />
         )}
         {currentScene === 1 && <SceneCurrents key="currents" />}

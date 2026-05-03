@@ -4,9 +4,9 @@ export function Shot4Journal() {
   return (
     <ScreenshotShell
       index={4}
-      eyebrow="Daily Mystic & Journal"
-      headline={<>Your daily mystic.<br />Saved, forever.</>}
-      subhead={<>Every reading kept.<br />Every insight remembered.</>}
+      eyebrow="Daily Guidance & Journal"
+      headline={<>Your daily advisor.<br />Saved, forever.</>}
+      subhead={<>Every session kept.<br />Every insight remembered.</>}
     >
       <MockJournalScreen />
     </ScreenshotShell>
@@ -83,7 +83,7 @@ function MockJournalScreen() {
             textTransform: 'uppercase',
           }}
         >
-          <span>✦ Today's Mystic Oracle</span>
+          <span>✦ Today's Oracle</span>
           <span style={{ opacity: 0.7 }}>April 21</span>
         </div>
         <div
@@ -127,12 +127,12 @@ function MockJournalScreen() {
           textTransform: 'uppercase',
         }}
       >
-        Your Saved Readings
+        Your Saved Sessions
       </div>
 
       <div style={{ marginTop: '18px', paddingInline: '36px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <Entry
-          tag="Full Reading"
+          tag="Full Session"
           tagColor="#c9a84c"
           icon="✦"
           title="The Patient Heart"
