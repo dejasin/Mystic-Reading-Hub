@@ -21,14 +21,14 @@ const router: IRouter = Router();
 router.use(globalLimiter);
 
 router.use(healthRouter);
-router.use("/send-code", authLimiter);
-router.use("/verify-code", authLimiter);
-router.use("/apple-signin", authLimiter);
+router.use("/auth/send-code", authLimiter);
+router.use("/auth/verify-code", authLimiter);
+router.use("/auth/apple", authLimiter);
 router.use(authRouter);
 
 router.use(profilesRouter);
 
-router.use("/oracle", aiGenerationLimiter);
+router.use("/generate", aiGenerationLimiter);
 router.use("/chat", aiGenerationLimiter);
 router.use("/synastry", aiGenerationLimiter);
 router.use("/deep-dive", aiGenerationLimiter);
