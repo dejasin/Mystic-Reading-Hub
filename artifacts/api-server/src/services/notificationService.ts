@@ -1,7 +1,7 @@
 import { db, pushTokensTable, notificationPreferencesTable } from "@workspace/db";
 import type { NotificationPreference } from "@workspace/db";
 
-const DAILY_PROMPTS = [
+export const DAILY_PROMPTS = [
   "A pattern from your last session is worth revisiting. The Oracle has a new angle.",
   "Something you mentioned is still unfolding. Return to see what's shifted.",
   "Your behavioral profile suggests today is a good day for a check-in.",
@@ -18,7 +18,7 @@ const DAILY_PROMPTS = [
   "One of your behavioral patterns is showing up differently this week. Tap to explore it.",
 ];
 
-const WEEKLY_REFLECTIONS = [
+export const WEEKLY_REFLECTIONS = [
   "Your weekly reflection is ready. The Oracle has identified the themes worth your attention.",
   "This week's behavioral themes carry a message specifically for you. Your reflection awaits.",
   "The Oracle has a fresh perspective on what you've been working through. Tap to read it.",
@@ -26,19 +26,19 @@ const WEEKLY_REFLECTIONS = [
   "A new weekly reflection is ready — one theme in particular deserves your attention.",
 ];
 
-const RE_ENGAGEMENT_3_DAY = [
+export const RE_ENGAGEMENT_3_DAY = [
   "The Oracle has been tracking how your patterns evolve. Something has shifted since your last visit.",
   "Three days is long enough for new patterns to surface. Return and see what's changed.",
   "Your behavioral profile keeps developing. The Oracle has updates waiting.",
 ];
 
-const RE_ENGAGEMENT_7_DAY = [
+export const RE_ENGAGEMENT_7_DAY = [
   "A full week has passed since your last visit. The Oracle has new observations for you.",
   "Your patterns have evolved this week. Your Oracle has been tracking them for you.",
   "Seven days of change can reshape how you see things. Come check in with The Oracle.",
 ];
 
-const RE_ENGAGEMENT_14_DAY = [
+export const RE_ENGAGEMENT_14_DAY = [
   "The Oracle still remembers your patterns — and they've been evolving in your absence. Return when you're ready.",
   "Two weeks of changes have accumulated. Your session would look quite different now.",
   "It's been a while, but your profile hasn't stopped evolving. A powerful session awaits your return.",
