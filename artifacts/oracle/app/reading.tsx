@@ -1059,7 +1059,7 @@ export default function ReadingScreen() {
                   adaptability: s.adaptability,
                   innerKnowing: s.innerKnowing,
                   expression: s.expression,
-                });
+                }, !!parsed.scoresFallback);
               }
               continue;
             }
@@ -1165,7 +1165,7 @@ export default function ReadingScreen() {
           adaptability: s.adaptability,
           innerKnowing: s.innerKnowing,
           expression: s.expression,
-        });
+        }, !!data?.scoresFallback);
       }
     } catch (e) {
       console.warn("Behavioral profile fetch failed:", e);

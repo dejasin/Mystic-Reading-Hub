@@ -414,8 +414,8 @@ End Section 2 with exactly this sentence: "Your behavioral profile points to a p
       session.hadPalmImages = hasPalmImages;
       await saveSession(sessionId, session);
 
-      const behavioralScores = await computeBehavioralScores(fullReading, userData, req.log);
-      sendEvent({ event: "behavioralScores", behavioralScores });
+      const behavioralResult = await computeBehavioralScores(fullReading, userData, req.log);
+      sendEvent({ event: "behavioralScores", behavioralScores: behavioralResult.scores, scoresFallback: behavioralResult.scoresFallback });
 
       stopKeepAlive();
       sendEvent({ event: "paywall" });
@@ -1298,8 +1298,8 @@ async function computeBehavioralScores(
   reading: string,
   userData: Record<string, string> | undefined,
   log: { error: (...args: unknown[]) => void },
-): Promise<Record<BehavioralDimension, number>> {
-  if (!anthropicApiKey || !reading.trim()) return { ...DEFAULT_BEHAVIORAL_SCORES };
+): Promise<{ scores: Record<BehavioralDimension, number>; scoresFallback: boolean }> {
+  if (!anthropicApiKey || !reading.trim()) return { scores: { ...DEFAULT_BEHAVIORAL_SCORES }, scoresFallback: true };
 
   try {
     const ud = userData ?? {};
@@ -1342,28 +1342,28 @@ Produce the JSON object now.`;
     });
 
     const text = result.content[0]?.type === "text" ? result.content[0].text.trim() : "";
-    if (!text) return { ...DEFAULT_BEHAVIORAL_SCORES };
+    if (!text) return { scores: { ...DEFAULT_BEHAVIORAL_SCORES }, scoresFallback: true };
 
     let parsed: Record<string, unknown>;
     try {
       parsed = JSON.parse(text) as Record<string, unknown>;
     } catch {
-      return { ...DEFAULT_BEHAVIORAL_SCORES };
+      return { scores: { ...DEFAULT_BEHAVIORAL_SCORES }, scoresFallback: true };
     }
     if (!parsed || typeof parsed !== "object") {
-      return { ...DEFAULT_BEHAVIORAL_SCORES };
+      return { scores: { ...DEFAULT_BEHAVIORAL_SCORES }, scoresFallback: true };
     }
 
     const out: Partial<Record<BehavioralDimension, number>> = {};
     for (const dim of BEHAVIORAL_DIMENSIONS) {
       const v = clampScore(parsed[dim]);
-      if (v === null) return { ...DEFAULT_BEHAVIORAL_SCORES };
+      if (v === null) return { scores: { ...DEFAULT_BEHAVIORAL_SCORES }, scoresFallback: true };
       out[dim] = v;
     }
-    return out as Record<BehavioralDimension, number>;
+    return { scores: out as Record<BehavioralDimension, number>, scoresFallback: false };
   } catch (err) {
     log.error({ err }, "Behavioral scoring failed; returning defaults");
-    return { ...DEFAULT_BEHAVIORAL_SCORES };
+    return { scores: { ...DEFAULT_BEHAVIORAL_SCORES }, scoresFallback: true };
   }
 }
 
@@ -1377,20 +1377,20 @@ router.post("/behavioral-profile", async (req: Request, res: Response) => {
     if (!sessionId) {
       res.status(200).json({
         behavioralScores: { ...DEFAULT_BEHAVIORAL_SCORES },
-        fallback: true,
+        scoresFallback: true,
       });
       return;
     }
 
     const session = await getOrCreateSession(sessionId);
     const reading = (session.reading ?? "").trim();
-    const behavioralScores = await computeBehavioralScores(reading, userData, req.log);
-    res.status(200).json({ behavioralScores });
+    const result = await computeBehavioralScores(reading, userData, req.log);
+    res.status(200).json({ behavioralScores: result.scores, scoresFallback: result.scoresFallback });
   } catch (err) {
     req.log.error({ err }, "Behavioral profile error (returning defaults)");
     res.status(200).json({
       behavioralScores: { ...DEFAULT_BEHAVIORAL_SCORES },
-      fallback: true,
+      scoresFallback: true,
     });
   }
 });

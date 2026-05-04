@@ -92,7 +92,7 @@ export default function DailyHistoryScreen() {
 
         {error && !loading && (
           <View style={styles.centerContainer}>
-            <Text style={styles.errorText}>Could not retrieve your oracle history.</Text>
+            <Text style={styles.errorText}>Could not retrieve your reflection history.</Text>
           </View>
         )}
 
@@ -100,7 +100,7 @@ export default function DailyHistoryScreen() {
           <View style={styles.centerContainer}>
             <Text style={styles.emptyTitle}>No Messages Yet</Text>
             <Text style={styles.emptyText}>
-              Return to the home screen to receive your first Daily Oracle message. A new check-in arrives each day.
+              Return to the home screen to receive your first Daily Reflection. A new check-in arrives each day.
             </Text>
           </View>
         )}

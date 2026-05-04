@@ -68,11 +68,11 @@ const SLIDES: SlideData[] = [
   },
   {
     key: "palm",
-    title: "PALM ANALYSIS",
+    title: "HAND PHOTO INPUT",
     subtitle: "Powered by AI. Refined by your biometrics.",
     bodyLines: [
-      "A few reference images of your hand",
-      "AI reads behavioral signal from your imprint",
+      "A few reference photos of your hand",
+      "AI uses visual cues as one input to your behavioral profile",
       "Images are sent securely and never stored",
     ],
     isFinal: true,

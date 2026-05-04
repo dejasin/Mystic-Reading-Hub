@@ -388,7 +388,7 @@ export default function LandingScreen() {
             <>
               <Text style={styles.taglineHeadline}>Your Personal AI Advisor</Text>
               <Text style={styles.tagline}>
-                Powered by your palm. Guided by AI.
+                Powered by your input. Guided by AI.
               </Text>
               <Text style={styles.taglineDescription}>
                 Oracle uses a few biometric reference images and your context to map your

@@ -65,6 +65,7 @@ export interface OracleState {
   deepDives: Partial<Record<DeepDiveCategory, string>>;
   behavioralScores: BehavioralScores | null;
   behavioralScoresUpdatedAt: number | null;
+  scoresFallback: boolean;
   questionnaireAnswers: QuestionnaireAnswers | null;
   // Task #65 — id of the OracleProfile this session is anchored to.
   // Set by the ritual when it auto-creates a profile, or by
@@ -88,7 +89,7 @@ interface OracleContextValue {
   setPaid: (v: boolean) => void;
   appendDeepDive: (category: DeepDiveCategory, text: string) => void;
   clearDeepDive: (category: DeepDiveCategory) => void;
-  setBehavioralScores: (scores: BehavioralScores | null) => void;
+  setBehavioralScores: (scores: BehavioralScores | null, fallback?: boolean) => void;
   setQuestionnaireAnswers: (answers: QuestionnaireAnswers | null) => void;
   setCurrentProfileId: (id: string | null) => void;
   resetAll: () => void;
@@ -116,6 +117,7 @@ const defaultState: OracleState = {
   deepDives: {},
   behavioralScores: null,
   behavioralScoresUpdatedAt: null,
+  scoresFallback: false,
   questionnaireAnswers: null,
   currentProfileId: null,
 };
@@ -139,12 +141,14 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
 
         let nextScores: BehavioralScores | null = null;
         let nextScoresUpdatedAt: number | null = null;
+        let nextScoresFallback = false;
         if (scoresRaw) {
           try {
             const parsed = JSON.parse(scoresRaw);
             if (parsed && parsed.scores && typeof parsed.scores.intuition === "number") {
               nextScores = parsed.scores;
               nextScoresUpdatedAt = parsed.updatedAt ?? null;
+              nextScoresFallback = parsed.scoresFallback ?? false;
             }
           } catch {}
         }
@@ -168,6 +172,7 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
           ...prev,
           behavioralScores: nextScores,
           behavioralScoresUpdatedAt: nextScoresUpdatedAt,
+          scoresFallback: nextScoresFallback,
           questionnaireAnswers: nextQA,
         }));
       } catch (e) {
@@ -255,19 +260,20 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
-  const setBehavioralScores = (scores: BehavioralScores | null) => {
+  const setBehavioralScores = (scores: BehavioralScores | null, fallback?: boolean) => {
     const updatedAt = scores ? Date.now() : null;
     setState(prev => ({
       ...prev,
       behavioralScores: scores,
       behavioralScoresUpdatedAt: updatedAt,
+      scoresFallback: fallback ?? false,
     }));
     (async () => {
       try {
         if (scores) {
           await AsyncStorage.setItem(
             BEHAVIORAL_SCORES_KEY,
-            JSON.stringify({ scores, updatedAt }),
+            JSON.stringify({ scores, updatedAt, scoresFallback: fallback ?? false }),
           );
         } else {
           await AsyncStorage.removeItem(BEHAVIORAL_SCORES_KEY);

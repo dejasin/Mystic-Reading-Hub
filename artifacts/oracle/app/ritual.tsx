@@ -73,7 +73,7 @@ type OracleImages = {
 const STEPS: StepConfig[] = [
   {
     key: null,
-    title: "Behavioral Imprint Capture",
+    title: "Hand Photo Capture",
     intro: true,
     instructions: [],
   },
@@ -92,7 +92,7 @@ const STEPS: StepConfig[] = [
   {
     key: "left_palm",
     title: "Your Non-Dominant Hand",
-    subtitle: "Behavioral imprint — secondary signal",
+    subtitle: "Secondary reference photo",
     instructions: [
       "Same technique as your dominant hand",
       "This image refines the behavioral profile",
@@ -268,7 +268,7 @@ export default function RitualScreen() {
             <Text style={styles.cardTitle}>{currentStep.title}</Text>
             <Text style={styles.divider}>─── ✦ ───</Text>
             <Text style={styles.introText}>
-              Oracle reads behavioral and personality patterns from your hand imprint. These images are the foundation of your session. Take your time — good light matters.
+              Oracle uses hand photos as one input signal to map your behavioral profile. These images are the foundation of your session. Take your time — good light matters.
             </Text>
             <Pressable
               style={({ pressed }) => [styles.proceedBtn, pressed && { opacity: 0.85 }]}

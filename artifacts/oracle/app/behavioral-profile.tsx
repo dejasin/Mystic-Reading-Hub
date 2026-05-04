@@ -204,7 +204,7 @@ export default function BehavioralProfileScreen() {
   const insets = useSafeAreaInsets();
   const { state } = useOracle();
   const { isSubscribed } = useSubscription();
-  const { userData, behavioralScores, behavioralScoresUpdatedAt } = state;
+  const { userData, behavioralScores, behavioralScoresUpdatedAt, scoresFallback } = state;
 
   const hasScores = !!behavioralScores;
   const isLocked = !hasScores;
@@ -265,7 +265,7 @@ export default function BehavioralProfileScreen() {
           <Text style={styles.divider}>─── ✦ ───</Text>
           <Text style={styles.subtitle}>
             {isLocked
-              ? "Derived from your palm analysis."
+              ? "Derived from your behavioral analysis."
               : userData.name
                 ? `A snapshot of how ${userData.name} moves through the world.`
                 : "A snapshot of how you move through the world."}
@@ -297,6 +297,37 @@ export default function BehavioralProfileScreen() {
               </Pressable>
             </View>
           </Animated.View>
+        ) : scoresFallback ? (
+          <>
+            <Animated.View entering={FadeIn.duration(700).delay(150)} style={styles.calibrationCard}>
+              <Feather name="activity" size={36} color={Colors.gold} style={{ marginBottom: 14, opacity: 0.6 }} />
+              <Text style={styles.calibrationTitle}>Calibrating Your Profile</Text>
+              <Text style={styles.calibrationBody}>
+                Scores are still being calibrated — refresh after your next session.
+              </Text>
+              <View style={styles.calibrationDimList}>
+                {DIMENSIONS.map((d) => (
+                  <View key={d.key} style={styles.calibrationDimRow}>
+                    <View style={styles.calibrationDot} />
+                    <Text style={styles.calibrationDimLabel}>{d.label}</Text>
+                    <Text style={styles.calibrationPending}>pending</Text>
+                  </View>
+                ))}
+              </View>
+            </Animated.View>
+
+            <Animated.View entering={FadeIn.duration(700).delay(300)} style={styles.bridgeCtaWrap}>
+              <Pressable
+                style={({ pressed }) => [styles.bridgeCta, pressed && { opacity: 0.85 }]}
+                onPress={handleBridgeToChat}
+                accessibilityLabel="Talk to Oracle About Your Profile"
+                accessibilityRole="button"
+              >
+                <Feather name="message-circle" size={18} color={Colors.bg} />
+                <Text style={styles.bridgeCtaText}>Talk to Oracle About Your Profile →</Text>
+              </Pressable>
+            </Animated.View>
+          </>
         ) : (
           <>
             <Animated.View entering={FadeIn.duration(700).delay(150)} style={styles.chartCard}>
@@ -534,6 +565,66 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
     letterSpacing: 0.5,
+  },
+  calibrationCard: {
+    alignItems: "center",
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    paddingVertical: 28,
+    paddingHorizontal: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: "rgba(201,168,76,0.15)",
+  },
+  calibrationTitle: {
+    color: Colors.gold,
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 1.5,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  calibrationBody: {
+    color: Colors.cream,
+    fontSize: 13,
+    lineHeight: 20,
+    textAlign: "center",
+    opacity: 0.8,
+    marginBottom: 20,
+    paddingHorizontal: 8,
+  },
+  calibrationDimList: {
+    width: "100%",
+    gap: 10,
+  },
+  calibrationDimRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: "rgba(201,168,76,0.06)",
+    borderRadius: 8,
+  },
+  calibrationDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Colors.gold,
+    opacity: 0.4,
+    marginRight: 10,
+  },
+  calibrationDimLabel: {
+    flex: 1,
+    color: Colors.cream,
+    fontSize: 13,
+    fontWeight: "500",
+    letterSpacing: 0.5,
+  },
+  calibrationPending: {
+    color: Colors.muted,
+    fontSize: 11,
+    fontStyle: "italic",
+    opacity: 0.7,
   },
   footerCard: {
     paddingHorizontal: 14,
