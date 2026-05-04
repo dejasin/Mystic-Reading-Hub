@@ -89,5 +89,8 @@ VERDICT: PASS
   pnpm run build (api-server): PASS
   pnpm test (api-server): 8/8 tests passed
   pnpm test (oracle): 10/10 tests passed
+  tsc --noEmit: TS6305 errors resolved. One pre-existing Drizzle ORM type mismatch in referral.ts (unrelated).
+  @anthropic-ai/sdk: Updated 0.80.0 → ^0.92.0 (patched GHSA-p7fg-763f-g4gf)
+  pnpm audit: 15 remaining vulns — all in transitive devDeps (postcss via Expo CLI/Vite), not shipped in iOS binary.
 VERDICT: PASS
 ```

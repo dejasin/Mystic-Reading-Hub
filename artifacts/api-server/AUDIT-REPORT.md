@@ -120,9 +120,13 @@ Full audit across 12 categories. **5 issues found and fixed.** All verification 
 **Sweep:** `sk-ant-`, `sk_live_`, `pk_live_`, `appl_[A-Za-z0-9]`
 **Result:** Zero matches. All secrets use environment variables. PASS.
 
-### 3f. Dependency Audit — NOTED
+### 3f. Anthropic SDK Vulnerability (FIXED)
+**Issue:** `@anthropic-ai/sdk@0.80.0` had known vulnerability GHSA-p7fg-763f-g4gf (patched in >=0.91.1).
+**Fix:** Updated to `@anthropic-ai/sdk@^0.92.0`.
+
+### 3g. Dependency Audit — ACCEPTED RISK
 **Command:** `pnpm audit`
-**Result:** 17 vulnerabilities (13 moderate, 4 high). Primary: `@anthropic-ai/sdk >=0.79.0 <0.91.1` (GHSA-p7fg-763f-g4gf). These are upstream dependency issues, not application code vulnerabilities. Recommend updating in a follow-up task.
+**Result:** 15 remaining vulnerabilities (11 moderate, 4 high). All are in transitive dependencies of Expo CLI (`@expo/cli>@expo/metro-config>postcss`) and Vite (`vite>postcss`) — build/dev tooling only, not shipped in the production iOS binary. These cannot be directly resolved without upstream package updates and do not affect the runtime security of the deployed app.
 
 ---
 
@@ -202,7 +206,7 @@ Full audit across 12 categories. **5 issues found and fixed.** All verification 
 | `pnpm run build` (api-server) | ✓ PASS |
 | `pnpm test` (api-server) | ✓ 8/8 tests passed |
 | `pnpm test` (oracle) | ✓ 10/10 tests passed |
-| TypeScript errors | Pre-existing TS6305 errors in lib/db (not introduced by this task) |
+| TypeScript (`tsc --noEmit`) | ✓ TS6305 errors fixed by building lib/db declarations. One pre-existing Drizzle ORM type mismatch in referral.ts (unrelated to this task, does not affect build or runtime). |
 
 ---
 
@@ -215,11 +219,12 @@ Full audit across 12 categories. **5 issues found and fixed.** All verification 
 | `artifacts/api-server/src/routes/auth.ts` | Gated verification code logging behind dev-only check |
 | `artifacts/api-server/src/routes/daily.ts` | Renamed console error messages |
 
-## 11. Packages Added
+## 11. Packages Added / Updated
 
 | Package | Workspace | Purpose |
 |---------|-----------|---------|
-| `helmet` | `@workspace/api-server` | Security headers middleware |
+| `helmet` (added) | `@workspace/api-server` | Security headers middleware |
+| `@anthropic-ai/sdk` (0.80.0 → ^0.92.0) | `@workspace/api-server` | Patched GHSA-p7fg-763f-g4gf vulnerability |
 
 ## 12. Recommended Follow-Up Tasks
 
@@ -228,4 +233,4 @@ Full audit across 12 categories. **5 issues found and fixed.** All verification 
 | 1 | Add rate limiting to API endpoints (auth, AI generation) | High |
 | 2 | Set up email delivery for verification codes before production | High |
 | 3 | Add unit tests for notification copy to prevent compliance regressions | Medium |
-| 4 | Update `@anthropic-ai/sdk` to patch GHSA-p7fg-763f-g4gf | Medium |
+| 4 | Monitor upstream Expo/Vite for postcss vulnerability patches | Low |
