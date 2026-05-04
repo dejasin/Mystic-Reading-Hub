@@ -1,0 +1,770 @@
+Here is the prompt:
+
+---
+
+You are a senior software engineer, App Store compliance specialist, and security auditor with 50+ shipped iOS apps. You have personally gotten apps approved after 4.3b rejections. You know exactly what Apple looks for, what gets flagged, and what gets approved. You are also a security expert who knows what exposes apps to data breaches, App Store violations, and legal liability.
+
+This is the final pre-submission security and compliance audit for **Oracle: AI Life Advisor**. Nothing gets submitted until this audit passes completely. Your job is to find every single thing that could cause a rejection, a crash, a security vulnerability, or a legal problem — and fix all of it before the EAS build runs.
+
+Be the last line of defense. Find everything.
+
+---
+
+**PHASE 1 — COLLECT ALL EVIDENCE FIRST**
+
+Run every command below before writing a single word of assessment. Collect all output. Use it as evidence in Phase 2.
+
+```bash
+# ============================================
+# BUILD INTEGRITY
+# ============================================
+
+echo "=== PNPM INSTALL ==="
+cd /home/user/Mystic-Reading-Hub && sudo pnpm install --frozen-lockfile
+
+echo "=== PREBUILD CHECK ==="
+cd /home/user/Mystic-Reading-Hub/artifacts/oracle && npx expo prebuild --platform ios --clean --no-install 2>&1
+
+echo "=== TYPESCRIPT CHECK ==="
+cd /home/user/Mystic-Reading-Hub/artifacts/oracle && npx tsc --noEmit 2>&1 | head -100
+
+echo "=== PACKAGE AUDIT ==="
+cd /home/user/Mystic-Reading-Hub && pnpm audit 2>&1 | head -50
+
+# ============================================
+# SECURITY SCAN
+# ============================================
+
+echo "=== API KEYS IN CLIENT CODE ==="
+grep -rn "sk-ant\|sk-\|api_key\|apiKey\|API_KEY\|secret\|SECRET\|private_key\|PRIVATE_KEY\|password\|PASSWORD" \
+  artifacts/oracle/app/ \
+  artifacts/oracle/lib/ \
+  artifacts/oracle/components/ \
+  artifacts/oracle/context/ \
+  --include="*.ts" --include="*.tsx" 2>/dev/null
+
+echo "=== HARDCODED CREDENTIALS ==="
+grep -rn "Bearer \|Authorization: \|x-api-key" \
+  artifacts/oracle/ \
+  --include="*.ts" --include="*.tsx" 2>/dev/null
+
+echo "=== ENVIRONMENT VARIABLES EXPOSED ==="
+grep -rn "process\.env\|EXPO_PUBLIC_" \
+  artifacts/oracle/ \
+  --include="*.ts" --include="*.tsx" 2>/dev/null
+
+echo "=== API SERVER SECURITY ==="
+grep -rn "cors\|helmet\|rate.limit\|rateLimit\|auth\|middleware" \
+  artifacts/api-server/src/ \
+  --include="*.ts" 2>/dev/null | head -50
+
+echo "=== SQL INJECTION RISKS ==="
+grep -rn "query\|sql\|SQL\|\`SELECT\|\`INSERT\|\`UPDATE\|\`DELETE" \
+  artifacts/api-server/src/ \
+  --include="*.ts" 2>/dev/null | head -50
+
+echo "=== UNVALIDATED USER INPUT ==="
+grep -rn "req\.body\|req\.params\|req\.query" \
+  artifacts/api-server/src/routes/ \
+  --include="*.ts" 2>/dev/null | head -50
+
+echo "=== SENSITIVE DATA IN ASYNCSTORAGE ==="
+grep -rn "AsyncStorage\.setItem" \
+  artifacts/oracle/ \
+  --include="*.ts" --include="*.tsx" 2>/dev/null
+
+echo "=== CONSOLE LOGS WITH SENSITIVE DATA ==="
+grep -rn "console\.log\|console\.error\|console\.warn" \
+  artifacts/oracle/app/ \
+  artifacts/oracle/lib/ \
+  --include="*.ts" --include="*.tsx" 2>/dev/null | head -50
+
+# ============================================
+# APP STORE COMPLIANCE SCAN
+# ============================================
+
+echo "=== FORTUNE TELLING LANGUAGE ==="
+grep -rn "fortune\|horoscope\|astrology\|numerology\|tarot\|zodiac\|destiny\|fate\b\|predict\b\|psychic\|divination\|mystic\b" \
+  artifacts/oracle/app/ \
+  artifacts/oracle/components/ \
+  --include="*.ts" --include="*.tsx" \
+  -i 2>/dev/null
+
+echo "=== CHIROMANTIC VOCABULARY ==="
+grep -rn "Heart Line\|Head Line\|Life Line\|Fate Line\|Mount of\|palmist\|chiromancy\|palmistry\|chiromantic" \
+  artifacts/oracle/app/ \
+  artifacts/oracle/components/ \
+  artifacts/api-server/src/ \
+  --include="*.ts" --include="*.tsx" \
+  -i 2>/dev/null
+
+echo "=== ZODIAC GLYPHS IN UI ==="
+grep -rn "♈\|♉\|♊\|♋\|♌\|♍\|♎\|♏\|♐\|♑\|♒\|♓\|Aries\|Taurus\|Gemini\|Cancer\|Leo\|Virgo\|Libra\|Scorpio\|Sagittarius\|Capricorn\|Aquarius\|Pisces" \
+  artifacts/oracle/app/ \
+  artifacts/oracle/components/ \
+  --include="*.ts" --include="*.tsx" 2>/dev/null
+
+echo "=== FORBIDDEN SERVER PATTERNS ==="
+grep -rn "computeSunSign\|computeFullNumerology\|computeChineseZodiac\|computeTarotCard\|computePersonalYear\|FORBIDDEN_TERMINOLOGY\|BIRLA_PERSONA_BLOCK\|RECOGNITION LINE MANDATORY\|MEMORY ILLUSION\|goal is NOT factual correctness\|emotional resonance.*perceived precision\|MEMORY ILLUSION\|Barnum" \
+  artifacts/api-server/src/ \
+  --include="*.ts" 2>/dev/null
+
+echo "=== HARDCODED PREDICTION CLIFFHANGER ==="
+grep -rn "3.5 years\|next 3\|one decision will define\|Oracle can already see\|pattern forming\|approaching a phase" \
+  artifacts/api-server/src/ \
+  artifacts/oracle/app/ \
+  --include="*.ts" --include="*.tsx" \
+  -i 2>/dev/null
+
+echo "=== DOB DRIVEN CONTENT ==="
+grep -rn "dateOfBirth\|date_of_birth\|dob\b\|birthDate\|birth_date" \
+  artifacts/api-server/src/routes/ \
+  artifacts/oracle/app/ \
+  artifacts/oracle/lib/ \
+  --include="*.ts" --include="*.tsx" 2>/dev/null
+
+echo "=== DAILY ORACLE WEEKLY FORECAST ==="
+grep -rn "Daily Oracle\|Weekly Forecast\|daily.oracle\|weekly.forecast\|daily_oracle\|weekly_forecast" \
+  artifacts/oracle/app/ \
+  artifacts/oracle/components/ \
+  artifacts/api-server/src/ \
+  --include="*.ts" --include="*.tsx" \
+  -i 2>/dev/null
+
+echo "=== MANIPULATION PROMPTS ==="
+grep -rn "emotional resonance\|perceived precision\|slightly exposed\|feel seen\|RECOGNITION\|MANDATORY\|MEMORY ILLUSION\|Barnum\|cold reading" \
+  artifacts/api-server/src/ \
+  --include="*.ts" \
+  -i 2>/dev/null
+
+# ============================================
+# PRIVACY AND DATA HANDLING
+# ============================================
+
+echo "=== CAMERA USAGE DESCRIPTION ==="
+grep -n "NSCameraUsageDescription\|NSPhotoLibrary\|NSMicrophone" \
+  artifacts/oracle/app.json 2>/dev/null
+
+echo "=== DATA BEING SENT TO API ==="
+grep -rn "FormData\|fetch\|axios\|api\." \
+  artifacts/oracle/lib/api.ts \
+  artifacts/oracle/app/ritual.tsx \
+  --include="*.ts" --include="*.tsx" 2>/dev/null | head -50
+
+echo "=== PHOTO STORAGE CHECK ==="
+grep -rn "saveToLibrary\|MediaLibrary\|FileSystem\.write\|downloadAsync\|palm\|photo.*stor\|stor.*photo\|image.*sav\|sav.*image" \
+  artifacts/oracle/app/ \
+  artifacts/oracle/lib/ \
+  --include="*.ts" --include="*.tsx" \
+  -i 2>/dev/null
+
+echo "=== USER DATA RETENTION ==="
+grep -rn "AsyncStorage\.setItem\|SecureStore" \
+  artifacts/oracle/ \
+  --include="*.ts" --include="*.tsx" 2>/dev/null
+
+# ============================================
+# SUBSCRIPTION AND PAYMENT INTEGRITY
+# ============================================
+
+echo "=== REVENUECAT CONFIGURATION ==="
+cat artifacts/oracle/lib/revenuecat.tsx 2>/dev/null
+
+echo "=== PAYWALL TRIGGER ==="
+grep -rn "paywall\|Purchases\|purchasePackage\|restorePurchases\|entitlement\|isActive\|full_reading" \
+  artifacts/oracle/app/ \
+  artifacts/oracle/lib/ \
+  --include="*.ts" --include="*.tsx" 2>/dev/null
+
+echo "=== SUBSCRIPTION PRICE REFERENCES ==="
+grep -rn "\$4\.99\|\$9\.99\|\$49\.99\|4\.99\|9\.99\|49\.99" \
+  artifacts/oracle/app/ \
+  artifacts/oracle/components/ \
+  --include="*.ts" --include="*.tsx" 2>/dev/null
+
+echo "=== SERVER SIDE SUBSCRIPTION VERIFICATION ==="
+grep -rn "verif\|entitlement\|receipt\|RevenueCat\|revenuecat" \
+  artifacts/api-server/src/ \
+  --include="*.ts" 2>/dev/null
+
+echo "=== FREE TIER ABUSE PREVENTION ==="
+grep -rn "messageCount\|rateLimi\|session.*limit\|limit.*session\|free.*session\|trial" \
+  artifacts/api-server/src/ \
+  --include="*.ts" 2>/dev/null
+
+# ============================================
+# CRASH AND ERROR HANDLING
+# ============================================
+
+echo "=== TRY CATCH COVERAGE ON API CALLS ==="
+grep -rn "await fetch\|await api\." \
+  artifacts/oracle/app/ \
+  artifacts/oracle/lib/ \
+  --include="*.ts" --include="*.tsx" 2>/dev/null | head -50
+
+echo "=== ERROR BOUNDARIES ==="
+grep -rn "ErrorBoundary\|componentDidCatch\|error.*boundary" \
+  artifacts/oracle/ \
+  --include="*.ts" --include="*.tsx" \
+  -i 2>/dev/null
+
+echo "=== STREAM ERROR HANDLING ==="
+grep -rn "EventSource\|stream\|ReadableStream\|onmessage\|onerror" \
+  artifacts/oracle/app/reading.tsx \
+  artifacts/oracle/lib/api.ts \
+  2>/dev/null
+
+echo "=== BEHAVIORAL SCORE FALLBACK ==="
+grep -rn "behavioralScores\|behavioral.*score\|score.*fallback\|catch.*score\|default.*score" \
+  artifacts/api-server/src/routes/oracle.ts \
+  artifacts/oracle/context/OracleContext.tsx \
+  2>/dev/null
+
+echo "=== REVENUECAT ERROR HANDLING ==="
+grep -rn "catch\|error\|Error" \
+  artifacts/oracle/lib/revenuecat.tsx \
+  2>/dev/null
+
+echo "=== NULL CHECKS ON CRITICAL CONTEXT ==="
+grep -rn "oracleContext\.\|useOracle\(\)" \
+  artifacts/oracle/app/ \
+  --include="*.tsx" 2>/dev/null | head -30
+
+# ============================================
+# APP.JSON INTEGRITY
+# ============================================
+
+echo "=== FULL APP.JSON ==="
+cat artifacts/oracle/app.json
+
+echo "=== EAS.JSON ==="
+cat artifacts/oracle/eas.json
+
+# ============================================
+# NAVIGATION INTEGRITY
+# ============================================
+
+echo "=== FULL LAYOUT FILE ==="
+cat artifacts/oracle/app/_layout.tsx
+
+echo "=== QUESTIONNAIRE IN NAVIGATION ==="
+grep -rn "questionnaire\|Questionnaire" \
+  artifacts/oracle/app/_layout.tsx \
+  artifacts/oracle/app/intake.tsx \
+  2>/dev/null
+
+echo "=== RETURNING USER SKIP LOGIC ==="
+grep -rn "questionnaireAnswers\|skipQuestionnaire\|hasQuestionnaire" \
+  artifacts/oracle/app/_layout.tsx \
+  artifacts/oracle/context/OracleContext.tsx \
+  2>/dev/null
+
+# ============================================
+# WEBSITE AND URLS
+# ============================================
+
+echo "=== SUPPORT URL CHECK ==="
+curl -s -o /dev/null -w "%{http_code}" \
+  "https://mystic-reading-hub-djsinclair.replit.app/oracle-website/#support" 2>/dev/null
+
+echo "=== PRIVACY URL CHECK ==="
+curl -s -o /dev/null -w "%{http_code}" \
+  "https://mystic-reading-hub-djsinclair.replit.app/oracle-website/#privacy" 2>/dev/null
+
+echo "=== WEBSITE FORTUNE TELLING LANGUAGE ==="
+grep -in "fortune\|palm reading\|horoscope\|predict\|psychic\|zodiac\|astrology\|tarot" \
+  artifacts/oracle-website/index.html 2>/dev/null
+
+echo "=== WEBSITE AI ADVISOR LANGUAGE ==="
+grep -in "AI advisor\|behavioral profile\|life advisor\|hand analysis" \
+  artifacts/oracle-website/index.html 2>/dev/null
+
+# ============================================
+# ASSETS CHECK
+# ============================================
+
+echo "=== ICON FILES ==="
+ls -la artifacts/oracle/assets/images/icon.png \
+  artifacts/oracle/assets/images/splash-icon.png \
+  artifacts/oracle/assets/images/adaptive-icon.png \
+  artifacts/oracle/assets/images/notification-icon.png 2>/dev/null
+
+echo "=== ICON DIMENSIONS ==="
+python3 -c "
+from PIL import Image
+import os
+icons = {
+  'icon.png': ('RGB', (1024,1024)),
+  'splash-icon.png': ('RGB', (1024,1024)),
+  'adaptive-icon.png': ('RGBA', (1024,1024)),
+  'notification-icon.png': ('RGBA', (96,96)),
+}
+base = 'artifacts/oracle/assets/images/'
+for name, (mode, size) in icons.items():
+  path = base + name
+  if os.path.exists(path):
+    img = Image.open(path)
+    status = 'PASS' if img.mode == mode and img.size == size else 'FAIL'
+    print(f'{status}: {name} — mode={img.mode} (expected {mode}), size={img.size} (expected {size}), filesize={os.path.getsize(path)/1024:.0f}KB')
+  else:
+    print(f'MISSING: {name}')
+" 2>/dev/null
+
+echo "=== SCREENSHOTS ==="
+ls -la artifacts/oracle/assets/app-store/screenshot-*.png 2>/dev/null
+python3 -c "
+from PIL import Image
+import os, glob
+for path in sorted(glob.glob('artifacts/oracle/assets/app-store/screenshot-*.png')):
+  img = Image.open(path)
+  status = 'PASS' if img.size == (1320,2868) else 'FAIL'
+  print(f'{status}: {os.path.basename(path)} — {img.size} — {os.path.getsize(path)/1024/1024:.1f}MB')
+" 2>/dev/null
+
+echo "=== PREVIEW VIDEOS ==="
+ls -la artifacts/oracle/assets/app-store/preview-*.mp4 2>/dev/null
+for f in artifacts/oracle/assets/app-store/preview-*.mp4; do
+  if [ -f "$f" ]; then
+    size=$(du -m "$f" | cut -f1)
+    echo "$(basename $f): ${size}MB"
+    ffprobe -v quiet -print_format json -show_streams "$f" 2>/dev/null | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for s in d.get('streams',[]):
+  if s.get('codec_type')=='video':
+    print(f\"  Video: {s.get('width')}x{s.get('height')} @ {s.get('r_frame_rate')} fps, codec={s.get('codec_name')}\")" 2>/dev/null
+  fi
+done
+
+echo "=== SUBMISSION DOCUMENT ==="
+ls -la artifacts/oracle/assets/app-store/APP-STORE-SUBMISSION.md 2>/dev/null
+wc -l artifacts/oracle/assets/app-store/APP-STORE-SUBMISSION.md 2>/dev/null
+
+# ============================================
+# SYSTEM PROMPT EXTRACTION
+# ============================================
+
+echo "=== FULL SYSTEM PROMPT FROM ORACLE.TS ==="
+grep -n "system\|BLOCK\|prompt\|persona\|You are\|ORACLE\|advisor\|behavioral\|palm\|hand" \
+  artifacts/api-server/src/routes/oracle.ts 2>/dev/null | head -150
+
+echo "=== ALL STRING LITERALS IN SYSTEM PROMPTS ==="
+awk '/system.*prompt|BLOCK|`You are/,/`/' \
+  artifacts/api-server/src/routes/oracle.ts 2>/dev/null | head -200
+```
+
+Save all output. Proceed to Phase 2.
+
+---
+
+**PHASE 2 — COMPLETE AUDIT REPORT**
+
+Using the evidence collected in Phase 1, write your complete findings. Every finding must cite the specific file, line number, and quote the exact code or output that led to your conclusion.
+
+---
+
+**SECTION 1 — BUILD INTEGRITY**
+
+Report the result of each build check:
+
+```
+PNPM INSTALL: PASS / FAIL
+Details: [exact output if failed]
+
+TYPESCRIPT CHECK: PASS / FAIL / WARNINGS
+Details: [list any errors or warnings]
+
+PREBUILD: PASS / FAIL
+Details: [exact error if failed]
+
+PACKAGE AUDIT: [list any high/critical vulnerabilities found]
+```
+
+If any build check fails — stop everything else and fix it first. A broken build cannot be submitted. Fix the build, re-run the check, confirm it passes, then continue.
+
+---
+
+**SECTION 2 — SECURITY AUDIT**
+
+For each security check, report PASS or FAIL with exact evidence:
+
+**2a. API Keys and Secrets**
+```
+STATUS: PASS / FAIL
+Evidence: [paste any keys or secrets found, or confirm none found]
+Risk: [explain what exposure means]
+Fix: [if failed]
+```
+
+Check: Are any Anthropic API keys, RevenueCat keys, database credentials, or JWT secrets present in client-side code? They must only exist in server environment variables or `.env` files — never in `artifacts/oracle/` client code.
+
+**2b. Server Security**
+```
+CORS configured: YES / NO — [file and line]
+Rate limiting present: YES / NO — [file and line]
+Input validation on req.body: YES / NO — [file and line]
+Auth middleware on protected routes: YES / NO — [file and line]
+SQL injection prevention: YES / NO — [approach used]
+```
+
+**2c. Data Privacy**
+```
+Palm photos stored permanently: YES / NO — [evidence]
+User data sent to third parties beyond Anthropic: YES / NO — [what and where]
+Sensitive data in AsyncStorage unencrypted: YES / NO — [what keys]
+Console logs exposing user data: YES / NO — [what logs]
+```
+
+**2d. Privacy Policy Accuracy**
+Does the NSCameraUsageDescription accurately describe what the camera is used for? Quote the current string and evaluate it.
+
+Does the privacy policy on the website accurately describe all data collected and processed? Is it consistent with what the code actually does?
+
+**2e. Security Score**
+Rate the overall security: PRODUCTION READY / NEEDS MINOR FIXES / NEEDS MAJOR FIXES
+List the top 3 security risks in order of severity.
+
+---
+
+**SECTION 3 — APP STORE COMPLIANCE AUDIT**
+
+This is the most critical section. Use the grep output from Phase 1 as your evidence.
+
+For each compliance check:
+
+**3a. Fortune Telling Language Sweep**
+```
+STATUS: CLEAN / VIOLATIONS FOUND
+Violations: [list every match with file:line:text]
+```
+
+**3b. Chiromantic Vocabulary Sweep**
+```
+STATUS: CLEAN / VIOLATIONS FOUND
+Violations: [list every match with file:line:text]
+```
+
+**3c. Zodiac and Astrology Sweep**
+```
+STATUS: CLEAN / VIOLATIONS FOUND
+Violations: [list every match with file:line:text]
+```
+
+**3d. Forbidden Server Patterns**
+```
+computeSunSign: DELETED / STILL EXISTS [file:line]
+computeFullNumerology: DELETED / STILL EXISTS [file:line]
+computeChineseZodiac: DELETED / STILL EXISTS [file:line]
+computeTarotCard: DELETED / STILL EXISTS [file:line]
+FORBIDDEN_TERMINOLOGY: DELETED / STILL EXISTS [file:line]
+BIRLA_PERSONA_BLOCK: DELETED / STILL EXISTS [file:line]
+RECOGNITION LINE MANDATORY: DELETED / STILL EXISTS [file:line]
+MEMORY ILLUSION: DELETED / STILL EXISTS [file:line]
+goal is NOT factual correctness: DELETED / STILL EXISTS [file:line]
+Hardcoded cliffhanger: DELETED / STILL EXISTS [file:line]
+```
+
+**3e. DOB-Driven Content**
+```
+STATUS: CLEAN / VIOLATIONS FOUND
+Daily Oracle card: RENAMED / STILL EXISTS [file:line]
+Weekly Forecast card: RENAMED / STILL EXISTS [file:line]
+DOB in daily-oracle API call: REMOVED / STILL PRESENT [file:line]
+DOB in weekly-forecast API call: REMOVED / STILL PRESENT [file:line]
+```
+
+**3f. System Prompt Compliance**
+Quote the first 500 characters of the actual current system prompt from oracle.ts verbatim. Then evaluate:
+```
+Contains palmistry instructions: YES / NO
+Contains ORACLE_PERSONA_BLOCK (new): YES / NO
+Contains behavioralContextBlock injection: YES / NO
+Contains time-specific predictions: YES / NO
+Contains manipulation instructions: YES / NO
+VERDICT: COMPLIANT / NON-COMPLIANT
+```
+
+**3g. Required App Store Elements**
+```
+About Oracle screen exists: YES / NO [file]
+About Oracle accessible from Settings: YES / NO [file:line]
+Reading screen disclaimer exists: YES / NO [file:line]
+"Talk to Oracle About Your Profile" bridge button: YES / NO [file:line]
+Auto-paywall after reading (1500ms): YES / NO [file:line]
+Per-session paywall flag: YES / NO [file:line]
+Home screen upgrade banner: YES / NO [file:line]
+NSCameraUsageDescription accurate: YES / NO [current text]
+Support URL resolves: YES (HTTP 200) / NO (HTTP [code])
+Privacy URL resolves: YES (HTTP 200) / NO (HTTP [code])
+```
+
+**3h. Questionnaire Implementation**
+```
+questionnaire.tsx exists: YES / NO
+All 8 questions present: YES / NO [evidence]
+Navigation includes questionnaire: YES / NO [_layout.tsx line]
+Returning users skip questionnaire: YES / NO [evidence]
+questionnaireAnswers in OracleContext: YES / NO
+behavioralContextBlock uses questionnaire data: YES / NO [oracle.ts line]
+```
+
+**3i. Compliance Verdict**
+```
+OVERALL COMPLIANCE STATUS: APPROVED / REJECTED
+Reason: [if rejected — list every fatal issue]
+Confidence: [0-100%] that Apple approves this submission
+```
+
+---
+
+**SECTION 4 — SUBSCRIPTION AND PAYMENT AUDIT**
+
+**4a. RevenueCat Configuration**
+```
+Monthly product ($9.99): CONFIGURED / MISSING [product ID]
+Annual product ($49.99): CONFIGURED / MISSING [product ID]
+3-day free trial: CONFIGURED / MISSING
+Entitlement ID: [what is it]
+```
+
+**4b. Paywall UI**
+```
+Paywall headline: [quote exact text]
+Annual option pre-selected: YES / NO
+"Save 58%" badge: YES / NO
+Benefit rows: [quote all 3]
+Fine print: [quote exact text]
+Restore purchases: YES / NO
+```
+
+**4c. Server-Side Verification**
+```
+Server verifies subscription before serving paid content: YES / NO [file:line]
+Free tier limits enforced server-side: YES / NO [file:line]
+What happens if someone bypasses client paywall: [explain]
+```
+
+**4d. Subscription Health Score**
+PRODUCTION READY / NEEDS FIXES
+List any subscription issues found.
+
+---
+
+**SECTION 5 — CRASH AND ERROR HANDLING AUDIT**
+
+For each critical path, report whether error handling exists:
+
+**5a. API Call Protection**
+```
+Anthropic API calls wrapped in try/catch: YES / NO [evidence]
+Stream drop handling in reading.tsx: YES / NO [evidence]
+Behavioral scoring fallback (default 5s): YES / NO [evidence]
+RevenueCat initialization failure handling: YES / NO [evidence]
+Network timeout handling: YES / NO [evidence]
+```
+
+**5b. Navigation Safety**
+```
+OracleContext null checks before use: YES / NO [evidence]
+Auth state checked before protected screens: YES / NO [evidence]
+Error boundaries present: YES / NO [evidence]
+```
+
+**5c. Crash Risk Assessment**
+List the top 5 crash scenarios you can identify from the code, ordered by likelihood. For each:
+```
+CRASH SCENARIO: [description]
+FILE: [exact path]
+LINE: [exact line]
+TRIGGER: [what causes it]
+FIX: [specific fix]
+PRIORITY: Fix before submission / Fix before launch / Can wait
+```
+
+---
+
+**SECTION 6 — ASSETS AUDIT**
+
+**6a. App Icon**
+```
+icon.png: [PASS/FAIL] — [dimensions] — [mode] — [file size]
+splash-icon.png: [PASS/FAIL] — [dimensions] — [mode] — [file size]
+adaptive-icon.png: [PASS/FAIL] — [dimensions] — [mode] — [file size]
+notification-icon.png: [PASS/FAIL] — [dimensions] — [mode] — [file size]
+app.json icon path: [correct path or missing]
+app.json adaptiveIcon: [present or missing]
+```
+
+**6b. Screenshots**
+```
+screenshot-1.png: [PASS/FAIL] — [dimensions] — [file size] — [shows chat: YES/NO]
+screenshot-2.png: [PASS/FAIL] — [dimensions] — [file size]
+screenshot-3.png: [PASS/FAIL] — [dimensions] — [file size]
+screenshot-4.png: [PASS/FAIL] — [dimensions] — [file size]
+screenshot-5.png: [PASS/FAIL] — [dimensions] — [file size]
+Screenshot 1 leads with AI conversation (not palm): YES / NO
+```
+
+**6c. Preview Videos**
+```
+preview-1.mp4: [PASS/FAIL] — [dimensions] — [duration] — [file size] — [under 500MB: YES/NO]
+preview-2.mp4: [PASS/FAIL] — [dimensions] — [duration] — [file size] — [under 500MB: YES/NO]
+preview-3.mp4: [PASS/FAIL] — [dimensions] — [duration] — [file size] — [under 500MB: YES/NO]
+Video 1 leads with AI conversation (not palm): YES / NO
+```
+
+**6d. Submission Document**
+```
+APP-STORE-SUBMISSION.md exists: YES / NO
+Contains Apple reply message: YES / NO
+Contains all required fields: YES / NO
+Missing fields: [list any]
+```
+
+---
+
+**SECTION 7 — APP.JSON AUDIT**
+
+Read the full `app.json` and verify every field:
+
+```
+name: [current value] — CORRECT (Oracle: AI Life Advisor) / WRONG
+slug: [current value] — unchanged: YES / NO
+bundleIdentifier: [current value] — unchanged (com.theoracle.app): YES / NO
+version: [current value]
+buildNumber: [current value]
+NSCameraUsageDescription: [quote exact string] — ACCURATE / INACCURATE
+NSPhotoLibraryUsageDescription: [quote exact string] — ACCURATE / INACCURATE
+ITSAppUsesNonExemptEncryption: [current value] — should be "NO": CORRECT / WRONG
+adaptiveIcon foregroundImage: [current value] — PRESENT / MISSING
+adaptiveIcon backgroundColor: [current value] — PRESENT / MISSING
+expo-notifications icon: [current value] — references notification-icon.png: YES / NO
+Associated domains: [list them] — unchanged: YES / NO
+EAS projectId: [current value] — unchanged: YES / NO
+```
+
+Flag anything that changed that should not have changed. Flag anything missing that should be present.
+
+---
+
+**SECTION 8 — WEBSITE AUDIT**
+
+```
+Support URL HTTP status: [200 / other]
+Privacy URL HTTP status: [200 / other]
+"Is this a fortune telling app?" FAQ: EXISTS / MISSING
+"Oracle: AI Life Advisor" in headings: YES / NO
+"palm reading app" language: REMOVED / STILL PRESENT [quote]
+"AI life advisor" positioning: PRESENT / MISSING
+Privacy policy effective date: [current date in file]
+```
+
+---
+
+**SECTION 9 — FIX EVERYTHING THAT FAILED**
+
+After completing the audit — fix every single item that failed. Work in this order:
+
+1. Build failures first (nothing else matters if the build is broken)
+2. Security vulnerabilities (API keys exposed, missing auth)
+3. Fatal App Store compliance violations (things that guarantee rejection)
+4. Moderate compliance violations (things that risk rejection)
+5. Crash risks (anything that could crash during Apple's review)
+6. Asset failures (wrong dimensions, missing files)
+7. Minor issues (copy, pricing references, labels)
+
+For each fix:
+- Read the file first
+- Make the minimal surgical change
+- Verify the fix is correct
+- Document what you changed in CHANGES.md
+- Do not break anything that was working
+
+After all fixes — re-run the relevant checks to confirm they now pass.
+
+---
+
+**SECTION 10 — FINAL BUILD VERIFICATION**
+
+After all fixes are applied, run these commands and confirm both pass:
+
+```bash
+cd /home/user/Mystic-Reading-Hub
+pnpm install --frozen-lockfile
+
+cd /home/user/Mystic-Reading-Hub/artifacts/oracle
+npx expo prebuild --platform ios --clean --no-install
+```
+
+Then run the two definitive compliance grep sweeps and confirm zero results:
+
+```bash
+grep -rn "computeSunSign\|computeFullNumerology\|computeChineseZodiac\|computeTarotCard\|FORBIDDEN_TERMINOLOGY\|BIRLA_PERSONA_BLOCK\|RECOGNITION LINE MANDATORY\|MEMORY ILLUSION\|goal is NOT factual correctness" \
+  /home/user/Mystic-Reading-Hub/artifacts/ 2>/dev/null
+
+grep -rn "Daily Oracle\|Weekly Forecast\|Heart Line\|Head Line\|Life Line\|Fate Line\|Mount of Jupiter\|Mount of Saturn\|Mount of Venus\|♈\|♉\|♊\|♋\|♌\|♍\|♎\|♏\|♐\|♑\|♒\|♓" \
+  /home/user/Mystic-Reading-Hub/artifacts/oracle/app/ 2>/dev/null
+```
+
+Both grep commands must return zero results. If anything appears — fix it immediately and re-run.
+
+---
+
+**SECTION 11 — COMMIT AND PUSH**
+
+After everything passes:
+
+Update `CHANGES.md` at repo root with every file changed during this audit.
+
+Commit message:
+`"Final pre-submission security and compliance audit — all checks green"`
+
+Push to GitHub master. Report:
+- Final commit hash
+- Every file changed
+- Pass/fail summary for all sections
+
+---
+
+**SECTION 12 — SUBMISSION READINESS VERDICT**
+
+Give me a final verdict in this exact format:
+
+```
+=== ORACLE: AI LIFE ADVISOR — SUBMISSION READINESS REPORT ===
+
+BUILD: READY / NOT READY
+SECURITY: READY / NOT READY
+APP STORE COMPLIANCE: READY / NOT READY
+SUBSCRIPTION: READY / NOT READY
+CRASH RISK: LOW / MEDIUM / HIGH
+ASSETS: READY / NOT READY
+WEBSITE: READY / NOT READY
+
+OVERALL: READY TO SUBMIT / NOT READY — [reason]
+
+APPLE APPROVAL CONFIDENCE: [0-100]%
+
+TOP 3 REMAINING RISKS:
+1. [risk]
+2. [risk]
+3. [risk]
+
+RECOMMENDED ACTION: Submit now / Fix [X] first then submit
+```
+
+---
+
+**CRITICAL RULES:**
+
+Every finding must cite exact file path and line number. No exceptions.
+Quote actual code — do not paraphrase.
+If something was claimed done by a previous task but the code shows otherwise — say so directly.
+Zero tolerance for "probably fine" — if you are not certain something is correct, flag it.
+This is the last check before real money and real users are involved. Find everything.
+
+Do not stop until every section is complete, every failure is fixed, the build passes, both grep sweeps return zero results, and everything is pushed to GitHub.
+
+---
+
+That prompt runs a complete automated evidence collection phase first using shell commands, then does a structured audit against that evidence, then fixes everything that fails, then verifies the fixes, then commits. It is designed so Replit cannot skip steps or make assumptions — every finding is backed by actual command output.
