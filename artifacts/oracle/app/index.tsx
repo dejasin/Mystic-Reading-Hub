@@ -248,7 +248,9 @@ export default function LandingScreen() {
     ? profiles.reduce((a, b) => (a.createdAt > b.createdAt ? a : b))
     : null;
 
-  const hasProfile = mostRecentProfile && mostRecentProfile.dob;
+  // Task #65 — DOB is no longer collected at intake; presence of any
+  // profile is enough to consider the user "set up".
+  const hasProfile = !!mostRecentProfile;
 
   useEffect(() => {
     (async () => {

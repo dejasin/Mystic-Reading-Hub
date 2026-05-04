@@ -310,11 +310,11 @@ export default function DeepDiveScreen() {
   const scrollRef = useRef<ScrollView>(null);
 
   const saveDeepDiveToVault = async (category: DeepDiveCategory, text: string) => {
-    const { name, dob } = state.userData;
-    if (!name || !dob) return;
-    const profile = profiles.find(
-      p => p.name.trim().toLowerCase() === name.trim().toLowerCase() && p.dob === dob
-    );
+    // Task #65 — anchor by profile id (set by ritual or profile-action)
+    // since DOB is no longer collected at intake.
+    const profileId = state.currentProfileId;
+    if (!profileId) return;
+    const profile = profiles.find(p => p.id === profileId);
     if (profile) {
       await updateProfile(profile.id, {
         deepDives: { ...(profile.deepDives ?? {}), [category]: text },

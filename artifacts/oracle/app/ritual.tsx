@@ -112,8 +112,8 @@ const FRONT_CAMERA_KEYS: (keyof OracleImages)[] = [];
 
 export default function RitualScreen() {
   const insets = useSafeAreaInsets();
-  const { state, setImage } = useOracle();
-  const { profiles, addProfile } = useProfiles();
+  const { state, setImage, setCurrentProfileId } = useOracle();
+  const { addProfile } = useProfiles();
   const [step, setStep] = useState(0);
   const currentStep = STEPS[step];
 
@@ -123,27 +123,30 @@ export default function RitualScreen() {
 
   const saveToVaultAndReveal = async () => {
     try {
-      const { userData, images } = state;
-      if (userData.dob) {
-        const alreadySaved = profiles.some(p => p.dob === userData.dob);
-        if (!alreadySaved) {
-          await addProfile({
-            name: userData.name ?? "",
-            dob: userData.dob,
-            birthTime: userData.birthTime ?? "",
-            birthTimeUnknown: userData.birthTimeUnknown ?? false,
-            birthCity: userData.birthCity ?? "",
-            birthCountry: userData.birthCountry ?? "",
-            gender: userData.gender ?? "",
-            dominantHand: userData.dominantHand ?? "",
-            eyeColor: userData.eyeColor ?? "",
-            notes: "",
-            photos: {
-              right_palm: images.right_palm?.uri,
-              left_palm: images.left_palm?.uri,
-            },
-          });
-        }
+      const { userData, images, currentProfileId } = state;
+      // Task #65 — DOB is no longer collected at intake, so we can't use
+      // it to dedupe. Skip the auto-save when the session is already
+      // anchored to an existing profile (e.g. the user navigated here
+      // from /profile-action). Otherwise create a fresh vault profile so
+      // reading.tsx / deep-dive.tsx can still attach the generated text.
+      if (!currentProfileId) {
+        const created = await addProfile({
+          name: userData.name ?? "",
+          dob: userData.dob ?? "",
+          birthTime: userData.birthTime ?? "",
+          birthTimeUnknown: userData.birthTimeUnknown ?? false,
+          birthCity: userData.birthCity ?? "",
+          birthCountry: userData.birthCountry ?? "",
+          gender: userData.gender ?? "",
+          dominantHand: userData.dominantHand ?? "",
+          eyeColor: userData.eyeColor ?? "",
+          notes: "",
+          photos: {
+            right_palm: images.right_palm?.uri,
+            left_palm: images.left_palm?.uri,
+          },
+        });
+        if (created) setCurrentProfileId(created.id);
       }
     } catch (_e) {
     }
@@ -303,12 +306,6 @@ export default function RitualScreen() {
                   </View>
                 );
               })}
-            </View>
-
-            <View style={styles.userSummary}>
-              <Text style={styles.summaryDetail}>
-                Born {state.userData.dob}
-              </Text>
             </View>
 
             <Text style={styles.generatingNote}>

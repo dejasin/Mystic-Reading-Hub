@@ -940,11 +940,13 @@ export default function ReadingScreen() {
   };
 
   const saveReadingToVault = async (fullReading: string) => {
-    const { name, dob } = state.userData;
-    if (!name || !dob) return;
-    const profile = profiles.find(
-      p => p.name.trim().toLowerCase() === name.trim().toLowerCase() && p.dob === dob
-    );
+    // Task #65 — DOB is no longer collected at intake, so we anchor the
+    // session to a profile via OracleState.currentProfileId (set by the
+    // ritual when it auto-creates the profile, or by profile-action when
+    // an existing profile starts a new session).
+    const profileId = state.currentProfileId;
+    if (!profileId) return;
+    const profile = profiles.find(p => p.id === profileId);
     if (profile) {
       // Task #64 — also persist the sessionId of this completed reading so
       // the home cards can pull recent behavioral themes for daily/weekly.

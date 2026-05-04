@@ -3,11 +3,16 @@ import React, { createContext, useContext, useState, useEffect, useRef } from "r
 
 export interface UserData {
   name: string;
-  dob: string;
-  birthTime: string;
-  birthTimeUnknown: boolean;
-  birthCity: string;
-  birthCountry: string;
+  // Birth-related fields are no longer collected at intake (Task #65 —
+  // removed to keep the first-screen experience aligned with the AI life
+  // advisor repositioning). They remain optional on the type so existing
+  // stored profiles and downstream code that still references them keep
+  // compiling without changes.
+  dob?: string;
+  birthTime?: string;
+  birthTimeUnknown?: boolean;
+  birthCity?: string;
+  birthCountry?: string;
   gender: string;
   dominantHand: string;
   eyeColor: string;
@@ -61,6 +66,12 @@ export interface OracleState {
   behavioralScores: BehavioralScores | null;
   behavioralScoresUpdatedAt: number | null;
   questionnaireAnswers: QuestionnaireAnswers | null;
+  // Task #65 — id of the OracleProfile this session is anchored to.
+  // Set by the ritual when it auto-creates a profile, or by
+  // profile-action when an existing profile starts a new session.
+  // Replaces the old name+dob lookup used by reading.tsx /
+  // deep-dive.tsx since intake no longer collects DOB.
+  currentProfileId: string | null;
 }
 
 interface OracleContextValue {
@@ -79,16 +90,12 @@ interface OracleContextValue {
   clearDeepDive: (category: DeepDiveCategory) => void;
   setBehavioralScores: (scores: BehavioralScores | null) => void;
   setQuestionnaireAnswers: (answers: QuestionnaireAnswers | null) => void;
+  setCurrentProfileId: (id: string | null) => void;
   resetAll: () => void;
 }
 
 const defaultUserData: UserData = {
   name: "",
-  dob: "",
-  birthTime: "",
-  birthTimeUnknown: false,
-  birthCity: "",
-  birthCountry: "",
   gender: "",
   dominantHand: "",
   eyeColor: "",
@@ -110,6 +117,7 @@ const defaultState: OracleState = {
   behavioralScores: null,
   behavioralScoresUpdatedAt: null,
   questionnaireAnswers: null,
+  currentProfileId: null,
 };
 
 const BEHAVIORAL_SCORES_KEY = "oracle_behavioral_scores";
@@ -182,7 +190,12 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
       isPaid: false,
       deepDives: {},
       sessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      currentProfileId: null,
     }));
+  };
+
+  const setCurrentProfileId = (id: string | null) => {
+    setState(prev => ({ ...prev, currentProfileId: id }));
   };
 
   const updateUserData = (partial: Partial<UserData>) => {
@@ -297,6 +310,7 @@ export function OracleProvider({ children }: { children: React.ReactNode }) {
       appendDeepDive, clearDeepDive,
       setBehavioralScores,
       setQuestionnaireAnswers,
+      setCurrentProfileId,
       resetAll,
     }}>
       {children}

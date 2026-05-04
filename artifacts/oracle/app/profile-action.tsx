@@ -20,7 +20,7 @@ export default function ProfileActionScreen() {
   const insets = useSafeAreaInsets();
   const { profileId } = useLocalSearchParams<{ profileId: string }>();
   const { profiles } = useProfiles();
-  const { resetAll, setUserData, setImage } = useOracle();
+  const { resetAll, setUserData, setImage, setCurrentProfileId } = useOracle();
 
   const profile = profiles.find(p => p.id === profileId);
 
@@ -82,6 +82,11 @@ export default function ProfileActionScreen() {
           accessibilityRole="button"
           onPress={() => {
             resetAll();
+            // Task #65 — birth fields are no longer collected at intake;
+            // pass through whatever the existing profile happens to have
+            // for downstream code that still reads them, but anchor the
+            // session via currentProfileId so reading.tsx /
+            // deep-dive.tsx can attach generated text to this profile.
             setUserData({
               name: profile.name,
               dob: profile.dob ?? "",
@@ -96,6 +101,7 @@ export default function ProfileActionScreen() {
               q2: "",
               q3: "",
             });
+            setCurrentProfileId(profile.id);
             if (profile.photos.right_palm) setImage("right_palm", { uri: profile.photos.right_palm });
             if (profile.photos.left_palm) setImage("left_palm", { uri: profile.photos.left_palm });
             router.push("/reading");

@@ -70,8 +70,12 @@ router.post("/profiles", async (req: Request, res: Response) => {
       deepDives,
     } = req.body;
 
-    if (!name || !dob) {
-      res.status(400).json({ error: "Name and dob are required" });
+    // Task #65 — DOB is no longer collected at intake; only name is
+    // required. Existing profiles created before the change keep their
+    // stored DOB (the column remains notNull at the DB level — empty
+    // string is acceptable for new ritual-created profiles).
+    if (!name) {
+      res.status(400).json({ error: "Name is required" });
       return;
     }
 

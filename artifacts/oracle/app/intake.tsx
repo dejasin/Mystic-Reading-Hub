@@ -182,11 +182,6 @@ export default function IntakeScreen() {
   const { pendingReferralCode, redeemReferralCode, clearPendingReferralCode } = useReferral();
 
   const [referralCode, setReferralCode] = useState(pendingReferralCode ?? "");
-  const [dob, setDob] = useState("");
-  const [birthTime, setBirthTime] = useState("");
-  const [birthTimeUnknown, setBirthTimeUnknown] = useState(false);
-  const [birthCity, setBirthCity] = useState("");
-  const [birthCountry, setBirthCountry] = useState("");
   const [gender, setGender] = useState("");
   const [dominantHand, setDominantHand] = useState("");
   const [q1, setQ1] = useState("");
@@ -194,11 +189,6 @@ export default function IntakeScreen() {
   const [q3, setQ3] = useState("");
 
   const handleSubmit = async () => {
-    if (!dob.trim()) {
-      Alert.alert("The Oracle requires your date of birth to proceed.");
-      return;
-    }
-
     if (Platform.OS !== "web") {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
@@ -212,13 +202,11 @@ export default function IntakeScreen() {
       }
     }
 
+    // Task #65 — birth date / time / city / country are no longer
+    // collected here. The behavioral questionnaire is the real
+    // personalization signal.
     const userData: UserData = {
       name: "",
-      dob,
-      birthTime: birthTimeUnknown ? "" : birthTime,
-      birthTimeUnknown,
-      birthCity,
-      birthCountry,
       gender,
       dominantHand,
       eyeColor: "",
@@ -228,8 +216,6 @@ export default function IntakeScreen() {
     };
     setUserData(userData);
     trackEvent(AnalyticsEvent.INTAKE_COMPLETED, {
-      has_birth_time: !birthTimeUnknown && !!birthTime,
-      has_birth_location: !!birthCity || !!birthCountry,
       questions_answered: [q1, q2, q3].filter(q => q.trim()).length,
     });
     // Task #60 — first-time users go through the 8-question questionnaire
@@ -284,47 +270,6 @@ export default function IntakeScreen() {
         </Field>
 
         <Text style={styles.divider}>─── ✦ ───</Text>
-
-        <Field label="Date of Birth">
-          <StyledInput
-            value={dob}
-            onChangeText={setDob}
-            placeholder="YYYY-MM-DD"
-            type="date"
-          />
-        </Field>
-
-        <Field label="Time of Birth" optional>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <View style={{ flex: 1 }}>
-              <StyledInput
-                value={birthTime}
-                onChangeText={setBirthTime}
-                placeholder="HH:MM"
-                type="date"
-              />
-            </View>
-            <Pressable
-              onPress={() => setBirthTimeUnknown(!birthTimeUnknown)}
-              style={[styles.checkbox, birthTimeUnknown && styles.checkboxChecked]}
-              hitSlop={8}
-              accessibilityLabel="Birth time unknown"
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: birthTimeUnknown }}
-            >
-              {birthTimeUnknown && <Feather name="check" size={12} color={Colors.bg} />}
-            </Pressable>
-            <Text style={styles.checkboxLabel}>Unknown</Text>
-          </View>
-        </Field>
-
-        <Field label="City of Birth" optional>
-          <StyledInput value={birthCity} onChangeText={setBirthCity} placeholder="City" />
-        </Field>
-
-        <Field label="Country of Birth" optional>
-          <StyledInput value={birthCountry} onChangeText={setBirthCountry} placeholder="Country" />
-        </Field>
 
         <Field label="Gender" optional>
           <SelectOption options={GENDER_OPTIONS} value={gender} onSelect={setGender} />
@@ -435,25 +380,6 @@ const styles = StyleSheet.create({
     color: Colors.muted,
     textAlign: "center",
     marginTop: -8,
-  },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 5,
-    borderWidth: 1.5,
-    borderColor: Colors.inputBorder,
-    backgroundColor: Colors.inputBg,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkboxChecked: {
-    backgroundColor: Colors.gold,
-    borderColor: Colors.gold,
-  },
-  checkboxLabel: {
-    fontFamily: "EBGaramond_400Regular",
-    fontSize: 14,
-    color: Colors.muted,
   },
   submitBtn: {
     backgroundColor: Colors.gold,
