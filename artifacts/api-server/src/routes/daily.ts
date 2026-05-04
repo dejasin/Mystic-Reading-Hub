@@ -139,7 +139,7 @@ RULES:
 
     res.json({ content, date: today, cached: false, label: "Daily Reflection" });
   } catch (e) {
-    console.error("Daily oracle error:", e);
+    console.error("Daily reflection error:", e);
     res.status(500).json({ error: "Failed to generate today's reflection." });
   }
 });
@@ -237,7 +237,7 @@ RULES:
 
     res.json({ content, date: weekStr, cached: false, label: "This Week's Focus" });
   } catch (e) {
-    console.error("Weekly forecast error:", e);
+    console.error("Weekly focus error:", e);
     res.status(500).json({ error: "Failed to generate this week's focus." });
   }
 });

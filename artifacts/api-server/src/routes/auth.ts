@@ -77,12 +77,16 @@ router.post("/auth/send-code", async (req: Request, res: Response) => {
       expiresAt,
     });
 
-    logger.info({ email: normalizedEmail, code }, "Verification code generated (no email service — logging to console)");
-    console.log(`\n========================================`);
-    console.log(`  VERIFICATION CODE for ${normalizedEmail}`);
-    console.log(`  Code: ${code}`);
-    console.log(`  Expires: ${expiresAt.toISOString()}`);
-    console.log(`========================================\n`);
+    if (process.env.NODE_ENV !== "production") {
+      logger.info({ email: normalizedEmail, code }, "Verification code generated (dev only — logging to console)");
+      console.log(`\n========================================`);
+      console.log(`  VERIFICATION CODE for ${normalizedEmail}`);
+      console.log(`  Code: ${code}`);
+      console.log(`  Expires: ${expiresAt.toISOString()}`);
+      console.log(`========================================\n`);
+    } else {
+      logger.info({ email: normalizedEmail }, "Verification code generated");
+    }
 
     res.json({ success: true, message: "Verification code sent" });
   } catch (error) {

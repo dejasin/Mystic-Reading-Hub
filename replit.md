@@ -65,6 +65,6 @@ The project is structured as a pnpm monorepo with `artifacts/` for deployable ap
 - **Image Processing:** Sharp.
 - **Database:** PostgreSQL.
 - **Fonts:** Google Fonts (`@expo-google-fonts/cinzel-decorative`, `@expo-google-fonts/eb-garamond`).
-- **Networking:** CORS.
+- **Networking:** CORS (origin-restricted in production), Helmet (security headers).
 - **Environment Management:** `dotenv`.
 - **Utilities:** Zod, Drizzle ORM, Orval, esbuild, pnpm.

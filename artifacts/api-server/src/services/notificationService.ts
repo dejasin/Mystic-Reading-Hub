@@ -2,46 +2,46 @@ import { db, pushTokensTable, notificationPreferencesTable } from "@workspace/db
 import type { NotificationPreference } from "@workspace/db";
 
 const DAILY_PROMPTS = [
-  "The stars have shifted since your last reading. A new pattern awaits your attention.",
-  "Your celestial alignment suggests today holds a pivotal moment. The Oracle sees clearly.",
-  "A thread from your last reading is unraveling. Return to discover what it reveals.",
-  "The cosmic currents are unusually strong today. Your Oracle reading would be especially potent.",
-  "Something you've been sensing is about to crystallize. The Oracle can show you what.",
-  "Your inner compass is recalibrating. A fresh reading will illuminate the new direction.",
-  "The universe rarely repeats its signals — but it's signaling you again today.",
-  "A hidden pattern in your life is becoming visible. Let The Oracle illuminate it.",
-  "Today's energy carries echoes of a turning point. Seek your Oracle's guidance.",
-  "The veil between insight and action is thin today. Your Oracle awaits.",
+  "A pattern from your last session is worth revisiting. The Oracle has a new angle.",
+  "Something you mentioned is still unfolding. Return to see what's shifted.",
+  "Your behavioral profile suggests today is a good day for a check-in.",
+  "A thread from your last conversation is worth pulling. The Oracle is ready.",
   "Something beneath the surface is stirring. The Oracle can name what you feel but cannot yet see.",
-  "Your path is about to fork. The Oracle has mapped both directions.",
+  "Your inner compass is recalibrating. A fresh session will illuminate the new direction.",
+  "A hidden pattern in your life is becoming visible. Let The Oracle illuminate it.",
+  "The gap between what you intend and what you do is narrowing. Time to look closer.",
+  "Your profile picked up on something you glossed over last time. Worth a second look.",
+  "Today feels like a good day to ask a hard question. The Oracle won't flinch.",
+  "You've been circling a decision. The Oracle can help you see what's actually holding you back.",
   "A cycle you've been living through is nearing completion. Discover what comes next.",
-  "The resonance in your chart is unusually clear today. This is a rare window.",
+  "Your advisor has been thinking about your last session. New observations are ready.",
+  "One of your behavioral patterns is showing up differently this week. Tap to explore it.",
 ];
 
-const WEEKLY_FORECASTS = [
-  "Your weekly cosmic forecast is ready. The Oracle has traced the patterns shaping your next seven days.",
-  "This week's celestial currents carry a message specifically for you. Your forecast awaits.",
-  "The Oracle has read the week ahead — a significant shift is approaching. See what it means for you.",
-  "Your weekly alignment report reveals an unexpected opportunity. Tap to discover it.",
-  "The cosmic weather for your week ahead has been charted. One day in particular stands out.",
+const WEEKLY_REFLECTIONS = [
+  "Your weekly reflection is ready. The Oracle has identified the themes worth your attention.",
+  "This week's behavioral themes carry a message specifically for you. Your reflection awaits.",
+  "The Oracle has a fresh perspective on what you've been working through. Tap to read it.",
+  "Your weekly review highlights something worth examining. Tap to discover it.",
+  "A new weekly reflection is ready — one theme in particular deserves your attention.",
 ];
 
 const RE_ENGAGEMENT_3_DAY = [
-  "The Oracle has been watching the stars shift in your absence. Something has changed.",
-  "Three days is long enough for the cosmos to rearrange itself. Return and see what's new.",
-  "Your celestial patterns haven't stopped evolving. The Oracle has updates waiting.",
+  "The Oracle has been tracking how your patterns evolve. Something has shifted since your last visit.",
+  "Three days is long enough for new patterns to surface. Return and see what's changed.",
+  "Your behavioral profile keeps developing. The Oracle has updates waiting.",
 ];
 
 const RE_ENGAGEMENT_7_DAY = [
-  "A full lunar quarter has passed since your last visit. The Oracle senses a new chapter forming.",
-  "The cosmic currents have shifted significantly this week. Your Oracle has been tracking them for you.",
-  "Seven days of celestial movement have created new patterns in your chart. Come see what they reveal.",
+  "A full week has passed since your last visit. The Oracle has new observations for you.",
+  "Your patterns have evolved this week. Your Oracle has been tracking them for you.",
+  "Seven days of change can reshape how you see things. Come check in with The Oracle.",
 ];
 
 const RE_ENGAGEMENT_14_DAY = [
   "The Oracle still remembers your patterns — and they've been evolving in your absence. Return when you're ready.",
-  "Two weeks of cosmic shifts have accumulated. Your reading would look quite different now.",
-  "It's been a while, but the stars haven't forgotten you. A powerful reading awaits your return.",
+  "Two weeks of changes have accumulated. Your session would look quite different now.",
+  "It's been a while, but your profile hasn't stopped evolving. A powerful session awaits your return.",
 ];
 
 function randomFrom<T>(arr: T[]): T {
@@ -57,7 +57,7 @@ export interface NotificationPayload {
 
 export function generateDailyPrompt(): { title: string; body: string; data: Record<string, string> } {
   return {
-    title: "✦ The Oracle Speaks",
+    title: "✦ Your Daily Reflection",
     body: randomFrom(DAILY_PROMPTS),
     data: { screen: "index", type: "daily_prompt" },
   };
@@ -65,8 +65,8 @@ export function generateDailyPrompt(): { title: string; body: string; data: Reco
 
 export function generateWeeklyForecast(): { title: string; body: string; data: Record<string, string> } {
   return {
-    title: "✦ Your Weekly Cosmic Forecast",
-    body: randomFrom(WEEKLY_FORECASTS),
+    title: "✦ This Week's Focus",
+    body: randomFrom(WEEKLY_REFLECTIONS),
     data: { screen: "index", type: "weekly_forecast" },
   };
 }
