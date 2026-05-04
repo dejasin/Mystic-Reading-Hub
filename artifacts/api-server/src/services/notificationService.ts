@@ -13,7 +13,7 @@ const DAILY_PROMPTS = [
   "Your profile picked up on something you glossed over last time. Worth a second look.",
   "Today feels like a good day to ask a hard question. The Oracle won't flinch.",
   "You've been circling a decision. The Oracle can help you see what's actually holding you back.",
-  "A cycle you've been living through is nearing completion. Discover what comes next.",
+  "A cycle you've been living through is nearing completion. Time to reflect on what it taught you.",
   "Your advisor has been thinking about your last session. New observations are ready.",
   "One of your behavioral patterns is showing up differently this week. Tap to explore it.",
 ];
